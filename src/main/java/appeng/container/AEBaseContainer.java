@@ -989,6 +989,10 @@ public abstract class AEBaseContainer extends Container {
     }
 
     public void swapSlotContents(final int slotA, final int slotB) {
+        final int inventorySize = this.inventorySlots.size();
+        if (slotA < 0 || slotA >= inventorySize || slotB < 0 || slotB >= inventorySize) {
+            return;
+        }
         final Slot a = this.getSlot(slotA);
         final Slot b = this.getSlot(slotB);
 
