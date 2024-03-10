@@ -27,8 +27,8 @@ public class GuiCraftingCPUTable {
     private final ContainerCPUTable container;
 
     public static final int CPU_TABLE_WIDTH = 94;
-    public static final int CPU_TABLE_HEIGHT = 164;
-    public static final int CPU_TABLE_SLOTS = 6;
+    public static int CPU_TABLE_HEIGHT = 164;
+    public static int CPU_TABLE_SLOTS = 6;
     public static final int CPU_TABLE_SLOT_XOFF = 100;
     public static final int CPU_TABLE_SLOT_YOFF = 0;
     public static final int CPU_TABLE_SLOT_WIDTH = 67;
@@ -46,6 +46,10 @@ public class GuiCraftingCPUTable {
         this.cpuScrollbar.setTop(19);
         this.cpuScrollbar.setWidth(12);
         this.cpuScrollbar.setHeight(137);
+    }
+
+    private void updateScrollBar() {
+        this.cpuScrollbar.setHeight(CPU_TABLE_HEIGHT - 27);
     }
 
     public ContainerCPUTable getContainer() {
@@ -210,7 +214,19 @@ public class GuiCraftingCPUTable {
 
     public void drawBG(int offsetX, int offsetY) {
         parent.bindTexture("guis/cpu_selector.png");
-        parent.drawTexturedModalRect(offsetX - CPU_TABLE_WIDTH, offsetY, 0, 0, CPU_TABLE_WIDTH, CPU_TABLE_HEIGHT);
+        if (CPU_TABLE_HEIGHT != 164) {
+            parent.drawTexturedModalRect(offsetX - CPU_TABLE_WIDTH, offsetY, 0, 0, CPU_TABLE_WIDTH, 41);
+            int y = 41;
+            int rows = CPU_TABLE_SLOTS;
+            for (int row = 1; row < rows - 1; row++) {
+                parent.drawTexturedModalRect(offsetX - CPU_TABLE_WIDTH, offsetY + y, 0, 41, CPU_TABLE_WIDTH, 23);
+                y += 23;
+            }
+            parent.drawTexturedModalRect(offsetX - CPU_TABLE_WIDTH, offsetY + y, 0, 132, CPU_TABLE_WIDTH, 31);
+        } else {
+            parent.drawTexturedModalRect(offsetX - CPU_TABLE_WIDTH, offsetY, 0, 0, CPU_TABLE_WIDTH, CPU_TABLE_HEIGHT);
+        }
+        updateScrollBar();
     }
 
     /**

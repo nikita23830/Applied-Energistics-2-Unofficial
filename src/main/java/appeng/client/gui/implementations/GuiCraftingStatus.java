@@ -155,7 +155,7 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
         }
         this.switchTallMode = new GuiImgButton(
                 this.guiLeft - 18,
-                this.guiTop + 166,
+                this.guiTop + this.ySize - 18,
                 Settings.TERMINAL_STYLE,
                 tallMode ? TerminalStyle.TALL : TerminalStyle.SMALL);
         this.buttonList.add(switchTallMode);
@@ -264,6 +264,8 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
             this.rows = DISPLAYED_ROWS;
             this.ySize = GUI_HEIGHT;
         }
+        GuiCraftingCPUTable.CPU_TABLE_HEIGHT = this.ySize - 20;
+        GuiCraftingCPUTable.CPU_TABLE_SLOTS = this.rows;
     }
 
     private void setScrollBar() {
