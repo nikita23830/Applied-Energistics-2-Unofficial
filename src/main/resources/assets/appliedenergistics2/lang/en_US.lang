@@ -61,6 +61,7 @@ tile.appliedenergistics2.BlockCraftingAccelerator1024x.name=1024 Core Co-Process
 tile.appliedenergistics2.BlockCraftingAccelerator4096x.name=4096 Core Co-Processing Unit
 tile.appliedenergistics2.BlockCraftingUnit.name=Crafting Unit
 tile.appliedenergistics2.BlockMolecularAssembler.name=Molecular Assembler
+tile.appliedenergistics2.BlockPatternOptimizationMatrix.name=Pattern Optimization Matrix
 
 # Stairs
 tile.appliedenergistics2.ChiseledQuartzStairBlock.name=Chiseled Certus Quartz Stairs
@@ -181,6 +182,17 @@ gui.appliedenergistics2.StoredStacks=Stored Stacks
 gui.appliedenergistics2.Terminal=Terminal
 gui.appliedenergistics2.InterfaceTerminal=Interface Terminal
 gui.appliedenergistics2.InterfaceTerminalHint=Show Or Hide on Interface Terminal.
+gui.appliedenergistics2.PatternOptimization=Allow pattern optimization
+gui.appliedenergistics2.PatternOptimizationHint=Allows patterns from this interface to be modified by pattern optimizer.
+gui.appliedenergistics2.PatternOptimizer=Pattern optimizer
+gui.appliedenergistics2.StepsPerCraft=Max steps per craft
+gui.appliedenergistics2.PatternsAffected=Patterns affected
+gui.appliedenergistics2.Multiplied=Multiplied
+gui.appliedenergistics2.MultipliedBy=Multiplied by
+gui.appliedenergistics2.CurrentPatternOutput=Current pattern output
+gui.appliedenergistics2.NewPatternOutput=New pattern output
+gui.appliedenergistics2.Optimize=Optimize
+
 gui.appliedenergistics2.FormationPlane=Formation Plane
 gui.appliedenergistics2.VibrationChamber=Vibration Chamber
 gui.appliedenergistics2.NetworkDetails=Network Details
@@ -437,7 +449,9 @@ gui.tooltips.appliedenergistics2.SaveSearchString=Save Search String
 gui.tooltips.appliedenergistics2.SaveSearchStringYes=Yes
 gui.tooltips.appliedenergistics2.SaveSearchStringNo=No
 gui.tooltips.appliedenergistics2.DoublePattern=Double pattern
-gui.tooltips.appliedenergistics2.DoublePatternHint=Double stack sizes of pattern inputs and output(s) if it can. x8 when shift is held. Click the middle mouse button to customize the multiplier.
+gui.tooltips.appliedenergistics2.DoublePatternHint=Double stack sizes of pattern inputs and output(s) if it can. x8 when shift is held. Right click to divide instead. Click the middle mouse button to customize the multiplier.
+gui.tooltips.appliedenergistics2.DoublePatterns=Double patterns
+gui.tooltips.appliedenergistics2.DoublePatternsHint=Double stack sizes of pattern inputs and output(s) if it can. x8 when shift is held. Right click to divide instead.
 gui.tooltips.appliedenergistics2.CraftingStatus=Crafting Status
 gui.tooltips.appliedenergistics2.CraftingStatusDesc=Opens crafting status window
 gui.tooltips.appliedenergistics2.ToggleMolecularAssemblers=Toggles showing crafting interfaces only
@@ -453,6 +467,8 @@ gui.tooltips.appliedenergistics2.HighlightInterface=Highlight interface
 gui.tooltips.appliedenergistics2.SearchFieldInputs=Recipe Inputs
 gui.tooltips.appliedenergistics2.SearchFieldOutputs=Recipe Outputs
 gui.tooltips.appliedenergistics2.SearchFieldNames=Interface Names
+gui.tooltips.appliedenergistics2.OptimizePatterns=Optimize patterns
+gui.tooltips.appliedenergistics2.OptimizePatternsNoReq=§cThis option is unavailable because there is no Pattern Optimization Matrix in your network!
 
 gui.tooltips.appliedenergistics2.InsertionModeDefault=Default Insertion Mode
 gui.tooltips.appliedenergistics2.InsertionModeDefaultDesc=First to last, merge stacks as necessary

@@ -405,11 +405,6 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
     }
 
     @Override
-    public boolean shouldDisplay() {
-        return IInterfaceHost.super.shouldDisplay();
-    }
-
-    @Override
     public IInventory getPatterns() {
         if (isOutput()) {
             PartP2PInterface input = getInput();

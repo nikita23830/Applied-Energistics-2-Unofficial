@@ -55,6 +55,7 @@ import appeng.api.config.YesNo;
 import appeng.client.texture.ExtraBlockTextures;
 import appeng.core.localization.ButtonToolTips;
 import appeng.core.localization.GuiText;
+import appeng.util.Platform;
 
 public class GuiImgButton extends GuiButton implements ITooltip {
 
@@ -890,17 +891,12 @@ public class GuiImgButton extends GuiButton implements ITooltip {
             }
 
             value = PATTERN_NEW_LINE.matcher(value).replaceAll("\n");
-            final StringBuilder sb = new StringBuilder(value);
 
-            int i = sb.lastIndexOf("\n");
-            if (i <= 0) {
-                i = 0;
-            }
-            while (i + 30 < sb.length() && (i = sb.lastIndexOf(" ", i + 30)) != -1) {
-                sb.replace(i, i + 1, "\n");
-            }
+            if (Platform.isServer()) return name + '\n' + value;
 
-            return name + '\n' + sb;
+            value = Minecraft.getMinecraft().fontRenderer.wrapFormattedStringToWidth(value, 150);
+
+            return name + '\n' + value;
         }
         return null;
     }

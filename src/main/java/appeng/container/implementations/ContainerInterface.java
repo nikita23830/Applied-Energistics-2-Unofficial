@@ -13,6 +13,7 @@ package appeng.container.implementations;
 import java.util.ArrayList;
 
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 
@@ -23,6 +24,11 @@ import appeng.api.config.SecurityPermissions;
 import appeng.api.config.Settings;
 import appeng.api.config.Upgrades;
 import appeng.api.config.YesNo;
+import appeng.api.implementations.ICraftingPatternItem;
+import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridNode;
+import appeng.api.networking.crafting.ICraftingPatternDetails;
+import appeng.api.networking.security.IActionHost;
 import appeng.api.util.IConfigManager;
 import appeng.container.guisync.GuiSync;
 import appeng.container.slot.IOptionalSlotHost;
@@ -32,6 +38,9 @@ import appeng.container.slot.SlotNormal;
 import appeng.container.slot.SlotRestrictedInput;
 import appeng.helpers.DualityInterface;
 import appeng.helpers.IInterfaceHost;
+import appeng.me.cache.CraftingGridCache;
+import appeng.tile.misc.TilePatternOptimizationMatrix;
+import appeng.util.PatternMultiplierHelper;
 import appeng.util.Platform;
 
 public class ContainerInterface extends ContainerUpgradeable implements IOptionalSlotHost {
@@ -43,6 +52,12 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
 
     @GuiSync(4)
     public YesNo iTermMode = YesNo.YES;
+
+    @GuiSync(14)
+    public boolean isAllowedToMultiplyPatterns = false;
+
+    @GuiSync(13)
+    public YesNo patternOptimization = YesNo.YES;
 
     @GuiSync(10)
     public AdvancedBlockingMode advancedBlockingMode = AdvancedBlockingMode.DEFAULT;
@@ -114,6 +129,13 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
     public void detectAndSendChanges() {
         this.verifyPermissions(SecurityPermissions.BUILD, false);
 
+        if (Platform.isServer()) {
+            IGrid grid = getGrid();
+            if (grid != null) {
+                this.isAllowedToMultiplyPatterns = !grid.getMachines(TilePatternOptimizationMatrix.class).isEmpty();
+            }
+        }
+
         if (patternRows != getPatternCapacityCardsInstalled()) patternRows = getPatternCapacityCardsInstalled();
         isEmpty = patternRows == -1;
 
@@ -147,8 +169,50 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
         this.setBlockingMode((YesNo) cm.getSetting(Settings.BLOCK));
         this.setInterfaceTerminalMode((YesNo) cm.getSetting(Settings.INTERFACE_TERMINAL));
         this.setInsertionMode((InsertionMode) cm.getSetting(Settings.INSERTION_MODE));
+        this.setPatternOptimization((YesNo) cm.getSetting(Settings.PATTERN_OPTIMIZATION));
         this.setAdvancedBlockingMode((AdvancedBlockingMode) cm.getSetting(Settings.ADVANCED_BLOCKING_MODE));
         this.setLockCraftingMode((LockCraftingMode) cm.getSetting(Settings.LOCK_CRAFTING_MODE));
+    }
+
+    public void doublePatterns(int val) {
+        if (!this.isAllowedToMultiplyPatterns) return;
+        boolean fast = (val & 1) != 0;
+        boolean backwards = (val & 2) != 0;
+        CraftingGridCache.pauseRebuilds();
+        try {
+            IInventory patterns = this.myDuality.getPatterns();
+            TileEntity te = this.myDuality.getHost().getTile();
+            for (int i = 0; i < patterns.getSizeInventory(); i++) {
+                ItemStack stack = patterns.getStackInSlot(i);
+                if (stack != null && stack.getItem() instanceof ICraftingPatternItem cpi) {
+                    ICraftingPatternDetails details = cpi.getPatternForItem(stack, te.getWorldObj());
+                    if (details != null && !details.isCraftable()) {
+                        int max = backwards ? PatternMultiplierHelper.getMaxBitDivider(details)
+                                : PatternMultiplierHelper.getMaxBitMultiplier(details);
+                        if (max > 0) {
+                            ItemStack copy = stack.copy();
+                            PatternMultiplierHelper
+                                    .applyModification(copy, (fast ? Math.min(3, max) : 1) * (backwards ? -1 : 1));
+                            patterns.setInventorySlotContents(i, copy);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        CraftingGridCache.unpauseRebuilds();
+        this.standardDetectAndSendChanges();
+    }
+
+    private IGrid getGrid() {
+        final IActionHost host = this.getActionHost();
+
+        if (host != null) {
+            final IGridNode gn = host.getActionableNode();
+            if (gn != null) {
+                return gn.getGrid();
+            }
+        }
+        return null;
     }
 
     public YesNo getBlockingMode() {
@@ -165,6 +229,14 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
 
     private void setInterfaceTerminalMode(final YesNo iTermMode) {
         this.iTermMode = iTermMode;
+    }
+
+    public YesNo getPatternOptimization() {
+        return patternOptimization;
+    }
+
+    public void setPatternOptimization(final YesNo patternOptimization) {
+        this.patternOptimization = patternOptimization;
     }
 
     public InsertionMode getInsertionMode() {

@@ -32,6 +32,7 @@ import appeng.container.implementations.ContainerAdvancedNetworkTool;
 import appeng.container.implementations.ContainerCellWorkbench;
 import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.container.implementations.ContainerCraftingCPU;
+import appeng.container.implementations.ContainerInterface;
 import appeng.container.implementations.ContainerLevelEmitter;
 import appeng.container.implementations.ContainerNetworkTool;
 import appeng.container.implementations.ContainerOreFilter;
@@ -96,7 +97,12 @@ public class PacketValueConfig extends AppEngPacket {
             qk.selectCPU(Integer.parseInt(this.Value));
         } else if (this.Name.equals("Terminal.Start") && c instanceof final ContainerCraftConfirm qk) {
             qk.startJob();
-        } else if (this.Name.equals("TileCrafting.Cancel") && c instanceof final ContainerCraftingCPU qk) {
+        } else if(this.Name.equals("Terminal.OptimizePatterns") && c instanceof final ContainerCraftConfirm qk){
+            qk.optimizePatterns();
+        } else if(this.Name.equals("Interface.DoublePatterns") && c instanceof final ContainerInterface qk){
+            qk.doublePatterns(Integer.parseInt(this.Value));
+        }
+        else if (this.Name.equals("TileCrafting.Cancel") && c instanceof final ContainerCraftingCPU qk) {
             qk.cancelCrafting();
         } else if (this.Name.equals("QuartzKnife.Name") && c instanceof final ContainerQuartzKnife qk) {
             qk.setName(this.Value);
@@ -122,7 +128,7 @@ public class PacketValueConfig extends AppEngPacket {
                 case "PatternTerminal.Substitute" -> cpt.getPatternTerminal().setSubstitution(this.Value.equals("1"));
                 case "PatternTerminal.BeSubstitute" -> cpt.getPatternTerminal()
                         .setCanBeSubstitution(this.Value.equals("1"));
-                case "PatternTerminal.Double" -> cpt.doubleStacks(Value.equals("1"));
+                case "PatternTerminal.Double" -> cpt.doubleStacks(Integer.parseInt(this.Value));
             }
         } else if (this.Name.startsWith("PatternTerminalEx.") && c instanceof final ContainerPatternTermEx cpt) {
             switch (this.Name) {
@@ -136,7 +142,7 @@ public class PacketValueConfig extends AppEngPacket {
                 case "PatternTerminalEx.BeSubstitute" -> cpt.getPatternTerminal()
                         .setCanBeSubstitution(this.Value.equals("1"));
                 case "PatternTerminalEx.Invert" -> cpt.getPatternTerminal().setInverted(Value.equals("1"));
-                case "PatternTerminalEx.Double" -> cpt.doubleStacks(Value.equals("1"));
+                case "PatternTerminalEx.Double" -> cpt.doubleStacks(Integer.parseInt(this.Value));
                 case "PatternTerminalEx.ActivePage" -> cpt.getPatternTerminal().setActivePage(Integer.parseInt(Value));
             }
         } else if (this.Name.startsWith("StorageBus.") && c instanceof final ContainerStorageBus ccw) {

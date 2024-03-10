@@ -18,6 +18,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 import appeng.api.config.ActionItems;
 import appeng.api.config.ItemSubstitution;
@@ -101,10 +102,10 @@ public class GuiPatternTerm extends GuiMEMonitorable {
                                 "PatternTerminal.BeSubstitute",
                                 this.beSubstitutionsEnabledBtn == btn ? SUBSITUTION_DISABLE : SUBSITUTION_ENABLE));
             } else if (doubleBtn == btn) {
-                NetworkHandler.instance.sendToServer(
-                        new PacketValueConfig(
-                                "PatternTerminal.Double",
-                                Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? "1" : "0"));
+                int val = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? 1 : 0;
+                if (Mouse.isButtonDown(1)) val |= 0b10;
+                NetworkHandler.instance
+                        .sendToServer(new PacketValueConfig("PatternTerminal.Double", String.valueOf(val)));
             }
         } catch (final IOException e) {
             // TODO Auto-generated catch block

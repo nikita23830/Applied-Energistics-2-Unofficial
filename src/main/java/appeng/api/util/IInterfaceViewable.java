@@ -35,6 +35,10 @@ public interface IInterfaceViewable extends IGridHost {
 
     boolean shouldDisplay();
 
+    default boolean allowsPatternOptimization() {
+        return true;
+    }
+
     /**
      * Self representation
      */

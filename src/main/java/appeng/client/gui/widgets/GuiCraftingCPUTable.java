@@ -277,12 +277,7 @@ public class GuiCraftingCPUTable {
 
     public boolean hideItemPanelSlot(int x, int y, int w, int h) {
         x += CPU_TABLE_WIDTH;
-        boolean xInside = (x >= 0 && x < CPU_TABLE_SLOT_WIDTH + 9) || (x + w >= 0 && x + w < CPU_TABLE_SLOT_WIDTH + 9)
-                || (x <= 0 && x + w >= CPU_TABLE_SLOT_WIDTH + 9);
-        boolean yInside = (y >= 0 && y < 19 + CPU_TABLE_SLOTS * CPU_TABLE_SLOT_HEIGHT)
-                || (y + h >= 0 && y + h < 19 + CPU_TABLE_SLOTS * CPU_TABLE_SLOT_HEIGHT)
-                || (y < 0 && y + h >= 19 + CPU_TABLE_SLOTS * CPU_TABLE_SLOT_HEIGHT);
-        return xInside && yInside;
+        return x + w >= 0 && x <= CPU_TABLE_WIDTH && y + h >= 0 && y <= CPU_TABLE_HEIGHT;
     }
 
     public void cycleCPU(boolean backwards) {

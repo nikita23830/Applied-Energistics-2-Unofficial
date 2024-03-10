@@ -54,6 +54,7 @@ public enum Settings {
 
     INTERFACE_TERMINAL(EnumSet.of(YesNo.YES, YesNo.NO)),
     CRAFT_VIA_REDSTONE(EnumSet.of(YesNo.YES, YesNo.NO)),
+    PATTERN_OPTIMIZATION(EnumSet.of(YesNo.YES, YesNo.NO)),
 
     STORAGE_FILTER(EnumSet.allOf(StorageFilter.class)),
     TYPE_FILTER(EnumSet.allOf(TypeFilter.class)),

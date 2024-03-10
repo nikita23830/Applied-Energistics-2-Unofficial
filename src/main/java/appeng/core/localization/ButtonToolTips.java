@@ -145,6 +145,10 @@ public enum ButtonToolTips {
     OreFilterHint,
     DoublePattern,
     DoublePatternHint,
+    DoublePatterns,
+    DoublePatternsHint,
+    OptimizePatterns,
+    OptimizePatternsNoReq,
 
     SaveSearchString,
     SaveSearchStringYes,

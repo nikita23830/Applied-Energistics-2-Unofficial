@@ -55,6 +55,7 @@ import appeng.parts.reporting.PartCraftingTerminal;
 import appeng.parts.reporting.PartPatternTerminal;
 import appeng.parts.reporting.PartPatternTerminalEx;
 import appeng.parts.reporting.PartTerminal;
+import appeng.tile.misc.TilePatternOptimizationMatrix;
 import appeng.util.Platform;
 
 public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingCPUSelectorContainer {
@@ -83,7 +84,10 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
     @GuiSync(7)
     public String myName = "";
 
-    @GuiSync.Recurse(8)
+    @GuiSync(8)
+    public boolean isAllowedToRunPatternOptimization = false;
+
+    @GuiSync.Recurse(9)
     public final ContainerCPUTable cpuTable;
 
     public ContainerCraftConfirm(final InventoryPlayer ip, final ITerminalHost te) {
@@ -119,6 +123,10 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
         }
 
         this.setNoCPU(this.cpuTable.getCPUs().isEmpty());
+
+        IGrid grid = getGrid();
+        if (grid != null) this.isAllowedToRunPatternOptimization = !getGrid()
+                .getMachines(TilePatternOptimizationMatrix.class).isEmpty();
 
         super.detectAndSendChanges();
 
@@ -252,6 +260,22 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
             this.setAutoStart(false);
             if (g != null) {
                 this.switchToOriginalGUI();
+            }
+        }
+    }
+
+    public void optimizePatterns() {
+        // only V2 supported
+        if (this.result instanceof CraftingJobV2 && !this.isSimulation()
+                && getGrid() != null
+                && !getGrid().getMachines(TilePatternOptimizationMatrix.class).isEmpty()) {
+            Platform.openGUI(
+                    this.getPlayerInv().player,
+                    this.getOpenContext().getTile(),
+                    this.getOpenContext().getSide(),
+                    GuiBridge.GUI_OPTIMIZE_PATTERNS);
+            if (this.getPlayerInv().player.openContainer instanceof ContainerOptimizePatterns cop) {
+                cop.setResult(this.result);
             }
         }
     }

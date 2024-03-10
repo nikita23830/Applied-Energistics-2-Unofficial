@@ -189,4 +189,6 @@ public interface IBlocks {
     ITileDefinition lightDetector();
 
     ITileDefinition paint();
+
+    ITileDefinition patternsOptimizationMatrix();
 }

@@ -150,6 +150,7 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
     private GuiTabButton switchDisplayMode;
     private GuiImgButton sortingModeButton;
     private GuiImgButton sortingDirectionButton;
+    private GuiSimpleImgButton optimizeButton;
     private int tooltip = -1;
     private ItemStack hoveredStack;
 
@@ -274,6 +275,13 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 this.sortDir);
         this.buttonList.add(this.sortingDirectionButton);
 
+        this.optimizeButton = new GuiSimpleImgButton(
+                this.guiLeft + this.xSize + 2,
+                this.guiTop + 8 + 20 * 2,
+                19,
+                ButtonToolTips.OptimizePatterns.getLocal());
+        this.optimizeButton.enabled = false;
+        this.buttonList.add(this.optimizeButton);
     }
 
     @Override
@@ -291,7 +299,12 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
         }
 
         this.selectCPU.enabled = (displayMode == DisplayMode.LIST) && !this.isSimulation();
-        this.selectCPU.visible = this.sortingModeButton.visible = this.sortingDirectionButton.visible = (displayMode
+        this.optimizeButton.enabled = (displayMode == DisplayMode.LIST) && !this.isSimulation()
+                && this.ccc.isAllowedToRunPatternOptimization;
+        if (!this.ccc.isAllowedToRunPatternOptimization) this.optimizeButton.setTooltip(
+                ButtonToolTips.OptimizePatterns.getLocal() + "\n" + ButtonToolTips.OptimizePatternsNoReq.getLocal());
+        else this.optimizeButton.setTooltip(ButtonToolTips.OptimizePatterns.getLocal());
+        this.selectCPU.visible = this.optimizeButton.visible = this.sortingModeButton.visible = this.sortingDirectionButton.visible = (displayMode
                 == DisplayMode.LIST);
         this.takeScreenshot.visible = (displayMode == DisplayMode.TREE);
 
@@ -872,6 +885,12 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 this.sortItems();
             }
             iBtn.set(next);
+        } else if (btn == this.optimizeButton) {
+            try {
+                NetworkHandler.instance.sendToServer(new PacketValueConfig("Terminal.OptimizePatterns", "Patterns"));
+            } catch (final Throwable e) {
+                AELog.debug(e);
+            }
         } else if (btn == this.start) {
             try {
                 NetworkHandler.instance.sendToServer(new PacketValueConfig("Terminal.Start", "Start"));

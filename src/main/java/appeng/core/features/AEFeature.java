@@ -132,6 +132,7 @@ public enum AEFeature {
     Patterns(Constants.CATEGORY_CRAFTING_FEATURES),
     CraftingCPU(Constants.CATEGORY_CRAFTING_FEATURES),
     XtremeCraftingCPU(Constants.CATEGORY_CRAFTING_FEATURES),
+    PatternsOptimizer(Constants.CATEGORY_CRAFTING_FEATURES),
 
     ChunkLoggerTrace(Constants.CATEGORY_COMMANDS, false);
 

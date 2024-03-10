@@ -73,6 +73,15 @@ public enum GuiText {
     Inscriber,
     QuartzCuttingKnife,
 
+    PatternOptimizer,
+    StepsPerCraft,
+    PatternsAffected,
+    Multiplied,
+    MultipliedBy,
+    CurrentPatternOutput,
+    NewPatternOutput,
+    Optimize,
+
     // tunnel names
     METunnel,
     ItemTunnel,
@@ -168,6 +177,8 @@ public enum GuiText {
     UnknownItem,
 
     InterfaceTerminalHint,
+    PatternOptimization,
+    PatternOptimizationHint,
     Range,
     TransparentFacades,
     TransparentFacadesHint,

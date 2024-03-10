@@ -46,6 +46,11 @@ public interface IInterfaceHost extends ICraftingProvider, IUpgradeableHost, ICr
     }
 
     @Override
+    default boolean allowsPatternOptimization() {
+        return getInterfaceDuality().getConfigManager().getSetting(Settings.PATTERN_OPTIMIZATION) == YesNo.YES;
+    }
+
+    @Override
     default String getName() {
         return getInterfaceDuality().getTermName();
     }

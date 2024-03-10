@@ -410,8 +410,10 @@ public class ContainerPatternTermEx extends ContainerMEMonitorable
         return this.activePage;
     }
 
-    public void doubleStacks(boolean isShift) {
-        multiplyOrDivideStacks(isShift ? MULTIPLE_OF_BUTTON_CLICK_ON_SHIFT : MULTIPLE_OF_BUTTON_CLICK);
+    public void doubleStacks(int val) {
+        multiplyOrDivideStacks(
+                ((val & 1) != 0 ? MULTIPLE_OF_BUTTON_CLICK_ON_SHIFT : MULTIPLE_OF_BUTTON_CLICK)
+                        * ((val & 2) != 0 ? -1 : 1));
     }
 
     public void multiplyOrDivideStacks(int multi) {
