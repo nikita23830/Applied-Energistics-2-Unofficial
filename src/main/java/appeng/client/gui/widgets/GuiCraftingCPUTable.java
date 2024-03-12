@@ -45,7 +45,7 @@ public class GuiCraftingCPUTable {
         this.cpuScrollbar.setLeft(-16);
         this.cpuScrollbar.setTop(19);
         this.cpuScrollbar.setWidth(12);
-        this.cpuScrollbar.setHeight(137);
+        updateScrollBar();
     }
 
     private void updateScrollBar() {

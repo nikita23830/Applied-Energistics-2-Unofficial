@@ -76,12 +76,15 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
 
     public static final int TREE_VIEW_TEXTURE_WIDTH = 238;
     public static final int TREE_VIEW_TEXTURE_HEIGHT = 238;
+    public static final int TREE_VIEW_DEFAULT_CPU_SLOTS = 8;
+    public static final float TERR_VIEW_MAX_WIDTH_RATIO = 0.5f;
 
     public static final int LIST_VIEW_TEXTURE_WIDTH = 238;
     public static final int LIST_VIEW_TEXTURE_HEIGHT = 206;
     public static final int LIST_VIEW_TEXTURE_BELOW_TOP_ROW_Y = 41;
     public static final int LIST_VIEW_TEXTURE_ABOVE_BOTTOM_ROW_Y = 110;
     public static final int LIST_VIEW_TEXTURE_ROW_HEIGHT = 23;
+
     /** How many pixels tall is the list view texture minus the space for rows of items */
     public static final int LIST_VIEW_TEXTURE_NONROW_HEIGHT = LIST_VIEW_TEXTURE_HEIGHT
             - (LIST_VIEW_TEXTURE_ABOVE_BOTTOM_ROW_Y - LIST_VIEW_TEXTURE_BELOW_TOP_ROW_Y)
@@ -115,12 +118,16 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 }
             }
             case TREE -> {
-                this.xSize = tallMode ? width - 200 : TREE_VIEW_TEXTURE_WIDTH;
+                this.xSize = tallMode ? Math.max(TREE_VIEW_TEXTURE_WIDTH, (int) (width * TERR_VIEW_MAX_WIDTH_RATIO))
+                        : TREE_VIEW_TEXTURE_WIDTH;
                 this.ySize = tallMode ? height - 64 : TREE_VIEW_TEXTURE_HEIGHT;
+                this.rows = tallMode ? (ySize - 46) / LIST_VIEW_TEXTURE_ROW_HEIGHT : TREE_VIEW_DEFAULT_CPU_SLOTS;
                 this.craftingTree.widgetW = xSize - 35;
                 this.craftingTree.widgetH = ySize - 46;
             }
         }
+        GuiCraftingCPUTable.CPU_TABLE_SLOTS = this.rows;
+        GuiCraftingCPUTable.CPU_TABLE_HEIGHT = this.rows * LIST_VIEW_TEXTURE_ROW_HEIGHT + 27;
     }
 
     private final ContainerCraftConfirm ccc;
@@ -237,14 +244,14 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
 
         this.switchTallMode = new GuiImgButton(
                 this.guiLeft - 18,
-                this.guiTop + 166,
+                this.guiTop + this.ySize - 18,
                 Settings.TERMINAL_STYLE,
                 tallMode ? TerminalStyle.TALL : TerminalStyle.SMALL);
         this.buttonList.add(switchTallMode);
 
         this.takeScreenshot = new GuiSimpleImgButton(
-                this.guiLeft - 18,
-                this.guiTop + 184,
+                this.guiLeft - 36,
+                this.guiTop + this.ySize - 18,
                 16 * 9,
                 ButtonToolTips.SaveAsImage.getLocal());
         this.buttonList.add(takeScreenshot);
@@ -287,7 +294,6 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
     @Override
     public void drawScreen(final int mouseX, final int mouseY, final float btn) {
         this.updateCPUButtonText();
-
         cpuTable.drawScreen();
 
         this.start.enabled = !(this.ccc.hasNoCPU() || this.isSimulation());
