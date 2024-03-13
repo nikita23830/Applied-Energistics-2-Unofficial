@@ -383,12 +383,12 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
         cpuTable.drawFG(offsetX, offsetY, mouseX, mouseY, guiLeft, guiTop);
 
         final long BytesUsed = this.ccc.getUsedBytes();
-        final String byteUsed = NumberFormat.getInstance().format(BytesUsed);
+        final String byteUsed = Platform.formatByteDouble(BytesUsed);
         final String bannerText;
         if (jobTree != null && !jobTree.getErrorMessage().isEmpty()) {
             bannerText = StatCollector.translateToLocal(jobTree.getErrorMessage());
         } else if (BytesUsed > 0) {
-            bannerText = (byteUsed + ' ' + GuiText.BytesUsed.getLocal());
+            bannerText = byteUsed;
         } else {
             bannerText = GuiText.CalculatingWait.getLocal();
         }
@@ -412,7 +412,7 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
         } else {
             dsp = this.ccc.getCpuAvailableBytes() > 0
                     ? (GuiText.Bytes.getLocal() + ": "
-                            + NumberFormat.getInstance().format(this.ccc.getCpuAvailableBytes())
+                            + Platform.formatByteDouble(this.ccc.getCpuAvailableBytes())
                             + " : "
                             + GuiText.CoProcessors.getLocal()
                             + ": "

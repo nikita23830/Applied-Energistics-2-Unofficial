@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.util.ItemSorters;
+import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
 import io.netty.buffer.ByteBuf;
 
@@ -167,17 +168,6 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
     }
 
     public String formatStorage() {
-        long val = getStorage();
-        if (val > 4_000_000_000_000L) {
-            return String.format("%dT", val / 1024 / 1024 / 1024 / 1024);
-        } else if (val > 4_000_000_000L) {
-            return String.format("%dG", val / 1024 / 1024 / 1024);
-        } else if (val > 4_000_000L) {
-            return String.format("%dM", val / 1024 / 1024);
-        } else if (val > 4_000L) {
-            return String.format("%dk", val / 1024);
-        } else {
-            return Long.toString(val);
-        }
+        return Platform.formatByteDouble(getStorage());
     }
 }

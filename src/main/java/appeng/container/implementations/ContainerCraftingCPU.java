@@ -51,7 +51,7 @@ public class ContainerCraftingCPU extends AEBaseContainer
     private String cpuName = null;
 
     @GuiSync(0)
-    public long eta = -1;
+    public long elapsed = -1;
 
     public ContainerCraftingCPU(final InventoryPlayer ip, final Object te) {
         super(ip, te);
@@ -108,11 +108,11 @@ public class ContainerCraftingCPU extends AEBaseContainer
             this.list.resetStatus();
             this.getMonitor().getListOfItem(this.list, CraftingItemList.ALL);
             this.getMonitor().addListener(this, null);
-            this.setEstimatedTime(0);
+            this.setElapsedTime(0);
         } else {
             this.setMonitor(null);
             this.cpuName = "";
-            this.setEstimatedTime(-1);
+            this.setElapsedTime(-1);
         }
     }
 
@@ -120,7 +120,7 @@ public class ContainerCraftingCPU extends AEBaseContainer
         if (this.getMonitor() != null) {
             this.getMonitor().cancel();
         }
-        this.setEstimatedTime(-1);
+        this.setElapsedTime(-1);
     }
 
     @Override
@@ -144,14 +144,7 @@ public class ContainerCraftingCPU extends AEBaseContainer
     public void detectAndSendChanges() {
         if (Platform.isServer() && this.getMonitor() != null && !this.list.isEmpty()) {
             try {
-                if (this.getEstimatedTime() >= 0) {
-                    final long elapsedTime = this.getMonitor().getElapsedTime();
-                    final double remainingItems = this.getMonitor().getRemainingItemCount();
-                    final double startItems = this.getMonitor().getStartItemCount();
-                    final long eta = (long) (elapsedTime / Math.max(1d, (startItems - remainingItems))
-                            * remainingItems);
-                    this.setEstimatedTime(eta);
-                }
+                this.setElapsedTime(this.getMonitor().getElapsedTime());
 
                 final PacketMEInventoryUpdate a = new PacketMEInventoryUpdate((byte) 0);
                 final PacketMEInventoryUpdate b = new PacketMEInventoryUpdate((byte) 1);
@@ -223,12 +216,12 @@ public class ContainerCraftingCPU extends AEBaseContainer
         this.cpuName = name;
     }
 
-    public long getEstimatedTime() {
-        return this.eta;
+    public long getElapsedTime() {
+        return this.elapsed;
     }
 
-    private void setEstimatedTime(final long eta) {
-        this.eta = eta;
+    private void setElapsedTime(final long elapsed) {
+        this.elapsed = elapsed;
     }
 
     CraftingCPUCluster getMonitor() {

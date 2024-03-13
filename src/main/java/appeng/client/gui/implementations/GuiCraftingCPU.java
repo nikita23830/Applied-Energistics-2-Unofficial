@@ -297,12 +297,18 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
         String title = this.getGuiDisplayName(GuiText.CraftingStatus.getLocal());
 
-        if (this.craftingCpu.getEstimatedTime() > 0 && !this.visual.isEmpty()) {
-            final long etaInMilliseconds = TimeUnit.MILLISECONDS
-                    .convert(this.craftingCpu.getEstimatedTime(), TimeUnit.NANOSECONDS);
-            final String etaTimeText = DurationFormatUtils
-                    .formatDuration(etaInMilliseconds, GuiText.ETAFormat.getLocal());
-            title += " - " + etaTimeText;
+        if (this.craftingCpu.getElapsedTime() > 0 && !this.visual.isEmpty()) {
+            final long elapsedInMilliseconds = TimeUnit.MILLISECONDS
+                    .convert(this.craftingCpu.getElapsedTime(), TimeUnit.NANOSECONDS);
+            final String elapsedTimeText = DurationFormatUtils
+                    .formatDuration(elapsedInMilliseconds, GuiText.ETAFormat.getLocal());
+
+            // If title is empty, don't show that ' - '
+            if (title.length() == 0) {
+                title = elapsedTimeText;
+            } else {
+                title += " - " + elapsedTimeText;
+            }
         }
         updateRemainingOperations();
         this.fontRendererObj.drawString(
