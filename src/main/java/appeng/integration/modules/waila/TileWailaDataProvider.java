@@ -16,10 +16,12 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
 import com.google.common.collect.Lists;
 
+import appeng.helpers.ICustomNameObject;
 import appeng.integration.modules.waila.tile.ChargerWailaDataProvider;
 import appeng.integration.modules.waila.tile.CraftingMonitorWailaDataProvider;
 import appeng.integration.modules.waila.tile.InterfaceDataProvider;
@@ -37,6 +39,8 @@ import mcp.mobius.waila.api.IWailaDataProvider;
  * @since rv2
  */
 public final class TileWailaDataProvider implements IWailaDataProvider {
+
+    private static final String NBT_TILE_CUSTOM_NAME = "tileCustomName";
 
     /**
      * Contains all providers
@@ -77,6 +81,11 @@ public final class TileWailaDataProvider implements IWailaDataProvider {
         for (final IWailaDataProvider provider : this.providers) {
             provider.getWailaBody(itemStack, currentToolTip, accessor, config);
         }
+        if (accessor.getNBTData().hasKey(NBT_TILE_CUSTOM_NAME)) {
+            currentToolTip.add(
+                    EnumChatFormatting.WHITE.toString() + EnumChatFormatting.ITALIC
+                            + accessor.getNBTData().getString(NBT_TILE_CUSTOM_NAME));
+        }
 
         return currentToolTip;
     }
@@ -96,6 +105,10 @@ public final class TileWailaDataProvider implements IWailaDataProvider {
             final World world, final int x, final int y, final int z) {
         for (final IWailaDataProvider provider : this.providers) {
             provider.getNBTData(player, te, tag, world, x, y, z);
+        }
+        if (te instanceof ICustomNameObject customNameObject && customNameObject.hasCustomName()
+                && !customNameObject.getCustomName().isEmpty()) {
+            tag.setString(NBT_TILE_CUSTOM_NAME, customNameObject.getCustomName());
         }
 
         return tag;
