@@ -18,7 +18,6 @@ import javax.annotation.Nonnull;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 import org.lwjgl.opengl.GL11;
@@ -26,7 +25,6 @@ import org.lwjgl.opengl.GL11;
 import appeng.api.config.TerminalFontSize;
 import appeng.api.storage.IItemDisplayRegistry.ItemRenderHook;
 import appeng.api.storage.data.IAEItemStack;
-import appeng.client.me.SlotME;
 import appeng.core.AEConfig;
 import appeng.core.localization.GuiText;
 
@@ -39,19 +37,11 @@ import appeng.core.localization.GuiText;
 public class AppEngRenderItem extends AERenderItem {
 
     private IAEItemStack aeStack = null;
-    private Slot slot = null;
 
     /**
      * Post render hooks. All are called.
      */
     public static List<ItemRenderHook> POST_HOOKS = new ArrayList<>();
-
-    public void renderItemOverlayIntoGUI(final FontRenderer fontRenderer, final TextureManager textureManager,
-            final ItemStack is, final int par4, final int par5, final String par6Str, Slot slotIn) {
-        this.slot = slotIn;
-        this.renderItemOverlayIntoGUI(fontRenderer, textureManager, is, par4, par5, par6Str);
-
-    }
 
     @Override
     public void renderItemOverlayIntoGUI(final FontRenderer fontRenderer, final TextureManager textureManager,
@@ -98,7 +88,7 @@ public class AppEngRenderItem extends AERenderItem {
                 GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             }
 
-            if (is.stackSize == 0 && showCraftLabelText && aeStack != null && aeStack.isCraftable()) {
+            if (is.stackSize == 0 && showCraftLabelText) {
                 final String craftLabelText = fontSize == TerminalFontSize.SMALL ? GuiText.SmallFontCraft.getLocal()
                         : GuiText.LargeFontCraft.getLocal();
 
@@ -111,9 +101,7 @@ public class AppEngRenderItem extends AERenderItem {
 
             final long amount = this.aeStack != null ? this.aeStack.getStackSize() : is.stackSize;
 
-            if ((amount != 0 && showStackSize) || (slot != null && slot instanceof SlotME
-                    && ((SlotME) slot).getAEStack() != null
-                    && !((SlotME) slot).getAEStack().isCraftable())) {
+            if (amount != 0 && showStackSize) {
 
                 GL11.glDisable(GL11.GL_LIGHTING);
                 GL11.glPushMatrix();

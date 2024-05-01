@@ -1017,14 +1017,7 @@ public abstract class AEBaseGui extends GuiContainer {
 
         this.zLevel = 0.0F;
         GL11.glTranslatef(0.0f, 0.0f, 200.0f);
-        aeRenderItem.renderItemOverlayIntoGUI(
-                this.fontRendererObj,
-                this.mc.getTextureManager(),
-                itemstack,
-                i,
-                j,
-                s,
-                slotIn);
+        aeRenderItem.renderItemOverlayIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), itemstack, i, j, s);
         GL11.glTranslatef(0.0f, 0.0f, -200.0f);
     }
 

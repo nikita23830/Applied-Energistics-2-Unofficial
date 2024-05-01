@@ -105,7 +105,6 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
     private boolean isAutoFocus = false;
     private int currentMouseX = 0;
     private int currentMouseY = 0;
-    protected boolean hasShiftKeyDown = false;
 
     public GuiMEMonitorable(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         this(inventoryPlayer, te, new ContainerMEMonitorable(inventoryPlayer, te));
@@ -567,16 +566,6 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         }
 
         this.repo.updateView();
-    }
-
-    @Override
-    public void handleKeyboardInput() {
-        super.handleKeyboardInput();
-        hasShiftKeyDown |= isShiftKeyDown();
-        if (hasShiftKeyDown && !Keyboard.getEventKeyState()) { // keyup
-            this.repo.updateView();
-            hasShiftKeyDown = false;
-        }
     }
 
     @SuppressWarnings("SameParameterValue")
