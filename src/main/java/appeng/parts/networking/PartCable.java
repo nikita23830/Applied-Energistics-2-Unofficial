@@ -485,64 +485,35 @@ public class PartCable extends AEBasePart implements IPartCable {
     }
 
     public IIcon getCoveredTexture(final AEColor c) {
-        switch (c) {
-            case Black -> {
-                return CableBusTextures.MECovered_Black.getIcon();
+        IIcon val = switch (c) {
+            case Black -> CableBusTextures.MECovered_Black.getIcon();
+            case Blue -> CableBusTextures.MECovered_Blue.getIcon();
+            case Brown -> CableBusTextures.MECovered_Brown.getIcon();
+            case Cyan -> CableBusTextures.MECovered_Cyan.getIcon();
+            case Gray -> CableBusTextures.MECovered_Gray.getIcon();
+            case Green -> CableBusTextures.MECovered_Green.getIcon();
+            case LightBlue -> CableBusTextures.MECovered_LightBlue.getIcon();
+            case LightGray -> CableBusTextures.MECovered_LightGrey.getIcon();
+            case Lime -> CableBusTextures.MECovered_Lime.getIcon();
+            case Magenta -> CableBusTextures.MECovered_Magenta.getIcon();
+            case Orange -> CableBusTextures.MECovered_Orange.getIcon();
+            case Pink -> CableBusTextures.MECovered_Pink.getIcon();
+            case Purple -> CableBusTextures.MECovered_Purple.getIcon();
+            case Red -> CableBusTextures.MECovered_Red.getIcon();
+            case White -> CableBusTextures.MECovered_White.getIcon();
+            case Yellow -> CableBusTextures.MECovered_Yellow.getIcon();
+            default -> {
+                final AEColoredItemDefinition coveredCable = AEApi.instance().definitions().parts().cableCovered();
+                yield coveredCable.stack(AEColor.Transparent, 1).getIconIndex();
             }
-            case Blue -> {
-                return CableBusTextures.MECovered_Blue.getIcon();
-            }
-            case Brown -> {
-                return CableBusTextures.MECovered_Brown.getIcon();
-            }
-            case Cyan -> {
-                return CableBusTextures.MECovered_Cyan.getIcon();
-            }
-            case Gray -> {
-                return CableBusTextures.MECovered_Gray.getIcon();
-            }
-            case Green -> {
-                return CableBusTextures.MECovered_Green.getIcon();
-            }
-            case LightBlue -> {
-                return CableBusTextures.MECovered_LightBlue.getIcon();
-            }
-            case LightGray -> {
-                return CableBusTextures.MECovered_LightGrey.getIcon();
-            }
-            case Lime -> {
-                return CableBusTextures.MECovered_Lime.getIcon();
-            }
-            case Magenta -> {
-                return CableBusTextures.MECovered_Magenta.getIcon();
-            }
-            case Orange -> {
-                return CableBusTextures.MECovered_Orange.getIcon();
-            }
-            case Pink -> {
-                return CableBusTextures.MECovered_Pink.getIcon();
-            }
-            case Purple -> {
-                return CableBusTextures.MECovered_Purple.getIcon();
-            }
-            case Red -> {
-                return CableBusTextures.MECovered_Red.getIcon();
-            }
-            case White -> {
-                return CableBusTextures.MECovered_White.getIcon();
-            }
-            case Yellow -> {
-                return CableBusTextures.MECovered_Yellow.getIcon();
-            }
-            default -> {}
-        }
-
-        final AEColoredItemDefinition coveredCable = AEApi.instance().definitions().parts().cableCovered();
-        IIcon val = coveredCable.stack(AEColor.Transparent, 1).getIconIndex();
+        };
 
         if (val == null) {
             val = CableBusTextures.getMissing();
         }
+
+        // this can't be null
+        assert val != null;
 
         return val;
     }
