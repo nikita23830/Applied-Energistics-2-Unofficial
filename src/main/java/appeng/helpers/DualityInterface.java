@@ -857,7 +857,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     private boolean gtMachineHasOnlyCircuit(InventoryAdaptor ad) {
         for (ItemSlot i : ad) {
             ItemStack is = i.getItemStack();
-            if (is == null || is.getItem().getUnlocalizedName().equals("gt.integrated_circuit")) continue;
+            if (BlockingModeIgnoreList.isIgnored(is)) continue;
             return false;
         }
         return true;

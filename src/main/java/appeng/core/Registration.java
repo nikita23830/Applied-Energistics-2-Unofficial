@@ -65,6 +65,7 @@ import appeng.core.features.registries.entries.VoidCellHandler;
 import appeng.core.localization.GuiText;
 import appeng.core.localization.PlayerMessages;
 import appeng.core.stats.PlayerStatsRegistration;
+import appeng.helpers.BlockingModeIgnoreList;
 import appeng.hooks.AETrading;
 import appeng.hooks.TickHandler;
 import appeng.items.materials.ItemMultiMaterial;
@@ -819,5 +820,11 @@ public final class Registration {
          * initial recipe bake, if ore dictionary changes after this it re-bakes.
          */
         OreDictionaryHandler.INSTANCE.bakeRecipes();
+
+        /**
+         * Populate list of items that blocking mode should ignore
+         */
+        BlockingModeIgnoreList.registerIgnoredMaterials();
+
     }
 }
