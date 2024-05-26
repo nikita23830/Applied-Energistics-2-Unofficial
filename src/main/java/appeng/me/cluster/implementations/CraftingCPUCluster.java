@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -245,7 +246,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         {
             if (is != null && is.getStackSize() > 0) {
                 if (is.getStackSize() >= what.getStackSize()) {
-                    if (this.finalOutput.equals(what)) {
+                    if (Objects.equals(this.finalOutput, what)) {
                         if (this.myLastLink != null) {
                             return ((CraftingLink) this.myLastLink).injectItems(what.copy(), type);
                         }
@@ -262,7 +263,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                 final IAEItemStack used = what.copy();
                 used.setStackSize(is.getStackSize());
 
-                if (this.finalOutput.equals(what)) {
+                if (Objects.equals(finalOutput, what)) {
                     if (this.myLastLink != null) {
                         leftOver.add(((CraftingLink) this.myLastLink).injectItems(used.copy(), type));
                         return leftOver;
@@ -286,7 +287,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     this.markDirty();
                     this.postCraftingStatusChange(is);
 
-                    if (this.finalOutput.equals(what)) {
+                    if (Objects.equals(finalOutput, what)) {
                         IAEStack leftover = what;
 
                         this.finalOutput.decStackSize(what.getStackSize());
@@ -314,7 +315,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
                 is.setStackSize(0);
 
-                if (this.finalOutput.equals(insert)) {
+                if (Objects.equals(finalOutput, insert)) {
                     IAEStack leftover = input;
 
                     this.finalOutput.decStackSize(insert.getStackSize());
@@ -449,7 +450,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     final IAEItemStack finalIngredient = ingredient; // have to copy because of Java lambda capture
                                                                      // rules here
                     final int matchingSlot = IntStream.range(0, inputSlots.length)
-                            .filter(idx -> inputSlots[idx] != null && inputSlots[idx].equals(finalIngredient))
+                            .filter(idx -> inputSlots[idx] != null && Objects.equals(inputSlots[idx], finalIngredient))
                             .findFirst().orElse(-1);
                     if (matchingSlot < 0) {
                         continue;
@@ -795,38 +796,40 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             this.waitingFor.resetStatus();
             job.startCrafting(ci, this, src);
             if (ci.commit(src)) {
-                this.finalOutput = job.getOutput();
-                this.waiting = false;
-                this.isComplete = false;
-                this.markDirty();
+                if (job.getOutput() != null) {
+                    this.finalOutput = job.getOutput();
+                    this.waiting = false;
+                    this.isComplete = false;
+                    this.markDirty();
 
-                this.updateCPU();
-                final String craftID = this.generateCraftingID();
+                    this.updateCPU();
+                    final String craftID = this.generateCraftingID();
 
-                this.myLastLink = new CraftingLink(
-                        this.generateLinkData(craftID, requestingMachine == null, false),
-                        this);
+                    this.myLastLink = new CraftingLink(
+                            this.generateLinkData(craftID, requestingMachine == null, false),
+                            this);
 
-                this.prepareElapsedTime();
+                    this.prepareElapsedTime();
 
-                if (requestingMachine == null) {
-                    return this.myLastLink;
+                    if (requestingMachine == null) {
+                        return this.myLastLink;
+                    }
+
+                    final ICraftingLink whatLink = new CraftingLink(
+                            this.generateLinkData(craftID, false, true),
+                            requestingMachine);
+
+                    this.submitLink(this.myLastLink);
+                    this.submitLink(whatLink);
+
+                    final IItemList<IAEItemStack> list = AEApi.instance().storage().createItemList();
+                    this.getListOfItem(list, CraftingItemList.ALL);
+                    for (final IAEItemStack ge : list) {
+                        this.postChange(ge, this.machineSrc);
+                    }
+
+                    return whatLink;
                 }
-
-                final ICraftingLink whatLink = new CraftingLink(
-                        this.generateLinkData(craftID, false, true),
-                        requestingMachine);
-
-                this.submitLink(this.myLastLink);
-                this.submitLink(whatLink);
-
-                final IItemList<IAEItemStack> list = AEApi.instance().storage().createItemList();
-                this.getListOfItem(list, CraftingItemList.ALL);
-                for (final IAEItemStack ge : list) {
-                    this.postChange(ge, this.machineSrc);
-                }
-
-                return whatLink;
             } else {
                 this.tasks.clear();
                 this.providers.clear();
@@ -1008,7 +1011,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                 is.setStackSize(0);
                 for (final Entry<ICraftingPatternDetails, TaskProgress> t : this.tasks.entrySet()) {
                     for (final IAEItemStack ais : t.getKey().getCondensedOutputs()) {
-                        if (ais.equals(is)) {
+                        if (Objects.equals(ais, is)) {
                             is.setStackSize(is.getStackSize() + ais.getStackSize() * t.getValue().value);
                             if (cache != null) {
                                 List<ICraftingMedium> craftingProviders = cache.getMediums(t.getKey());
