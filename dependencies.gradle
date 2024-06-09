@@ -1,16 +1,16 @@
 // Add your dependencies here
 
 dependencies {
-    implementation('com.github.GTNewHorizons:NotEnoughItems:2.6.0-GTNH:dev')
+    implementation('com.github.GTNewHorizons:NotEnoughItems:2.6.1-GTNH:dev')
     implementation('curse.maven:cofh-core-69162:2388751')
 
-    compileOnlyApi('com.github.GTNewHorizons:Angelica:1.0.0-alpha51:api')
+    compileOnlyApi('com.github.GTNewHorizons:Angelica:1.0.0-alpha52:api')
     compileOnly("com.github.GTNewHorizons:GTNHLib:0.2.11:dev") {transitive = false}
     compileOnly('com.github.GTNewHorizons:ThaumicTinkerer:2.10.0:dev') {transitive = false}
     compileOnly('com.github.GTNewHorizons:BuildCraft:7.1.39:dev') {transitive = false}
-    compileOnly('com.github.GTNewHorizons:ForgeMultipart:1.4.8:dev') {transitive = false}
-    compileOnly('com.github.GTNewHorizons:GT5-Unofficial:5.09.46.23:dev') {transitive = false}
-    compileOnly('com.github.GTNewHorizons:Jabba:1.4.0:dev') {transitive = false}
+    compileOnly('com.github.GTNewHorizons:ForgeMultipart:1.5.0:dev') {transitive = false}
+    compileOnly('com.github.GTNewHorizons:GT5-Unofficial:5.09.48.23:dev') {transitive = false}
+    compileOnly('com.github.GTNewHorizons:Jabba:1.4.2:dev') {transitive = false}
     compileOnly('com.github.GTNewHorizons:inventory-tweaks:1.6.2:api') {transitive = false}
     compileOnly('com.github.GTNewHorizons:OpenComputers:1.10.11-GTNH:api') {transitive = false}
     compileOnly('com.github.GTNewHorizons:waila:1.8.0:dev') {transitive = false}
@@ -33,7 +33,7 @@ dependencies {
     functionalTestImplementation('org.junit.platform:junit-platform-engine')
     functionalTestImplementation('org.junit.platform:junit-platform-launcher')
     functionalTestImplementation('org.junit.platform:junit-platform-reporting')
-    functionalTestImplementation('com.github.GTNewHorizons:GT5-Unofficial:5.09.46.23:dev') {
+    functionalTestImplementation('com.github.GTNewHorizons:GT5-Unofficial:5.09.48.23:dev') {
         exclude module: "Applied-Energistics-2-Unofficial"
     }
 
@@ -42,5 +42,5 @@ dependencies {
     runtimeOnlyNonPublishable('com.github.GTNewHorizons:GTNHLib:0.2.11:dev')
     runtimeOnlyNonPublishable('thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev')
     runtimeOnlyNonPublishable('com.github.GTNewHorizons:ThaumicEnergistics:1.6.10-GTNH:dev') { transitive = false }
-    runtimeOnlyNonPublishable('com.github.GTNewHorizons:AE2FluidCraft-Rework:1.3.0-gtnh:dev') { transitive = false }
+    runtimeOnlyNonPublishable('com.github.GTNewHorizons:AE2FluidCraft-Rework:1.3.4-gtnh:dev') { transitive = false }
 }
