@@ -696,6 +696,11 @@ public final class Registration {
         Upgrades.ORE_FILTER.registerItem(items.cellSingularity(), 1);
         Upgrades.STICKY.registerItem(items.cellSingularity(), 1);
 
+        Upgrades.FUZZY.registerItem(items.cellUniverse(), 1);
+        Upgrades.INVERTER.registerItem(items.cellUniverse(), 1);
+        Upgrades.ORE_FILTER.registerItem(items.cellUniverse(), 1);
+        Upgrades.STICKY.registerItem(items.cellUniverse(), 1);
+
         Upgrades.FUZZY.registerItem(items.portableCell(), 1);
         Upgrades.INVERTER.registerItem(items.portableCell(), 1);
         Upgrades.ORE_FILTER.registerItem(items.portableCell(), 1);
