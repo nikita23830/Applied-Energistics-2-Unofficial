@@ -11,7 +11,7 @@
 package appeng.tile.storage;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.inventory.IInventory;
@@ -22,6 +22,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import appeng.api.AEApi;
 import appeng.api.implementations.tiles.IChestOrDrive;
 import appeng.api.networking.GridFlags;
+import appeng.api.networking.IGridNode;
 import appeng.api.networking.events.MENetworkCellArrayUpdate;
 import appeng.api.networking.events.MENetworkChannelsChanged;
 import appeng.api.networking.events.MENetworkEventSubscribe;
@@ -29,6 +30,9 @@ import appeng.api.networking.events.MENetworkPowerStatusChange;
 import appeng.api.networking.security.BaseActionSource;
 import appeng.api.networking.security.MachineSource;
 import appeng.api.networking.storage.IStorageGrid;
+import appeng.api.networking.ticking.IGridTickable;
+import appeng.api.networking.ticking.TickRateModulation;
+import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.storage.ICellHandler;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.IMEInventoryHandler;
@@ -38,7 +42,6 @@ import appeng.api.util.AECableType;
 import appeng.api.util.DimensionalCoord;
 import appeng.helpers.IPriorityHost;
 import appeng.me.GridAccessException;
-import appeng.me.storage.DriveWatcher;
 import appeng.me.storage.MEInventoryHandler;
 import appeng.tile.TileEvent;
 import appeng.tile.events.TileEventType;
@@ -48,17 +51,28 @@ import appeng.tile.inventory.InvOperation;
 import appeng.util.Platform;
 import io.netty.buffer.ByteBuf;
 
-public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPriorityHost {
+public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPriorityHost, IGridTickable {
+
+    private static final int INV_SIZE = 10;
+    /**
+     * Masks the part of {@link #state} that contains information
+     */
+    private static final int STATE_MASK = 0b111111111111111111111;
+    private static final int STATE_ACTIVE_MASK = 1 << 20;
 
     private final int[] sides = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    private final AppEngInternalInventory inv = new AppEngInternalInventory(this, 10);
-    private final ICellHandler[] handlersBySlot = new ICellHandler[10];
-    private final DriveWatcher<IAEItemStack>[] invBySlot = new DriveWatcher[10];
+    private final AppEngInternalInventory inv = new AppEngInternalInventory(this, INV_SIZE);
+    private final ICellHandler[] handlersBySlot = new ICellHandler[INV_SIZE];
+    private final MEInventoryHandler<IAEItemStack>[] invBySlot = new MEInventoryHandler[INV_SIZE];
     private final BaseActionSource mySrc;
     private boolean isCached = false;
-    private List<MEInventoryHandler> items = new LinkedList<>();
-    private List<MEInventoryHandler> fluids = new LinkedList<>();
-    private long lastStateChange = 0;
+    private List<MEInventoryHandler<?>> items = new ArrayList<>(INV_SIZE);
+    private List<MEInventoryHandler<?>> fluids = new ArrayList<>(INV_SIZE);
+    /**
+     * Bit mask representing the state of all cells and the active status of the drive. The lower 20 bits represent the
+     * state of the cells, with each cell state taking up 2 bits. The 21st bit represents the active status of the
+     * drive.
+     */
     private int state = 0;
     private int priority = 0;
     private boolean wasActive = false;
@@ -70,40 +84,24 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
 
     @TileEvent(TileEventType.NETWORK_WRITE)
     public void writeToStream_TileDrive(final ByteBuf data) {
-        if (this.worldObj.getTotalWorldTime() - this.lastStateChange > 8) {
-            this.state = 0;
-        } else {
-            this.state &= 0x24924924; // just keep the blinks...
-        }
-
-        if (this.getProxy().isActive()) {
-            this.state |= 0x80000000;
-        } else {
-            this.state &= ~0x80000000;
-        }
-
-        for (int x = 0; x < this.getCellCount(); x++) {
-            this.state |= (this.getCellStatus(x) << (3 * x));
-        }
-
         data.writeInt(this.state);
     }
 
     @Override
     public int getCellCount() {
-        return 10;
+        return INV_SIZE;
     }
 
     @Override
     public int getCellStatus(final int slot) {
         if (Platform.isClient()) {
-            return (this.state >> (slot * 3)) & 3;
+            return (this.state >> (slot * 2)) & 0b11;
         }
 
         final ItemStack cell = this.inv.getStackInSlot(2);
         final ICellHandler ch = this.handlersBySlot[slot];
 
-        final MEInventoryHandler handler = this.invBySlot[slot];
+        final MEInventoryHandler<IAEItemStack> handler = this.invBySlot[slot];
         if (handler == null) {
             return 0;
         }
@@ -124,30 +122,30 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     }
 
     @Override
+    public TickingRequest getTickingRequest(IGridNode node) {
+        return new TickingRequest(15, 15, false, false);
+    }
+
+    @Override
+    public TickRateModulation tickingRequest(IGridNode node, int ticksSinceLastCall) {
+        this.recalculateDisplay();
+        return TickRateModulation.SAME;
+    }
+
+    @Override
     public boolean isPowered() {
         if (Platform.isClient()) {
-            return (this.state & 0x80000000) == 0x80000000;
+            return (this.state & STATE_ACTIVE_MASK) == STATE_ACTIVE_MASK;
         }
 
         return this.getProxy().isActive();
     }
 
-    @Override
-    public boolean isCellBlinking(final int slot) {
-        final long now = this.worldObj.getTotalWorldTime();
-        if (now - this.lastStateChange > 8) {
-            return false;
-        }
-
-        return ((this.state >> (slot * 3 + 2)) & 0x01) == 0x01;
-    }
-
     @TileEvent(TileEventType.NETWORK_READ)
     public boolean readFromStream_TileDrive(final ByteBuf data) {
         final int oldState = this.state;
-        this.state = data.readInt();
-        this.lastStateChange = this.worldObj.getTotalWorldTime();
-        return (this.state & 0xDB6DB6DB) != (oldState & 0xDB6DB6DB);
+        this.state = data.readInt() & STATE_MASK;
+        return this.state != oldState;
     }
 
     @TileEvent(TileEventType.WORLD_NBT_READ)
@@ -167,11 +165,10 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     }
 
     private void recalculateDisplay() {
+        int newState = 0;
         final boolean currentActive = this.getProxy().isActive();
         if (currentActive) {
-            this.state |= 0x80000000;
-        } else {
-            this.state &= ~0x80000000;
+            newState |= STATE_ACTIVE_MASK;
         }
 
         if (this.wasActive != currentActive) {
@@ -184,12 +181,12 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
         }
 
         for (int x = 0; x < this.getCellCount(); x++) {
-            this.state |= (this.getCellStatus(x) << (3 * x));
+            newState |= ((this.getCellStatus(x) & 0b11) << (2 * x));
         }
 
-        final int oldState = 0;
-        if (oldState != this.state) {
+        if (this.state != newState) {
             this.markForUpdate();
+            this.state = newState;
         }
     }
 
@@ -243,8 +240,8 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
 
     private void updateState() {
         if (!this.isCached) {
-            this.items = new LinkedList();
-            this.fluids = new LinkedList();
+            this.items = new ArrayList<>(INV_SIZE);
+            this.fluids = new ArrayList<>(INV_SIZE);
 
             double power = 2.0;
 
@@ -263,11 +260,9 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
                         if (cell != null) {
                             power += this.handlersBySlot[x].cellIdleDrain(is, cell);
 
-                            final DriveWatcher<IAEItemStack> ih = new DriveWatcher(
+                            final MEInventoryHandler<IAEItemStack> ih = new MEInventoryHandler<IAEItemStack>(
                                     cell,
-                                    is,
-                                    this.handlersBySlot[x],
-                                    this);
+                                    cell.getChannel());
                             ih.setPriority(this.priority);
                             this.invBySlot[x] = ih;
                             this.items.add(ih);
@@ -277,11 +272,9 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
                             if (cell != null) {
                                 power += this.handlersBySlot[x].cellIdleDrain(is, cell);
 
-                                final DriveWatcher<IAEItemStack> ih = new DriveWatcher(
+                                final MEInventoryHandler<IAEItemStack> ih = new MEInventoryHandler<IAEItemStack>(
                                         cell,
-                                        is,
-                                        this.handlersBySlot[x],
-                                        this);
+                                        cell.getChannel());
                                 ih.setPriority(this.priority);
                                 this.invBySlot[x] = ih;
                                 this.fluids.add(ih);
@@ -309,7 +302,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
             this.updateState();
             return (List) (channel == StorageChannel.ITEMS ? this.items : this.fluids);
         }
-        return new ArrayList();
+        return Collections.emptyList();
     }
 
     @Override
@@ -330,19 +323,6 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
         } catch (final GridAccessException e) {
             // :P
         }
-    }
-
-    @Override
-    public void blinkCell(final int slot) {
-        final long now = this.worldObj.getTotalWorldTime();
-        if (now - this.lastStateChange > 8) {
-            this.state = 0;
-        }
-        this.lastStateChange = now;
-
-        this.state |= 1 << (slot * 3 + 2);
-
-        this.recalculateDisplay();
     }
 
     @Override

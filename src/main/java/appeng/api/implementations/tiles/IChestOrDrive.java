@@ -43,9 +43,8 @@ public interface IChestOrDrive extends ICellContainer, IGridHost, IOrientable {
      */
     boolean isPowered();
 
-    /**
-     * @param slot slot index
-     * @return is the cell currently blinking to show activity.
-     */
-    boolean isCellBlinking(int slot);
+    @Deprecated
+    default boolean isCellBlinking(int slot) {
+        return false;
+    }
 }
