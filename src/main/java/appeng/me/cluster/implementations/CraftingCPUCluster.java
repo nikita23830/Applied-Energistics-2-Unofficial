@@ -989,6 +989,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     }
 
     public void addStorage(final IAEItemStack extractItems) {
+        extractItems.setCraftable(false);
         this.inventory.injectItems(extractItems, Actionable.MODULATE, null);
     }
 
@@ -1121,6 +1122,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     public void readFromNBT(final NBTTagCompound data) {
         this.finalOutput = AEItemStack.loadItemStackFromNBT((NBTTagCompound) data.getTag("finalOutput"));
         for (final IAEItemStack ais : this.readList((NBTTagList) data.getTag("inventory"))) {
+            if (ais.isCraftable() && ais.getStackSize() == 0) // remove bugged items from CPU Clusters, they are
+                                                              // spamming injectItems every tick
+                continue;
+            ais.setCraftable(false);
             this.inventory.injectItems(ais, Actionable.MODULATE, this.machineSrc);
         }
 
