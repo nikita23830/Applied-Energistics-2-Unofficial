@@ -57,6 +57,7 @@ import appeng.tile.events.TileEventType;
 import appeng.tile.grid.AENetworkInvTile;
 import appeng.tile.inventory.AppEngInternalInventory;
 import appeng.tile.inventory.InvOperation;
+import appeng.util.IterationCounter;
 import appeng.util.Platform;
 import appeng.util.item.ItemList;
 import io.netty.buffer.ByteBuf;
@@ -344,7 +345,8 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
         ICellInventory cellInventory = handler.getCellInv();
         if (cellInventory != null) {
             if (cellInventory.getStoredItemTypes() != 0) {
-                ItemStack partition = handler.getAvailableItems(new ItemList()).getFirstItem().getItemStack().copy();
+                ItemStack partition = handler.getAvailableItems(new ItemList(), IterationCounter.fetchNewId())
+                        .getFirstItem().getItemStack().copy();
                 partition.stackSize = 1;
                 cellInventory.getConfigInventory().setInventorySlotContents(0, partition);
             }
