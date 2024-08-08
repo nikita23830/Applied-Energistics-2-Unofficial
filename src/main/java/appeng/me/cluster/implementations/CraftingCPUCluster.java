@@ -22,20 +22,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+
+import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -74,6 +80,7 @@ import appeng.api.util.IInterfaceViewable;
 import appeng.api.util.WorldCoord;
 import appeng.container.ContainerNull;
 import appeng.core.AELog;
+import appeng.core.localization.GuiText;
 import appeng.core.localization.PlayerMessages;
 import appeng.crafting.CraftBranchFailure;
 import appeng.crafting.CraftingLink;
@@ -129,6 +136,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private long elapsedTime;
     private long startItemCount;
     private long remainingItemCount;
+    private long numsOfOutput;
+
+    private List<String> playersFollowingCurrentCraft = new ArrayList<>();
 
     public CraftingCPUCluster(final WorldCoord min, final WorldCoord max) {
         this.min = min;
@@ -405,12 +415,35 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             AELog.crafting(LOG_MARK_AS_COMPLETE, logStack);
         }
 
+        if (!this.playersFollowingCurrentCraft.isEmpty()) {
+
+            final String elapsedTimeText = DurationFormatUtils.formatDuration(
+                    TimeUnit.MILLISECONDS.convert(this.getElapsedTime(), TimeUnit.NANOSECONDS),
+                    GuiText.ETAFormat.getLocal());
+
+            IChatComponent messageWaitToSend = PlayerMessages.FinishCraftingRemind.get(
+                    new ChatComponentText(EnumChatFormatting.GREEN + String.valueOf(this.numsOfOutput)),
+                    this.finalOutput.getItemStack().func_151000_E(),
+                    new ChatComponentText(EnumChatFormatting.GREEN + elapsedTimeText));
+
+            for (String playerName : this.playersFollowingCurrentCraft) {
+                // Get each EntityPlayer
+                EntityPlayer pl = this.getWorld().getPlayerEntityByName(playerName);
+                if (pl != null) {
+                    // Send message to player
+                    pl.addChatMessage(messageWaitToSend);
+                }
+            }
+        }
+
         this.usedStorage = 0;
         this.remainingItemCount = 0;
         this.startItemCount = 0;
         this.lastTime = 0;
         this.elapsedTime = 0;
+        this.numsOfOutput = 0;
         this.isComplete = true;
+        this.playersFollowingCurrentCraft.clear();
     }
 
     private void updateCPU() {
@@ -809,12 +842,17 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         try {
             this.waitingFor.resetStatus();
             job.startCrafting(ci, this, src);
+
+            // Clear the follow list by default
+            this.playersFollowingCurrentCraft.clear();
+
             if (ci.commit(src)) {
                 if (job.getOutput() != null) {
                     this.finalOutput = job.getOutput();
                     this.waiting = false;
                     this.isComplete = false;
                     this.usedStorage = job.getByteTotal();
+                    this.numsOfOutput = job.getOutput().getStackSize();
                     this.markDirty();
 
                     this.updateCPU();
@@ -905,6 +943,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             if (ci.commit(src)) {
                 this.finalOutput.add(job.getOutput());
                 this.usedStorage += job.getByteTotal();
+                this.numsOfOutput += job.getOutput().getStackSize();
 
                 this.prepareStepCount();
                 this.markDirty();
@@ -1098,6 +1137,15 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         data.setBoolean("waiting", this.waiting);
         data.setBoolean("isComplete", this.isComplete);
         data.setLong("usedStorage", this.usedStorage);
+        data.setLong("numsOfOutput", this.numsOfOutput);
+
+        if (!this.playersFollowingCurrentCraft.isEmpty()) {
+            NBTTagList nbtTagList = new NBTTagList();
+            for (String name : this.playersFollowingCurrentCraft) {
+                nbtTagList.appendTag(new NBTTagString(name));
+            }
+            data.setTag("playerNameList", nbtTagList);
+        }
 
         if (this.myLastLink != null) {
             final NBTTagCompound link = new NBTTagCompound();
@@ -1206,6 +1254,15 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.elapsedTime = data.getLong("elapsedTime");
         this.startItemCount = data.getLong("startItemCount");
         this.remainingItemCount = data.getLong("remainingItemCount");
+        this.numsOfOutput = data.getLong("numsOfOutput");
+
+        NBTBase tag = data.getTag("playerNameList");
+        if (tag != null && tag instanceof NBTTagList ntl) {
+            this.playersFollowingCurrentCraft.clear();
+            for (int index = 0; index < ntl.tagCount(); index++) {
+                this.playersFollowingCurrentCraft.add(ntl.getStringTagAt(index));
+            }
+        }
 
         list = data.getTagList("providers", 10);
         for (int x = 0; x < list.tagCount(); x++) {
@@ -1309,6 +1366,20 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     @Override
     public long getStartItemCount() {
         return this.startItemCount;
+    }
+
+    public List<String> getPlayersFollowingCurrentCraft() {
+        return playersFollowingCurrentCraft;
+    }
+
+    public boolean togglePlayerFollowStatus(final String name) {
+        if (this.playersFollowingCurrentCraft.contains(name)) {
+            this.playersFollowingCurrentCraft.remove(name);
+            return true;
+        } else {
+            this.playersFollowingCurrentCraft.add(name);
+            return false;
+        }
     }
 
     @SuppressWarnings("unchecked")

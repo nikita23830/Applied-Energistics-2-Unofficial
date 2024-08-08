@@ -101,9 +101,11 @@ public class PacketValueConfig extends AppEngPacket {
             qk.optimizePatterns();
         } else if(this.Name.equals("Interface.DoublePatterns") && c instanceof final ContainerInterface qk){
             qk.doublePatterns(Integer.parseInt(this.Value));
-        }
-        else if (this.Name.equals("TileCrafting.Cancel") && c instanceof final ContainerCraftingCPU qk) {
-            qk.cancelCrafting();
+        } else if(this.Name.startsWith("TileCrafting.") && c instanceof final ContainerCraftingCPU qk) {
+        	switch(this.Name) {
+        	case "TileCrafting.Cancel" -> qk.cancelCrafting();
+        	case "TileCrafting.Follow" -> qk.togglePlayerFollowStatus(this.Value);
+        	}
         } else if (this.Name.equals("QuartzKnife.Name") && c instanceof final ContainerQuartzKnife qk) {
             qk.setName(this.Value);
         } else if (this.Name.equals("QuartzKnife.ReName") && c instanceof final ContainerRenamer qk) {

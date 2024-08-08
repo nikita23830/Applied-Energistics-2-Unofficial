@@ -41,7 +41,8 @@ public enum PlayerMessages {
     CraftingItemsWentMissing,
     PriorityInvalidTarget,
     PriorityReadout,
-    PriorityConfigured;
+    PriorityConfigured,
+    FinishCraftingRemind;
 
     public IChatComponent get() {
         return new ChatComponentTranslation(this.getName());

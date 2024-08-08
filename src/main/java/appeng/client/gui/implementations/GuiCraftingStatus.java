@@ -13,11 +13,15 @@
  */
 package appeng.client.gui.implementations;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 
 import org.lwjgl.input.Mouse;
 
@@ -28,16 +32,20 @@ import appeng.api.definitions.IDefinitions;
 import appeng.api.definitions.IParts;
 import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.client.gui.widgets.GuiAeButton;
 import appeng.client.gui.widgets.GuiCraftingCPUTable;
 import appeng.client.gui.widgets.GuiImgButton;
 import appeng.client.gui.widgets.GuiTabButton;
 import appeng.client.gui.widgets.ICraftingCPUTableHolder;
 import appeng.container.implementations.ContainerCraftingStatus;
 import appeng.core.AEConfig;
+import appeng.core.AELog;
+import appeng.core.localization.ButtonToolTips;
 import appeng.core.localization.GuiText;
 import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketSwitchGuis;
+import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.WirelessTerminalGuiObject;
 import appeng.parts.reporting.PartCraftingTerminal;
 import appeng.parts.reporting.PartPatternTerminal;
@@ -48,6 +56,7 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
 
     private final ContainerCraftingStatus status;
     private GuiButton selectCPU;
+    private GuiAeButton follow;
     private final GuiCraftingCPUTable cpuTable;
 
     private GuiTabButton originalGuiBtn;
@@ -55,6 +64,7 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
     private ItemStack myIcon = null;
     private boolean tallMode;
     private GuiImgButton switchTallMode;
+    private List<String> playersFollowingCurrentCraft = new ArrayList<>();
 
     public GuiCraftingStatus(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         super(new ContainerCraftingStatus(inventoryPlayer, te));
@@ -114,10 +124,18 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
     protected void actionPerformed(final GuiButton btn) {
         super.actionPerformed(btn);
 
-        final boolean backwards = Mouse.isButtonDown(1);
+        final boolean leftClick = Mouse.isButtonDown(0);
+        final boolean rightClick = Mouse.isButtonDown(1);
 
         if (btn == this.selectCPU) {
-            cpuTable.cycleCPU(backwards);
+            cpuTable.cycleCPU(rightClick);
+        } else if (btn == this.follow) {
+            try {
+                NetworkHandler.instance.sendToServer(
+                        new PacketValueConfig("TileCrafting.Follow", this.mc.thePlayer.getCommandSenderName()));
+            } catch (final IOException e) {
+                AELog.debug(e);
+            }
         } else if (btn == this.originalGuiBtn) {
             NetworkHandler.instance.sendToServer(new PacketSwitchGuis(this.originalGui));
         } else if (btn == this.switchTallMode) {
@@ -138,10 +156,20 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
                 0,
                 this.guiLeft + 8,
                 this.guiTop + this.ySize - 25,
-                150,
+                100,
                 20,
                 GuiText.CraftingCPU.getLocal() + ": " + GuiText.NoCraftingCPUs);
         this.buttonList.add(this.selectCPU);
+
+        this.follow = new GuiAeButton(
+                1,
+                this.guiLeft + 111,
+                this.guiTop + this.ySize - 25,
+                50,
+                20,
+                GuiText.ToFollow.getLocal(),
+                ButtonToolTips.ToFollow.getLocal());
+        this.buttonList.add(this.follow);
 
         if (this.myIcon != null) {
             this.buttonList.add(
@@ -163,8 +191,10 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
 
     @Override
     public void drawScreen(final int mouseX, final int mouseY, final float btn) {
+        this.follow.enabled = !this.visual.isEmpty();
         this.cpuTable.drawScreen();
         this.updateCPUButtonText();
+        this.updateFollowButtonText();
         super.drawScreen(mouseX, mouseY, btn);
     }
 
@@ -249,6 +279,14 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
         this.selectCPU.displayString = btnTextText;
     }
 
+    private void updateFollowButtonText() {
+        boolean isFollow = this.playersFollowingCurrentCraft.contains(this.mc.thePlayer.getCommandSenderName());
+
+        this.follow.displayString = isFollow ? GuiText.ToUnfollow.getLocal() : GuiText.ToFollow.getLocal();
+        this.follow
+                .setTootipString(isFollow ? ButtonToolTips.ToUnfollow.getLocal() : ButtonToolTips.ToFollow.getLocal());
+    }
+
     @Override
     protected String getGuiDisplayName(final String in) {
         return in; // the cup name is on the button
@@ -279,5 +317,13 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
     public void postUpdate(List<IAEItemStack> list, byte ref) {
         super.postUpdate(list, ref);
         setScrollBar();
+    }
+
+    public void postUpdate(final NBTTagCompound playerNameListNBT) {
+        this.playersFollowingCurrentCraft.clear();
+        NBTTagList tagList = (NBTTagList) playerNameListNBT.getTag("playNameList");
+        for (int index = 0; index < tagList.tagCount(); index++) {
+            this.playersFollowingCurrentCraft.add(tagList.getStringTagAt(index));
+        }
     }
 }

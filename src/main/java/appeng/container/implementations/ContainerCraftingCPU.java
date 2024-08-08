@@ -11,11 +11,15 @@
 package appeng.container.implementations;
 
 import java.io.IOException;
+import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ICrafting;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import appeng.api.AEApi;
@@ -33,6 +37,7 @@ import appeng.container.AEBaseContainer;
 import appeng.container.guisync.GuiSync;
 import appeng.core.AELog;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketCompressedNBT;
 import appeng.core.sync.packets.PacketCraftingRemainingOperations;
 import appeng.core.sync.packets.PacketMEInventoryUpdate;
 import appeng.core.sync.packets.PacketValueConfig;
@@ -146,9 +151,22 @@ public class ContainerCraftingCPU extends AEBaseContainer
             try {
                 this.setElapsedTime(this.getMonitor().getElapsedTime());
 
+                NBTTagCompound nbttc = new NBTTagCompound();
+                NBTTagList tagList = new NBTTagList();
+                List<String> playersFollowingCurrentCraft = this.getPlayersFollowingCurrentCraft();
+
+                if (playersFollowingCurrentCraft != null) {
+                    for (String name : playersFollowingCurrentCraft) {
+                        tagList.appendTag(new NBTTagString(name));
+                    }
+                }
+                nbttc.setTag("playNameList", tagList);
+
                 final PacketMEInventoryUpdate a = new PacketMEInventoryUpdate((byte) 0);
                 final PacketMEInventoryUpdate b = new PacketMEInventoryUpdate((byte) 1);
                 final PacketMEInventoryUpdate c = new PacketMEInventoryUpdate((byte) 2);
+
+                final PacketCompressedNBT d = new PacketCompressedNBT(nbttc);
 
                 for (final IAEItemStack out : this.list) {
                     a.appendItem(this.getMonitor().getItemStack(out, CraftingItemList.STORAGE));
@@ -159,21 +177,24 @@ public class ContainerCraftingCPU extends AEBaseContainer
                 this.list.resetStatus();
 
                 for (final Object g : this.crafters) {
-                    if (g instanceof EntityPlayer) {
+                    if (g instanceof EntityPlayerMP epmp) {
                         if (!a.isEmpty()) {
-                            NetworkHandler.instance.sendTo(a, (EntityPlayerMP) g);
+                            NetworkHandler.instance.sendTo(a, epmp);
                         }
 
                         if (!b.isEmpty()) {
-                            NetworkHandler.instance.sendTo(b, (EntityPlayerMP) g);
+                            NetworkHandler.instance.sendTo(b, epmp);
                         }
 
                         if (!c.isEmpty()) {
-                            NetworkHandler.instance.sendTo(c, (EntityPlayerMP) g);
+                            NetworkHandler.instance.sendTo(c, epmp);
                         }
+
+                        NetworkHandler.instance.sendTo(d, epmp);
+
                         NetworkHandler.instance.sendTo(
                                 new PacketCraftingRemainingOperations(this.getMonitor().getRemainingOperations()),
-                                (EntityPlayerMP) g);
+                                epmp);
                     }
                 }
             } catch (final IOException e) {
@@ -238,5 +259,18 @@ public class ContainerCraftingCPU extends AEBaseContainer
 
     private void setNetwork(final IGrid network) {
         this.network = network;
+    }
+
+    public void togglePlayerFollowStatus(final String name) {
+        if (this.getMonitor() != null) {
+            this.getMonitor().togglePlayerFollowStatus(name);
+        }
+    }
+
+    public List<String> getPlayersFollowingCurrentCraft() {
+        if (this.getMonitor() != null) {
+            return this.getMonitor().getPlayersFollowingCurrentCraft();
+        }
+        return null;
     }
 }
