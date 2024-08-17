@@ -38,11 +38,18 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
     private static final ThreadLocal<LinkedList> DEPTH_SIM = new ThreadLocal<>();
 
     /**
-     * Sorter for the {@link #priorityInventory} list. Sticky inventories are always first. The inventories are then
-     * sorted by priority (highest first), and then by placement pass (1 first, 1&2 second, 2 last).
+     * Sorter for the {@link #priorityInventory} list. AutoCrafting inventories are first followed by Sticky
+     * inventories. The inventories are then sorted by priority (highest first), and then by placement pass (1 first,
+     * 1&2 second, 2 last).
      */
-    private static final Comparator<IMEInventoryHandler<?>> STICKY_PRIORITY_PLACEMENT_PASS_SORTER = (o1, o2) -> {
-        int result = Boolean.compare(o2.getSticky(), o1.getSticky());
+    private static final Comparator<IMEInventoryHandler<?>> CRAFTING_STICKY_PRIORITY_PLACEMENT_PASS_SORTER = (o1,
+            o2) -> {
+        int result = Boolean.compare(o2.isAutoCraftingInventory(), o1.isAutoCraftingInventory());
+        if (result != 0) {
+            return result;
+        }
+
+        result = Boolean.compare(o2.getSticky(), o1.getSticky());
         if (result != 0) {
             return result;
         }
@@ -72,7 +79,7 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
     public NetworkInventoryHandler(final StorageChannel chan, final SecurityCache security) {
         this.myChannel = chan;
         this.security = security;
-        this.priorityInventory = new SortedArrayList<>(STICKY_PRIORITY_PLACEMENT_PASS_SORTER);
+        this.priorityInventory = new SortedArrayList<>(CRAFTING_STICKY_PRIORITY_PLACEMENT_PASS_SORTER);
     }
 
     public void addNewStorage(final IMEInventoryHandler<T> h) {
@@ -98,12 +105,12 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         // Try to insert into all sticky inventories which are at the beginning of the list
         for (; i < size && input != null; i++) {
             final IMEInventoryHandler<T> inv = priorityInventory.get(i);
-            if (!inv.getSticky()) break;
+            if (!inv.getSticky() && !inv.isAutoCraftingInventory()) break;
 
             if (inv.canAccept(input)
                     && (inv.isPrioritized(input) || inv.extractItems(input, Actionable.SIMULATE, src) != null)) {
                 input = inv.injectItems(input, type, src);
-                stickyInventoryFound = true;
+                if (!stickyInventoryFound && inv.getSticky()) stickyInventoryFound = true;
             }
         }
 
