@@ -27,7 +27,7 @@ public class GuiRenamer extends AEBaseGui implements IDropToFillTextField {
         super(new ContainerRenamer(ip, obj));
         this.xSize = 256;
 
-        this.textField = new MEGuiTextField(230, 12) {
+        this.textField = new MEGuiTextField(231, 12) {
 
             @Override
             public void onTextChange(final String oldText) {

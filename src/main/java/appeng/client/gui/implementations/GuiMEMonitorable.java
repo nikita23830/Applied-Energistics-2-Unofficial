@@ -11,7 +11,6 @@
 package appeng.client.gui.implementations;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiButton;
@@ -63,13 +62,11 @@ import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.WirelessTerminalGuiObject;
 import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
+import appeng.integration.modules.NEI;
 import appeng.parts.reporting.AbstractPartTerminal;
 import appeng.tile.misc.TileSecurity;
 import appeng.util.IConfigManagerHost;
 import appeng.util.Platform;
-import codechicken.nei.TextField;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfigManagerHost, IDropToFillTextField {
 
@@ -88,7 +85,6 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
     private GuiTabButton craftingStatusBtn;
     private GuiImgButton craftingStatusImgBtn;
     private final MEGuiTextField searchField;
-    private TextField NEISearchField;
     private GuiText myName;
     private int perRow = 9;
     private int reservedSpace = 0;
@@ -152,17 +148,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             }
         };
 
-        if (Loader.isModLoaded("NotEnoughItems")) {
-
-            try {
-                final Class<? super Object> clazz = ReflectionHelper
-                        .getClass(this.getClass().getClassLoader(), "codechicken.nei.LayoutManager");
-                final Field fldSearchField = clazz.getField("searchField");
-                this.NEISearchField = (TextField) fldSearchField.get(clazz);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
+        NEI.searchField.putFormatter(this.searchField);
     }
 
     public void postUpdate(final List<IAEItemStack> list) {
@@ -488,16 +474,19 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
     protected void keyTyped(final char character, final int key) {
         if (!this.checkHotbarKeys(key)) {
 
-            if (NEISearchField != null && (NEISearchField.focused() || searchField.isFocused())
-                    && CommonHelper.proxy.isActionKey(ActionKey.TOGGLE_FOCUS, key)) {
-                final boolean focused = searchField.isFocused();
-                searchField.setFocused(!focused);
-                NEISearchField.setFocus(focused);
-                return;
-            }
+            if (NEI.searchField.existsSearchField()) {
 
-            if (NEISearchField != null && NEISearchField.focused()) {
-                return;
+                if ((NEI.searchField.focused() || searchField.isFocused())
+                        && CommonHelper.proxy.isActionKey(ActionKey.TOGGLE_FOCUS, key)) {
+                    final boolean focused = searchField.isFocused();
+                    searchField.setFocused(!focused);
+                    NEI.searchField.setFocus(focused);
+                    return;
+                }
+
+                if (NEI.searchField.focused()) {
+                    return;
+                }
             }
 
             if (searchField.isFocused() && key == Keyboard.KEY_RETURN) {

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -72,6 +73,7 @@ import appeng.helpers.InventoryAction;
 import appeng.helpers.PatternHelper;
 import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
+import appeng.integration.modules.NEI;
 import appeng.items.misc.ItemEncodedPattern;
 import appeng.parts.reporting.PartInterfaceTerminal;
 import appeng.tile.inventory.AppEngInternalInventory;
@@ -182,6 +184,9 @@ public class GuiInterfaceTerminal extends AEBaseGui
 
         this.extraOptionsText = new ArrayList<>(2);
         extraOptionsText.add(ButtonToolTips.HighlightInterface.getLocal());
+
+        NEI.searchField.putFormatter(this.searchFieldInputs);
+        NEI.searchField.putFormatter(this.searchFieldOutputs);
     }
 
     private void setScrollBar() {
@@ -884,15 +889,19 @@ public class GuiInterfaceTerminal extends AEBaseGui
 
         final NBTTagList tags = encodedValue.getTagList(in ? "in" : "out", NBT.TAG_COMPOUND);
         final boolean containsInvalidDisplayName = GuiText.UnknownItem.getLocal().toLowerCase().contains(searchTerm);
+        Predicate<ItemStack> itemFilter = (is) -> Platform
+                .getItemDisplayName(AEApi.instance().storage().createItemStack(is)).toLowerCase().contains(searchTerm);
+
+        if (NEI.searchField.existsSearchField()) {
+            itemFilter = NEI.searchField.getFilter(searchTerm);
+        }
 
         for (int i = 0; i < tags.tagCount(); i++) {
             final NBTTagCompound tag = tags.getCompoundTagAt(i);
             final ItemStack parsedItemStack = ItemStack.loadItemStackFromNBT(tag);
 
             if (parsedItemStack != null) {
-                final String displayName = Platform
-                        .getItemDisplayName(AEApi.instance().storage().createItemStack(parsedItemStack)).toLowerCase();
-                if (displayName.contains(searchTerm)) {
+                if (itemFilter.test(parsedItemStack)) {
                     return true;
                 }
             } else if (containsInvalidDisplayName && !tag.hasNoTags()) {

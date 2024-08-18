@@ -1,20 +1,88 @@
 package appeng.util.prioitylist;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.oredict.OreDictionary;
 
 import org.apache.commons.lang3.StringUtils;
 
 import appeng.api.storage.data.IAEItemStack;
 import appeng.core.AELog;
+import codechicken.nei.FormattedTextField.TextFormatter;
+import cpw.mods.fml.common.Optional;
 
 public class OreFilteredList implements IPartitionList<IAEItemStack> {
+
+    @Optional.Interface(modid = "NotEnoughItems", iface = "codechicken.nei.FormattedTextField.TextFormatter")
+    public static class OreFilterTextFormatter implements TextFormatter {
+
+        public String format(String text) {
+
+            if (notAWildcard(text)) {
+                return text.replaceAll(
+                        "([" + Pattern.quote("^$+()[].*?|:{}\\") + "])",
+                        EnumChatFormatting.AQUA + "$1" + EnumChatFormatting.RESET);
+            } else if (!text.isEmpty()) {
+                final String[] parts = text.split("\\|");
+                StringJoiner formattedText = new StringJoiner(EnumChatFormatting.GRAY + "|" + EnumChatFormatting.RESET);
+
+                for (String filterText : parts) {
+                    formattedText.add(formatRules(filterText));
+                }
+
+                if (text.endsWith("|")) {
+                    formattedText.add("");
+                }
+
+                return formattedText.toString();
+            }
+
+            return text;
+        }
+
+        private String formatRules(String text) {
+            final String[] parts = text.split("\\&");
+            StringJoiner formattedText = new StringJoiner(EnumChatFormatting.GRAY + "&" + EnumChatFormatting.RESET);
+
+            for (String filterText : parts) {
+                formattedText.add(formatPattern(filterText));
+            }
+
+            if (text.endsWith("&")) {
+                formattedText.add("");
+            }
+
+            return formattedText.toString();
+        }
+
+        private String formatPattern(String filter) {
+            final Matcher filterMatcher = Pattern.compile("(\\s*)(!*)(.*)").matcher(filter);
+
+            if (filterMatcher.find()) {
+                StringBuilder formattedPart = new StringBuilder();
+                formattedPart.append(filterMatcher.group(1));
+
+                if ("!".equals(filterMatcher.group(2))) {
+                    formattedPart.append(EnumChatFormatting.RED + "!" + EnumChatFormatting.RESET);
+                }
+
+                formattedPart.append(
+                        filterMatcher.group(3).replace("*", EnumChatFormatting.AQUA + "*" + EnumChatFormatting.RESET));
+                return formattedPart.toString();
+            }
+
+            return filter;
+        }
+    }
 
     private final Predicate<IAEItemStack> filterPredicate;
 
@@ -86,7 +154,7 @@ public class OreFilteredList implements IPartitionList<IAEItemStack> {
 
     private static class OreListMatcher implements Predicate<IAEItemStack> {
 
-        final HashMap<ItemRef, Boolean> cache = new HashMap<>();
+        final Map<ItemRef, Boolean> cache = new ConcurrentHashMap<>();
         final Predicate<ItemStack> matcher;
 
         public OreListMatcher(Predicate<ItemStack> matcher) {

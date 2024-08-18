@@ -964,9 +964,13 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
 
     protected void addMissingItemsToBookMark() {
         if (!this.missing.isEmpty() && isShiftKeyDown()) {
+            List<ItemStack> missing = new ArrayList<>();
+
             for (IAEItemStack iaeItemStack : this.missing) {
-                NEI.instance.addItemToBookMark(iaeItemStack.getItemStack());
+                missing.add(iaeItemStack.getItemStack());
             }
+
+            NEI.instance.addToBookmark(jobTree.getOutput().getItemStack(), missing);
         }
     }
 

@@ -21,13 +21,18 @@ import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.IOreFilterable;
+import appeng.integration.modules.NEI;
 import appeng.parts.automation.PartSharedItemBus;
 import appeng.parts.misc.PartStorageBus;
 import appeng.tile.misc.TileCellWorkbench;
+import appeng.util.prioitylist.OreFilteredList.OreFilterTextFormatter;
 
 public class GuiOreFilter extends AEBaseGui implements IDropToFillTextField {
 
     private MEGuiTextField textField;
+
+    private boolean useNEIFilter = false;
+    private long lastclicktime;
 
     public GuiOreFilter(InventoryPlayer ip, IOreFilterable obj) {
         super(new ContainerOreFilter(ip, obj));
@@ -41,11 +46,18 @@ public class GuiOreFilter extends AEBaseGui implements IDropToFillTextField {
 
                 if (!text.equals(oldText)) {
                     ((ContainerOreFilter) inventorySlots).setFilter(text);
+                    if (GuiOreFilter.this.useNEIFilter) {
+                        NEI.searchField.updateFilter();
+                    }
                 }
             }
         };
 
         this.textField.setMaxStringLength(120);
+
+        if (NEI.searchField.existsSearchField()) {
+            this.textField.setFormatter(new OreFilterTextFormatter());
+        }
     }
 
     @Override
@@ -60,6 +72,24 @@ public class GuiOreFilter extends AEBaseGui implements IDropToFillTextField {
     }
 
     @Override
+    public void onGuiClosed() {
+        super.onGuiClosed();
+
+        if (this.useNEIFilter) {
+            this.useNEIFilter = false;
+            NEI.searchField.updateFilter();
+        }
+    }
+
+    public String getText() {
+        return this.textField.getText();
+    }
+
+    public boolean useNEIFilter() {
+        return this.useNEIFilter;
+    }
+
+    @Override
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
         this.fontRendererObj.drawString(GuiText.OreFilterLabel.getLocal(), 12, 8, GuiColors.OreFilterLabel.getColor());
     }
@@ -69,10 +99,39 @@ public class GuiOreFilter extends AEBaseGui implements IDropToFillTextField {
         this.bindTexture("guis/renamer.png");
         this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
         this.textField.drawTextBox();
+
+        if (this.useNEIFilter) {
+            drawRect(textField.x - 1, textField.y - 1, textField.x + textField.w, textField.y, 0xFFFFFF00); // Top
+
+            drawRect(
+                    textField.x - 1,
+                    textField.y + textField.h - 1,
+                    textField.x + textField.w,
+                    textField.y + textField.h,
+                    0xFFFFFF00); // Bottom
+
+            drawRect(textField.x - 1, textField.y, textField.x, textField.y + textField.h - 1, 0xFFFFFF00); // Left
+
+            drawRect(
+                    textField.x + textField.w - 1,
+                    textField.y,
+                    textField.x + textField.w,
+                    textField.y + textField.h - 1,
+                    0xFFFFFF00); // Right
+        }
     }
 
     @Override
     protected void mouseClicked(final int xCoord, final int yCoord, final int btn) {
+
+        if (btn == 0 && NEI.searchField.existsSearchField() && textField.isMouseIn(xCoord, yCoord)) {
+            if (textField.isFocused() && (System.currentTimeMillis() - lastclicktime < 400)) { // double click
+                useNEIFilter = !useNEIFilter;
+                NEI.searchField.updateFilter();
+            }
+            lastclicktime = System.currentTimeMillis();
+        }
+
         this.textField.mouseClicked(xCoord, yCoord, btn);
         super.mouseClicked(xCoord, yCoord, btn);
     }

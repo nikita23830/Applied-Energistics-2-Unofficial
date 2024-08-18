@@ -1,57 +1,46 @@
 package appeng.integration.modules.NEIHelpers;
 
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 
 import appeng.api.AEApi;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.implementations.GuiOreFilter;
 import appeng.util.prioitylist.OreFilteredList;
-import codechicken.nei.SearchField.ISearchProvider;
 import codechicken.nei.api.ItemFilter;
+import codechicken.nei.api.ItemFilter.ItemFilterProvider;
 
-public class NEIOreDictionaryFilter implements ISearchProvider {
-
-    public Pattern pattern;
+public class NEIOreDictionaryFilter implements ItemFilterProvider {
 
     @Override
-    public ItemFilter getFilter(String searchText) {
-        if (Minecraft.getMinecraft().currentScreen instanceof GuiOreFilter) {
-            Pattern pattern = null;
-            try {
-                pattern = Pattern.compile(searchText);
-            } catch (PatternSyntaxException ignored) {}
-            return pattern == null || pattern.toString().length() == 0 ? null : new Filter(pattern);
-        } else {
-            return null;
+    public ItemFilter getFilter() {
+        GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
+
+        if (currentScreen instanceof GuiOreFilter) {
+            GuiOreFilter oreScreen = (GuiOreFilter) currentScreen;
+
+            if (oreScreen.useNEIFilter() && !oreScreen.getText().isEmpty()) {
+                return new Filter(oreScreen.getText());
+            }
         }
-    }
 
-    @Override
-    public boolean isPrimary() {
-        return true;
+        return null;
     }
 
     public static class Filter implements ItemFilter {
 
-        Pattern pattern;
-        Predicate<IAEItemStack> list;
+        private Predicate<IAEItemStack> list;
 
-        public Filter(Pattern pattern) {
-            this.pattern = pattern;
-            this.list = OreFilteredList.makeFilter(pattern.pattern());
+        public Filter(String pattern) {
+            this.list = OreFilteredList.makeFilter(pattern);
         }
 
         @Override
         public boolean matches(ItemStack itemStack) {
-            if (Minecraft.getMinecraft().currentScreen instanceof GuiOreFilter) {
-                return list.test(AEApi.instance().storage().createItemStack(itemStack));
-            }
-            return false;
+            return this.list == null || list.test(AEApi.instance().storage().createItemStack(itemStack));
         }
     }
 }
