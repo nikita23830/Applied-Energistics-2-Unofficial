@@ -38,6 +38,15 @@ public class NEISearchField {
         return getSearchField() != null;
     }
 
+    public String getEscapedSearchText(String text) {
+
+        if (existsSearchField()) {
+            return SearchField.getEscapedSearchText(text);
+        }
+
+        return text;
+    }
+
     public void putFormatter(MEGuiTextField field) {
         final SearchField searchField = getSearchField();
 
