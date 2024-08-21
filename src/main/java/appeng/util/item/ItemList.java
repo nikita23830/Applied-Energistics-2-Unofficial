@@ -179,7 +179,7 @@ public final class ItemList implements IItemList<IAEItemStack> {
     public Iterator<IAEItemStack> iterator() {
         return new MeaningfulItemIterator<>(new Iterator<>() {
 
-            private final Iterator<IAEItemStack> i = ItemList.this.setRecords.iterator();
+            private final Iterator<IAEItemStack> i = ItemList.this.records.values().iterator();
             private IAEItemStack next = null;
 
             @Override
@@ -195,7 +195,7 @@ public final class ItemList implements IItemList<IAEItemStack> {
             @Override
             public void remove() {
                 i.remove();
-                ItemList.this.records.remove(next);
+                ItemList.this.setRecords.remove(next);
             }
         });
     }
