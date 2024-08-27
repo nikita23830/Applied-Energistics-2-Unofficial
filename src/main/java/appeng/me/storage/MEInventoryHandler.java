@@ -10,6 +10,8 @@
 
 package appeng.me.storage;
 
+import java.util.function.Predicate;
+
 import javax.annotation.Nonnull;
 
 import appeng.api.config.AccessRestriction;
@@ -102,9 +104,11 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         if (!this.hasReadAccess) {
             return null;
         }
-        if (this.isExtractFilterActive() && !this.myExtractPartitionList.isEmpty()
-                && !this.myExtractPartitionList.isListed(request)) {
-            return null;
+        if (this.isExtractFilterActive() && !this.myExtractPartitionList.isEmpty()) {
+            Predicate<T> filterCondition = this.getExtractFilterCondition();
+            if (!filterCondition.test(request)) {
+                return null;
+            }
         }
 
         return this.internal.extractItems(request, type, src);
@@ -126,8 +130,9 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     protected IItemList<T> filterAvailableItems(IItemList<T> out, int iteration) {
         final IItemList<T> allAvailableItems = this.internal
                 .getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
+        Predicate<T> filterCondition = this.getExtractFilterCondition();
         for (T item : allAvailableItems) {
-            if (this.myExtractPartitionList.isListed(item)) {
+            if (filterCondition.test(item)) {
                 out.add(item);
             }
         }
@@ -140,12 +145,19 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
             return null;
         }
 
-        if (this.isExtractFilterActive() && !this.myExtractPartitionList.isEmpty()
-                && !this.myExtractPartitionList.isListed(request)) {
-            return null;
+        if (this.isExtractFilterActive() && !this.myExtractPartitionList.isEmpty()) {
+            Predicate<T> filterCondition = this.getExtractFilterCondition();
+            if (!filterCondition.test(request)) {
+                return null;
+            }
         }
 
         return this.internal.getAvailableItem(request, iteration);
+    }
+
+    public Predicate<T> getExtractFilterCondition() {
+        return this.myWhitelist == IncludeExclude.WHITELIST ? i -> this.myExtractPartitionList.isListed(i)
+                : i -> !this.myExtractPartitionList.isListed(i);
     }
 
     public boolean isExtractFilterActive() {

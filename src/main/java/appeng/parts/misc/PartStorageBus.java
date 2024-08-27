@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -101,7 +102,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     private byte resetCacheLogic = 0;
     private String oreFilterString = "";
     /**
-     * used when changing access settings to read the changes once
+     * used to read changes once when the list of extractable items was changed
      */
     private boolean readOncePass = false;
 
@@ -146,14 +147,6 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
 
     @Override
     public void updateSetting(final IConfigManager manager, final Enum settingName, final Enum newValue) {
-        if (settingName == Settings.ACCESS && this.handler != null) {
-            AccessRestriction currentAccess = this.handler.getAccess();
-            if (newValue != currentAccess && currentAccess.hasPermission(AccessRestriction.READ)) {
-                if (newValue == AccessRestriction.WRITE || newValue == AccessRestriction.READ) {
-                    this.readOncePass = true;
-                }
-            }
-        }
         this.resetCache(true);
         this.getHost().markForSave();
     }
@@ -261,8 +254,9 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         if (this.handler != null && this.handler.isExtractFilterActive()
                 && !this.handler.getExtractPartitionList().isEmpty()) {
             List<IAEItemStack> filteredChanges = new ArrayList<>();
+            Predicate<IAEItemStack> extractFilterCondition = this.handler.getExtractFilterCondition();
             for (final IAEItemStack changedItem : change) {
-                if (this.handler.getExtractPartitionList().isListed(changedItem)) {
+                if (extractFilterCondition.test(changedItem)) {
                     filteredChanges.add(changedItem);
                 }
             }
@@ -446,6 +440,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         this.handlerHash = newHandlerHash;
         this.handler = null;
         this.monitor = null;
+        this.readOncePass = true;
         if (target != null) {
             final IExternalStorageHandler esh = AEApi.instance().registries().externalStorage()
                     .getHandler(target, this.getSide().getOpposite(), StorageChannel.ITEMS, this.mySrc);
