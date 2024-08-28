@@ -870,8 +870,8 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
     private boolean inventoryCountsAsEmpty(TileEntity te, InventoryAdaptor ad, ForgeDirection side) {
         String name = te.getBlockType().getUnlocalizedName();
-        boolean isEmpty = (name.equals("gt.blockmachines") || name.equals("tile.interface") || name.equals("tile.blockWritingTable"))
-                && tileHasOnlyIgnoredItems(ad);
+        boolean isEmpty = (name.equals("gt.blockmachines") || name.equals("tile.interface")
+                || name.equals("tile.blockWritingTable")) && tileHasOnlyIgnoredItems(ad);
         if (shouldCheckFluid()) {
             isEmpty = name.equals("tile.interface");
         }
