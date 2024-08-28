@@ -854,10 +854,10 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         };
     }
 
-    private boolean gtMachineHasOnlyCircuit(InventoryAdaptor ad) {
+    private boolean tileHasOnlyIgnoredItems(InventoryAdaptor ad) {
         for (ItemSlot i : ad) {
             ItemStack is = i.getItemStack();
-            if (BlockingModeIgnoreList.isIgnored(is)) continue;
+            if (BlockingModeIgnoreList.isIgnored(is) || is == null) continue;
             return false;
         }
         return true;
@@ -870,8 +870,8 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
     private boolean inventoryCountsAsEmpty(TileEntity te, InventoryAdaptor ad, ForgeDirection side) {
         String name = te.getBlockType().getUnlocalizedName();
-        boolean isEmpty = (name.equals("gt.blockmachines") || name.equals("tile.interface"))
-                && gtMachineHasOnlyCircuit(ad);
+        boolean isEmpty = (name.equals("gt.blockmachines") || name.equals("tile.interface") || name.equals("tile.blockWritingTable"))
+                && tileHasOnlyIgnoredItems(ad);
         if (shouldCheckFluid()) {
             isEmpty = name.equals("tile.interface");
         }

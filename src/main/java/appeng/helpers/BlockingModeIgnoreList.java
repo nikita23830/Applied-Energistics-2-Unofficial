@@ -165,6 +165,23 @@ public class BlockingModeIgnoreList {
             IgnoredItems.add(GameRegistry.findItem("dreamcraft", "item.ChromaticLens"));
             IgnoredItems.add(GameRegistry.findItem("bartworks", "gt.bwMetaGeneratedlens"));
         }
+
+        if (Loader.isModLoaded("AWWayofTime")) { // blood magic
+            IgnoredItems.add(GameRegistry.findItem("AWWayofTime", "weakBloodOrb"));
+            IgnoredItems.add(GameRegistry.findItem("AWWayofTime", "apprenticeBloodOrb"));
+            IgnoredItems.add(GameRegistry.findItem("AWWayofTime", "magicianBloodOrb"));
+            IgnoredItems.add(GameRegistry.findItem("AWWayofTime", "masterBloodOrb"));
+            IgnoredItems.add(GameRegistry.findItem("AWWayofTime", "archmageBloodOrb"));
+            IgnoredItems.add(GameRegistry.findItem("AWWayofTime", "transcendentBloodOrb"));
+
+            if (Loader.isModLoaded("Avaritia")) {
+                IgnoredItems.add(GameRegistry.findItem("Avaritia", "Orb_Armok"));
+            }
+
+            if (Loader.isModLoaded("ForbiddenMagic")) {
+                IgnoredItems.add(GameRegistry.findItem("ForbiddenMagic", "EldritchOrb"));
+            }
+        }
     }
 
     public static boolean isIgnored(ItemStack is) {
