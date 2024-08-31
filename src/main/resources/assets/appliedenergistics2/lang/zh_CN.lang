@@ -527,6 +527,10 @@ gui.tooltips.appliedenergistics2.MultiplyOrDividePatternHint=如果是正数,就
 gui.tooltips.appliedenergistics2.ToFollow=当前并未订阅该合成的消息\n当该合成完成时将不会接收到消息提示\n点击即可订阅
 gui.tooltips.appliedenergistics2.ToUnfollow=当前已经订阅该合成的消息\n当该合成完成时将会接收到消息提示\n点击即可取消
 
+gui.tooltips.appliedenergistics2.StringOrder=排序方式
+gui.tooltips.appliedenergistics2.StringOrderNatural=默认排序
+gui.tooltips.appliedenergistics2.StringOrderAlphanum=自然数序
+
 # Units
 gui.appliedenergistics2.units.appliedenergstics=AE
 gui.appliedenergistics2.units.ic2=EU
