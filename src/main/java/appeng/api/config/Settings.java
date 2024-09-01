@@ -80,7 +80,9 @@ public enum Settings {
 
     PRIORITY_CARD_MODE(EnumSet.allOf(PriorityCardMode.class)),
 
-    TERMINAL_FONT_SIZE(EnumSet.allOf(TerminalFontSize.class));
+    TERMINAL_FONT_SIZE(EnumSet.allOf(TerminalFontSize.class)),
+
+    INTERFACE_TERMINAL_SECTION_ORDER(EnumSet.allOf(StringOrder.class));
 
     private final EnumSet<? extends Enum<?>> values;
 

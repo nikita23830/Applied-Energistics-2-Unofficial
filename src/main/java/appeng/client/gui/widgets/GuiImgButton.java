@@ -49,6 +49,7 @@ import appeng.api.config.SidelessMode;
 import appeng.api.config.SortDir;
 import appeng.api.config.SortOrder;
 import appeng.api.config.StorageFilter;
+import appeng.api.config.StringOrder;
 import appeng.api.config.TerminalStyle;
 import appeng.api.config.TypeFilter;
 import appeng.api.config.ViewItems;
@@ -768,6 +769,19 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     PriorityCardMode.DEC,
                     ButtonToolTips.PriorityCardMode,
                     ButtonToolTips.PriorityCardMode_Dec);
+
+            this.registerApp(
+                    64,
+                    Settings.INTERFACE_TERMINAL_SECTION_ORDER,
+                    StringOrder.NATURAL,
+                    ButtonToolTips.StringOrder,
+                    ButtonToolTips.StringOrderNatural);
+            this.registerApp(
+                    16,
+                    Settings.INTERFACE_TERMINAL_SECTION_ORDER,
+                    StringOrder.ALPHANUM,
+                    ButtonToolTips.StringOrder,
+                    ButtonToolTips.StringOrderAlphanum);
 
         }
     }

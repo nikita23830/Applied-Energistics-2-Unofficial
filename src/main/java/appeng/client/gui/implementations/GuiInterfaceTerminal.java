@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -44,6 +45,7 @@ import org.lwjgl.opengl.GL12;
 import appeng.api.AEApi;
 import appeng.api.config.ActionItems;
 import appeng.api.config.Settings;
+import appeng.api.config.StringOrder;
 import appeng.api.config.TerminalStyle;
 import appeng.api.config.YesNo;
 import appeng.api.util.DimensionalCoord;
@@ -105,7 +107,9 @@ public class GuiInterfaceTerminal extends AEBaseGui
             AppEng.MOD_ID,
             "textures/guis/newinterfaceterminal.png");
 
-    private final InterfaceTerminalList masterList = new InterfaceTerminalList();
+    private final InterfaceTerminalList masterList = new InterfaceTerminalList(
+            ((StringOrder) AEConfig.instance.settings
+                    .getSetting(Settings.INTERFACE_TERMINAL_SECTION_ORDER)).comparator);
     private final MEGuiTextField searchFieldOutputs;
     private final MEGuiTextField searchFieldInputs;
     private final MEGuiTextField searchFieldNames;
@@ -114,6 +118,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
     private final GuiImgButton guiButtonBrokenRecipes;
     private final GuiImgButton terminalStyleBox;
     private final GuiImgButton searchStringSave;
+    private final GuiImgButton guiButtonSectionOrder;
     private boolean onlyMolecularAssemblers = false;
     private boolean onlyBrokenRecipes = false;
     private boolean online;
@@ -179,6 +184,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
         guiButtonAssemblersOnly = new GuiImgButton(0, 0, Settings.ACTIONS, null);
         guiButtonHideFull = new GuiImgButton(0, 0, Settings.ACTIONS, null);
         guiButtonBrokenRecipes = new GuiImgButton(0, 0, Settings.ACTIONS, null);
+        guiButtonSectionOrder = new GuiImgButton(0, 0, Settings.INTERFACE_TERMINAL_SECTION_ORDER, StringOrder.NATURAL);
 
         terminalStyleBox = new GuiImgButton(0, 0, Settings.TERMINAL_STYLE, null);
 
@@ -224,8 +230,11 @@ public class GuiInterfaceTerminal extends AEBaseGui
         searchStringSave.xPosition = guiLeft - 18;
         searchStringSave.yPosition = terminalStyleBox.yPosition + 18;
 
+        guiButtonSectionOrder.xPosition = guiLeft - 18;
+        guiButtonSectionOrder.yPosition = searchStringSave.yPosition + 18;
+
         guiButtonBrokenRecipes.xPosition = guiLeft - 18;
-        guiButtonBrokenRecipes.yPosition = searchStringSave.yPosition + 18;
+        guiButtonBrokenRecipes.yPosition = guiButtonSectionOrder.yPosition + 18;
 
         guiButtonHideFull.xPosition = guiLeft - 18;
         guiButtonHideFull.yPosition = guiButtonBrokenRecipes.yPosition + 18;
@@ -243,6 +252,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
         buttonList.add(guiButtonAssemblersOnly);
         buttonList.add(guiButtonHideFull);
         buttonList.add(guiButtonBrokenRecipes);
+        buttonList.add(guiButtonSectionOrder);
         buttonList.add(searchStringSave);
         buttonList.add(terminalStyleBox);
     }
@@ -293,6 +303,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
         guiButtonBrokenRecipes.set(
                 onlyBrokenRecipes ? ActionItems.TOGGLE_SHOW_ONLY_INVALID_PATTERN_OFF
                         : ActionItems.TOGGLE_SHOW_ONLY_INVALID_PATTERN_ON);
+        guiButtonSectionOrder.set(AEConfig.instance.settings.getSetting(Settings.INTERFACE_TERMINAL_SECTION_ORDER));
 
         terminalStyleBox.set(AEConfig.instance.settings.getSetting(Settings.TERMINAL_STYLE));
 
@@ -337,6 +348,10 @@ public class GuiInterfaceTerminal extends AEBaseGui
                     initGui();
                 } else if (btn == searchStringSave) {
                     AEConfig.instance.preserveSearchBar = next == YesNo.YES;
+                } else if (btn == guiButtonSectionOrder) {
+                    AEConfig.instance.settings.putSetting(iBtn.getSetting(), next);
+                    masterList.changeSectionComparator(((StringOrder) next).comparator);
+                    masterList.markDirty();
                 }
 
                 iBtn.set(next);
@@ -962,14 +977,24 @@ public class GuiInterfaceTerminal extends AEBaseGui
     private class InterfaceTerminalList {
 
         private final Map<Long, InterfaceTerminalEntry> list = new HashMap<>();
-        private final Map<String, InterfaceSection> sections = new TreeMap<>();
+        private Map<String, InterfaceSection> sections;
         private final List<InterfaceSection> visibleSections = new ArrayList<>();
         private boolean isDirty;
         private int height;
         private InterfaceTerminalEntry hoveredEntry;
 
-        InterfaceTerminalList() {
+        InterfaceTerminalList(Comparator<String> comparator) {
+            this.sections = comparator == null ? new TreeMap<>() : new TreeMap<>(comparator);
             this.isDirty = true;
+        }
+
+        void changeSectionComparator(Comparator<String> comparator) {
+            if ((this.sections instanceof TreeMap t) && !Objects.equals(comparator, t.comparator())) {
+                TreeMap<String, InterfaceSection> map = comparator == null ? new TreeMap<>()
+                        : new TreeMap<>(comparator);
+                map.putAll(this.sections);
+                this.sections = map;
+            }
         }
 
         /**
