@@ -25,6 +25,7 @@ import appeng.integration.IntegrationType;
 import appeng.integration.abstraction.IIC2;
 import appeng.recipes.RecipeHandler;
 import appeng.util.Platform;
+import cpw.mods.fml.common.Loader;
 
 public class Macerator implements ICraftHandler, IWebsiteSerializer {
 
@@ -48,11 +49,13 @@ public class Macerator implements ICraftHandler, IWebsiteSerializer {
     public void register() throws RegistrationError, MissingIngredientError {
         if (IntegrationRegistry.INSTANCE.isEnabled(IntegrationType.IC2)) {
             final IIC2 ic2 = (IIC2) IntegrationRegistry.INSTANCE.getInstance(IntegrationType.IC2);
-            for (final ItemStack is : this.pro_input.getItemStackSet()) {
-                try {
-                    ic2.maceratorRecipe(is, this.pro_output[0].getItemStack());
-                } catch (final java.lang.RuntimeException err) {
-                    AELog.info("IC2 not happy - " + err.getMessage());
+            if (!Loader.isModLoaded("dreamcraft")) {
+                for (final ItemStack is : this.pro_input.getItemStackSet()) {
+                    try {
+                        ic2.maceratorRecipe(is, this.pro_output[0].getItemStack());
+                    } catch (final java.lang.RuntimeException err) {
+                        AELog.info("IC2 not happy - " + err.getMessage());
+                    }
                 }
             }
         }
