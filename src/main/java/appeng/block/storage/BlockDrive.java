@@ -26,6 +26,7 @@ import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
 import appeng.tile.storage.TileDrive;
 import appeng.util.Platform;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import gregtech.api.GregTechAPI;
@@ -54,7 +55,7 @@ public class BlockDrive extends AEBaseTileBlock {
 
         final TileDrive tg = this.getTileEntity(w, x, y, z);
         if (tg != null) {
-            if (Platform.isServer()) {
+            if (Platform.isServer() && Loader.isModLoaded("dreamcraft")) {
                 if (IntegrationRegistry.INSTANCE.isEnabled(IntegrationType.GT)
                         && GTUtility.isStackInList(p.getHeldItem(), GregTechAPI.sWireCutterList)) {
                     if (tg.lockDigitalSingularityCells()) {
