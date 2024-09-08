@@ -144,11 +144,11 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, IFluidHan
         int newState = 0;
 
         for (int x = 0; x < this.getCellCount(); x++) {
-            newState |= (this.getCellStatus(x) << (2 * x));
+            newState |= (this.getCellStatus(x) << (3 * x));
         }
 
         if (this.isPowered()) {
-            newState |= 0b100;
+            newState |= 0b1000;
         }
 
         final boolean currentActive = this.getProxy().isActive();
@@ -258,7 +258,7 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, IFluidHan
     @Override
     public int getCellStatus(final int slot) {
         if (Platform.isClient()) {
-            return (this.state >> (slot * 2)) & 0b11;
+            return (this.state >> (slot * 3)) & 0b111;
         }
 
         final ItemStack cell = this.inv.getStackInSlot(1);
@@ -286,7 +286,7 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, IFluidHan
     @Override
     public boolean isPowered() {
         if (Platform.isClient()) {
-            return (this.state & 0b100) == 0b100;
+            return (this.state & 0b1000) == 0b1000;
         }
 
         boolean gridPowered = this.getAECurrentPower() > 64;
@@ -329,14 +329,14 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, IFluidHan
         try {
             if (!this.getProxy().getEnergy().isNetworkPowered()) {
                 final double powerUsed = this.extractAEPower(idleUsage, Actionable.MODULATE, PowerMultiplier.CONFIG); // drain
-                if (powerUsed + 0.1 >= idleUsage != (this.state & 0b100) > 0) {
+                if (powerUsed + 0.1 >= idleUsage != (this.state & 0b1000) > 0) {
                     this.recalculateDisplay();
                 }
             }
         } catch (final GridAccessException e) {
             final double powerUsed = this
                     .extractAEPower(this.getProxy().getIdlePowerUsage(), Actionable.MODULATE, PowerMultiplier.CONFIG); // drain
-            if (powerUsed + 0.1 >= idleUsage != (this.state & 0b100) > 0) {
+            if (powerUsed + 0.1 >= idleUsage != (this.state & 0b1000) > 0) {
                 this.recalculateDisplay();
             }
         }
@@ -365,7 +365,7 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, IFluidHan
         final int oldState = this.state;
         final ItemStack oldType = this.storageType;
 
-        this.state = data.readByte() & 0b111;
+        this.state = data.readByte() & 0b1111;
         final AEColor oldPaintedColor = this.paintedColor;
         this.paintedColor = AEColor.values()[data.readByte()];
 

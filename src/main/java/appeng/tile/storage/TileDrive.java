@@ -68,8 +68,8 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     /**
      * Masks the part of {@link #state} that contains information
      */
-    private static final int STATE_MASK = 0b111111111111111111111;
-    private static final int STATE_ACTIVE_MASK = 1 << 20;
+    private static final int STATE_MASK = 0b1111111111111111111111111111111;
+    private static final int STATE_ACTIVE_MASK = 1 << 30;
 
     private final int[] sides = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     private final AppEngInternalInventory inv = new AppEngInternalInventory(this, INV_SIZE);
@@ -106,7 +106,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     @Override
     public int getCellStatus(final int slot) {
         if (Platform.isClient()) {
-            return (this.state >> (slot * 2)) & 0b11;
+            return (this.state >> (slot * 3)) & 0b111;
         }
 
         final ItemStack cell = this.inv.getStackInSlot(2);
@@ -192,7 +192,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
         }
 
         for (int x = 0; x < this.getCellCount(); x++) {
-            newState |= ((this.getCellStatus(x) & 0b11) << (2 * x));
+            newState |= ((this.getCellStatus(x) & 0b111) << (3 * x));
         }
 
         if (this.state != newState) {
