@@ -41,6 +41,20 @@ public interface IChestOrDrive extends ICellContainer, IGridHost, IOrientable {
     int getCellStatus(int slot);
 
     /**
+     * 0 - item cell,
+     * <p>
+     * 1 - fluid cell,
+     * <p>
+     * 2 - essentia cell
+     *
+     * @param slot slot index
+     * @return cell type of the slot, one of the above indices.
+     */
+    default int getCellType(int slot) {
+        return 0;
+    }
+
+    /**
      * @return if the device is online you should check this before providing any other information.
      */
     boolean isPowered();
