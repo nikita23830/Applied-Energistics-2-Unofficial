@@ -158,6 +158,10 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
         return 0;
     }
 
+    public MEInventoryHandler<IAEItemStack> getCellInvBySlot(final int slot) {
+        return this.invBySlot[slot];
+    }
+
     @Override
     public TickingRequest getTickingRequest(IGridNode node) {
         return new TickingRequest(15, 15, false, false);

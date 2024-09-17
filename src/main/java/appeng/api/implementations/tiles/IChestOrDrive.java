@@ -29,16 +29,20 @@ public interface IChestOrDrive extends ICellContainer, IGridHost, IOrientable {
     /**
      * 0 - cell is missing.
      * <p>
-     * 1 - green,
+     * 1 - green, ( usually means the cell is 100% free )
      * <p>
-     * 2 - orange,
+     * 2 - blue, ( usually means available room for types or items. )
      * <p>
-     * 3 - red
+     * 3 - orange, ( usually means available room for items, but not types. )
+     * <p>
+     * 4 - red, ( usually means the cell is 100% full )
      *
      * @param slot slot index
      * @return status of the slot, one of the above indices.
      */
-    int getCellStatus(int slot);
+    default int getCellStatus(int slot) {
+        return 0;
+    }
 
     /**
      * 0 - item cell,
