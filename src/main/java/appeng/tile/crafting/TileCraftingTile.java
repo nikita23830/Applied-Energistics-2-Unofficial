@@ -16,6 +16,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import appeng.api.util.IVirtualItem;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraft.block.Block;
@@ -286,8 +287,15 @@ public class TileCraftingTile extends AENetworkTile implements IAEMultiBlock, IP
                 ais = ais.copy();
                 ais.setStackSize(ais.getItemStack().getMaxStackSize());
                 while (!places.isEmpty()) {
-                    final IAEItemStack g = inv
-                            .extractItems(ais.copy(), Actionable.MODULATE, this.cluster.getActionSource());
+                    IAEItemStack g = null;
+                    if (ais.getItem() instanceof IVirtualItem) {
+                        // todo remove all virtauls items
+                        inv.extractItems(ais.copy().setStackSize(Long.MAX_VALUE), Actionable.MODULATE, this.cluster.getActionSource());
+                        g = null;
+                    } else {
+                        g = inv.extractItems(ais.copy(), Actionable.MODULATE, this.cluster.getActionSource());
+                    }
+
                     if (g == null) {
                         break;
                     }

@@ -383,7 +383,9 @@ public class TileInscriber extends AENetworkPowerTile implements IGridTickable, 
                 IEnergySource src = this;
 
                 // Base 1, increase by 1 for each card
-                final int speedFactor = 1 + this.upgrades.getInstalledUpgrades(Upgrades.SPEED);
+                int sp = getInstalledUpgrades(Upgrades.SPEED);
+                int spp = getInstalledUpgrades(Upgrades.SUPERSPEED);
+                final int speedFactor = 1 + sp + (spp * 2);
                 final int powerConsumption = 10 * speedFactor;
                 final double powerThreshold = powerConsumption - 0.01;
                 double powerReq = this.extractAEPower(powerConsumption, Actionable.SIMULATE, PowerMultiplier.CONFIG);
