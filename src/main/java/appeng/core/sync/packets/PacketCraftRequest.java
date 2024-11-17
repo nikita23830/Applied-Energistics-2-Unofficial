@@ -114,6 +114,7 @@ public class PacketCraftRequest extends AppEngPacket {
                         }
                     }
                 } catch (final Throwable e) {
+                    e.printStackTrace();
                     if (futureJob != null) {
                         futureJob.cancel(true);
                     }

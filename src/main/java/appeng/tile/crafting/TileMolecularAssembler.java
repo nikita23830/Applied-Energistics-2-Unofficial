@@ -13,6 +13,7 @@ package appeng.tile.crafting;
 import java.io.IOException;
 import java.util.List;
 
+import appeng.me.cluster.implementations.CraftingCPUCluster;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
@@ -97,6 +98,14 @@ public class TileMolecularAssembler extends AENetworkInvTile
 
     private int getUpgradeSlots() {
         return 5;
+    }
+
+    CraftingCPUCluster cluster;
+
+    @Override
+    public boolean pushPatternWithCluster(ICraftingPatternDetails patternDetails, InventoryCrafting table, ForgeDirection ejectionDirection, CraftingCPUCluster cluster) {
+        this.cluster = cluster;
+        return pushPattern(patternDetails, table, ejectionDirection);
     }
 
     @Override
@@ -380,13 +389,15 @@ public class TileMolecularAssembler extends AENetworkInvTile
 
         this.reboot = false;
         int speed = 10;
+        int superSpeed = this.upgrades.getInstalledUpgrades(Upgrades.SUPERSPEED);
+        superSpeed = superSpeed == 0 ? 0 : superSpeed * 20;
         switch (this.upgrades.getInstalledUpgrades(Upgrades.SPEED)) {
-            case 0 -> this.progress += this.userPower(ticksSinceLastCall, speed = 10, 1.0);
-            case 1 -> this.progress += this.userPower(ticksSinceLastCall, speed = 13, 1.3);
-            case 2 -> this.progress += this.userPower(ticksSinceLastCall, speed = 17, 1.7);
-            case 3 -> this.progress += this.userPower(ticksSinceLastCall, speed = 20, 2.0);
-            case 4 -> this.progress += this.userPower(ticksSinceLastCall, speed = 25, 2.5);
-            case 5 -> this.progress += this.userPower(ticksSinceLastCall, speed = 50, 5.0);
+            case 0 -> this.progress += this.userPower(ticksSinceLastCall, speed = (10 + superSpeed), (1.0 + (superSpeed * 1.0)));
+            case 1 -> this.progress += this.userPower(ticksSinceLastCall, speed = (13 + superSpeed), (1.0 + (superSpeed * 1.0)));
+            case 2 -> this.progress += this.userPower(ticksSinceLastCall, speed = (17 + superSpeed), (1.0 + (superSpeed * 1.0)));
+            case 3 -> this.progress += this.userPower(ticksSinceLastCall, speed = (20 + superSpeed), (1.0 + (superSpeed * 1.0)));
+            case 4 -> this.progress += this.userPower(ticksSinceLastCall, speed = (25 + superSpeed), (1.0 + (superSpeed * 1.0)));
+            case 5 -> this.progress += this.userPower(ticksSinceLastCall, speed = (50 + superSpeed), (1.0 + (superSpeed * 1.0)));
         }
 
         if (this.progress >= 100) {
@@ -397,10 +408,18 @@ public class TileMolecularAssembler extends AENetworkInvTile
             this.progress = 0;
             final ItemStack output = this.myPlan.getOutput(this.craftingInv, this.getWorldObj());
             if (output != null) {
-                FMLCommonHandler.instance().firePlayerCraftingEvent(
-                        Platform.getPlayer((WorldServer) this.getWorldObj()),
-                        output,
-                        this.craftingInv);
+                IAEItemStack outC = this.myPlan.getOutputs().length <= 0 ? AEApi.instance().storage().createItemStack(output) : this.myPlan.getOutputs()[0];
+                if (cluster != null && cluster.getRequester() != null && cluster.isActiveTask(outC)) {
+                    FMLCommonHandler.instance().firePlayerCraftingEvent(
+                            cluster.getRequester(),
+                            output,
+                            this.craftingInv);
+                } else {
+                    FMLCommonHandler.instance().firePlayerCraftingEvent(
+                            Platform.getPlayer((WorldServer) this.getWorldObj()),
+                            output,
+                            this.craftingInv);
+                }
 
                 this.pushOut(output.copy());
 

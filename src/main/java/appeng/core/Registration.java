@@ -279,7 +279,7 @@ public final class Registration {
 
         target.materialCardRedstone = this.converter.of(source.cardRedstone());
         target.materialCardSpeed = this.converter.of(source.cardSpeed());
-        target.materialCardSpeed = this.converter.of(source.cardSuperSpeed());
+        target.materialCardSuperSpeed = this.converter.of(source.cardSuperSpeed());
         target.materialCardCapacity = this.converter.of(source.cardCapacity());
         target.materialCardFuzzy = this.converter.of(source.cardFuzzy());
         target.materialCardInverter = this.converter.of(source.cardInverter());

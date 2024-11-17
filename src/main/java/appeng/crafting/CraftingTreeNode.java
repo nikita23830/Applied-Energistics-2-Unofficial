@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import appeng.api.util.IVirtualItem;
 import net.minecraft.world.World;
 
 import com.google.common.collect.Lists;
@@ -109,7 +110,7 @@ public class CraftingTreeNode {
             final Collection<IAEItemStack> itemList;
             final IItemList<IAEItemStack> inventoryList = inv.getItemList();
 
-            if (this.parent.details.canSubstitute()) {
+            if (this.parent.details.canSubstitute() || this.what.getItem() instanceof IVirtualItem) {
                 itemList = inventoryList.findFuzzy(this.what, FuzzyMode.IGNORE_ALL);
             } else {
                 itemList = Lists.newArrayList();

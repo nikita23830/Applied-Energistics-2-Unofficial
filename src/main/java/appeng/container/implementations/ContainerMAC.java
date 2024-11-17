@@ -10,6 +10,7 @@
 
 package appeng.container.implementations;
 
+import appeng.api.util.IVirtualItem;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -52,7 +53,7 @@ public class ContainerMAC extends ContainerUpgradeable implements IProgressProvi
         if (is.getItem() instanceof ItemEncodedPattern iep) {
             final World w = this.getTileEntity().getWorldObj();
             final ICraftingPatternDetails ph = iep.getPatternForItem(is, w);
-            if (ph.isCraftable()) {
+            if (ph.isCraftable() || i.getItem() instanceof IVirtualItem) {
                 return ph.isValidItemForSlot(slotIndex, i, w);
             }
         }

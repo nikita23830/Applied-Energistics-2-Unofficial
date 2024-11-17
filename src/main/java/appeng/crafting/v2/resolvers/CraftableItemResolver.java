@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import appeng.api.util.IVirtualItem;
 import net.minecraft.world.World;
 
 import org.apache.logging.log4j.Level;
@@ -278,7 +279,7 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
         }
 
         public boolean isValidSubstitute(IAEItemStack reference, IAEItemStack stack, World world) {
-            if (!pattern.isCraftable()) {
+            if (!pattern.isCraftable() && !(stack.getItem() instanceof IVirtualItem)) {
                 return true;
             }
             IAEItemStack[] rawInputs = pattern.getInputs();
@@ -291,7 +292,7 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
         }
 
         public boolean isValidSubstitute(IAEItemStack reference, IAEItemStack stack, World world, int slot) {
-            if (!pattern.isCraftable()) {
+            if (!pattern.isCraftable() && !(stack.getItem() instanceof IVirtualItem)) {
                 return true;
             }
             IAEItemStack[] rawInputs = pattern.getInputs();

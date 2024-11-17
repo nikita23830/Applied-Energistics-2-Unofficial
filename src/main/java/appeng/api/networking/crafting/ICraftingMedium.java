@@ -13,6 +13,7 @@
 
 package appeng.api.networking.crafting;
 
+import appeng.me.cluster.implementations.CraftingCPUCluster;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 
@@ -30,6 +31,10 @@ public interface ICraftingMedium {
      * @return if the pattern was successfully pushed.
      */
     boolean pushPattern(ICraftingPatternDetails patternDetails, InventoryCrafting table);
+
+    default boolean pushPatternWithCluster(ICraftingPatternDetails patternDetails, InventoryCrafting table, CraftingCPUCluster cluster) {
+        return pushPattern(patternDetails, table);
+    }
 
     /**
      * @return if this is false, the crafting engine will refuse to send new jobs to this medium.

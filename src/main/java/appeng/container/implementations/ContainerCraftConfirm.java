@@ -17,6 +17,7 @@ import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
+import appeng.me.cluster.implementations.CraftingCPUCluster;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -280,6 +281,9 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
         if (this.result != null && !this.isSimulation() && getGrid() != null) {
             final ICraftingGrid cc = this.getGrid().getCache(ICraftingGrid.class);
             CraftingCPUStatus selected = this.cpuTable.getSelectedCPU();
+            if (selected != null && selected.getServerCluster() instanceof CraftingCPUCluster && !getWorld().isRemote) {
+                ((CraftingCPUCluster) selected.getServerCluster()).setRequester((EntityPlayerMP) this.getInventoryPlayer().player);
+            }
             final ICraftingLink g = cc.submitJob(
                     this.result,
                     null,

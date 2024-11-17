@@ -13,6 +13,7 @@
 
 package appeng.api.implementations.tiles;
 
+import appeng.me.cluster.implementations.CraftingCPUCluster;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -30,6 +31,11 @@ public interface ICraftingMachine {
      */
     boolean pushPattern(ICraftingPatternDetails patternDetails, InventoryCrafting table,
             ForgeDirection ejectionDirection);
+
+    default boolean pushPatternWithCluster(ICraftingPatternDetails patternDetails, InventoryCrafting table,
+                                   ForgeDirection ejectionDirection, CraftingCPUCluster cluster) {
+        return pushPattern(patternDetails, table, ejectionDirection);
+    }
 
     /**
      * check if the crafting machine is accepting pushes via pushPattern, if this is false, all calls to push will fail,

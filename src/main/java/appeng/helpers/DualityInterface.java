@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import appeng.me.cluster.implementations.CraftingCPUCluster;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
@@ -885,6 +886,14 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         return isEmpty;
     }
 
+    private CraftingCPUCluster cluster;
+
+    @Override
+    public boolean pushPatternWithCluster(ICraftingPatternDetails patternDetails, InventoryCrafting table, CraftingCPUCluster cluster) {
+        this.cluster = cluster;
+        return pushPattern(patternDetails, table);
+    }
+
     @Override
     public boolean pushPattern(final ICraftingPatternDetails patternDetails, final InventoryCrafting table) {
         if (this.hasItemsToSend() || !this.gridProxy.isActive() || !this.craftingList.contains(patternDetails)) {
@@ -909,7 +918,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
             if (te instanceof ICraftingMachine cm) {
                 if (cm.acceptsPlans()) {
-                    if (cm.pushPattern(patternDetails, table, s.getOpposite())) {
+                    if (cm.pushPatternWithCluster(patternDetails, table, s.getOpposite(), cluster)) {
                         if (this.isSmartBlocking()) {
                             this.lastInputHash = patternDetails.hashCode();
                         }

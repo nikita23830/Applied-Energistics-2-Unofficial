@@ -14,6 +14,7 @@ import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
+import appeng.api.util.IVirtualItem;
 import appeng.core.AELog;
 import appeng.core.localization.GuiText;
 import appeng.crafting.v2.resolvers.CraftingTask;
@@ -269,10 +270,18 @@ public class CraftingRequest<StackType extends IAEStack<StackType>> implements I
             throw new IllegalArgumentException(
                     "Can't fulfill crafting request with too many of " + input + " : " + this);
         }
-        this.untransformedByteCost += input.getStackSize();
+        if (input instanceof IAEItemStack && ((IAEItemStack) input).getItem() instanceof IVirtualItem)
+            this.untransformedByteCost += pentaUpdate$ceilingDivision(input.getStackSize(), ((IVirtualItem) ((IAEItemStack) input).getItem()).getDivision());
+        else
+            this.untransformedByteCost += input.getStackSize();
         this.byteCost = CraftingCalculations.adjustByteCost(this, untransformedByteCost);
         this.remainingToProcess -= input.getStackSize();
         this.usedResolvers.add(new UsedResolverEntry(this, origin, input.copy()));
+    }
+
+    private long pentaUpdate$ceilingDivision(long a, long b) {
+        double x = (double) a / (double) b;
+        return x > (long) x ? (long) x + 1 : (long) x;
     }
 
     /**

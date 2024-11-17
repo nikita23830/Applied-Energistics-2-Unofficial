@@ -16,9 +16,12 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -71,6 +74,13 @@ public class TileCraftingTile extends AENetworkTile implements IAEMultiBlock, IP
 
     @Override
     protected ItemStack getItemFromTile(final Object obj) {
+        if (this.worldObj == null) {
+//            if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
+//                MinecraftServer.getServer().worldServerForDimension(0).removeTileEntity(xCoord, yCoord, zCoord);
+//                MinecraftServer.getServer().worldServerForDimension(0).setBlockToAir(xCoord, yCoord, zCoord);
+//            }
+            return null;
+        }
         if (((TileCraftingTile) obj).isAccelerator()) {
             if (((TileCraftingTile) obj).getBlockType() instanceof BlockAdvancedCraftingUnit) {
                 for (final ItemStack accelerator : AEApi.instance().definitions().blocks().craftingAccelerator64x()

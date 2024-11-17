@@ -1,5 +1,6 @@
 package appeng.crafting.v2;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -133,14 +134,36 @@ public class CraftingCalculations {
 
     private static final class InternalMultiMap<K, V> extends Object2ObjectArrayMap<K, V[]> {
 
-        public Object[] keysArray() {
-            return this.key;
+        private static final Field KEY_FIELD;
+        private static final Field VALUE_FIELD;
+
+        static {
+            try {
+                KEY_FIELD = Object2ObjectArrayMap.class.getDeclaredField("key");
+                KEY_FIELD.setAccessible(true);
+                VALUE_FIELD = Object2ObjectArrayMap.class.getDeclaredField("value");
+                VALUE_FIELD.setAccessible(true);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException("Unable to access key or value field", e);
+            }
         }
 
+        public Object[] keysArray() {
+            try {
+                return (Object[]) KEY_FIELD.get(this);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Unable to access keys array", e);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
         public V[] valuesArrayAt(int index) {
-            // NOTE: Returning a V[] is only safe because registerProvider and registerByteAmountAdjuster create typed
-            // arrays when inserting values
-            return (V[]) this.value[index];
+            try {
+                Object[] values = (Object[]) VALUE_FIELD.get(this);
+                return (V[]) values[index];
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Unable to access values array", e);
+            }
         }
 
         @Override

@@ -28,10 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
+import appeng.api.events.EventFinishCraft;
+import appeng.api.implementations.tiles.ICraftingMachine;
+import appeng.api.util.IVirtualItem;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.InventoryCrafting;
@@ -50,6 +55,8 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import com.google.common.collect.ImmutableList;
@@ -111,6 +118,8 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 
+import javax.annotation.Nullable;
+
 public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
     private static final String LOG_MARK_AS_COMPLETE = "Completed job for %s.";
@@ -168,8 +177,12 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         EntityPlayer player = getPlayerByName(playerName);
                         if (player != null) {
                             // Send message to player
-                            player.addChatMessage(messageToSend);
-                            player.worldObj.playSoundAtEntity(player, "random.levelup", 1f, 1f);
+                            EventFinishCraft craft = new EventFinishCraft(player, finalOutput);
+                            MinecraftForge.EVENT_BUS.post(craft);
+                            if (!craft.isCanceled()) {
+                                player.addChatMessage(messageToSend);
+                                player.worldObj.playSoundAtEntity(player, "random.levelup", 1f, 1f);
+                            }
                         } else {
                             this.unreadNotifications.computeIfAbsent(playerName, name -> new ArrayList<>())
                                     .add(notification);
@@ -183,9 +196,32 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private final List<CraftCancelListener> craftCancelListeners = new ArrayList<>();
     private final List<String> playersFollowingCurrentCraft = new ArrayList<>();
 
+    private FakePlayer requester;
+    private String requester_name = null;
+    private UUID requester_uuid = null;
+
     public CraftingCPUCluster(final WorldCoord min, final WorldCoord max) {
         this.min = min;
         this.max = max;
+    }
+
+    public FakePlayer getRequester() {
+        if (getWorld() != null && requester == null && requester_name != null && requester_uuid != null) {
+            requester = new FakePlayer((WorldServer) getWorld(), new GameProfile(requester_uuid, requester_name));
+        }
+        return requester;
+    }
+
+    public void setRequester(@Nullable EntityPlayerMP player) {
+        if (player == null) {
+            requester = null;
+        } else
+            requester = new FakePlayer((WorldServer) player.worldObj, new GameProfile(player.getUniqueID(), player.getCommandSenderName()));
+    }
+
+    public boolean isActiveTask(IAEItemStack machine) {
+        IAEItemStack st = waitingFor.findPrecise(machine);
+        return st == null || st.getStackSize() > 0;
     }
 
     @SubscribeEvent
@@ -266,6 +302,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         if (this.isDestroyed) {
             return;
         }
+        setRequester(null);
         this.isDestroyed = true;
 
         FMLCommonHandler.instance().bus().unregister(this);
@@ -326,6 +363,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         }
         return false;
     }
+
+    InventoryCrafting simpleNull = new InventoryCrafting(new ContainerNull(), 3, 3);
 
     public IAEStack injectItems(final IAEStack input, final Actionable type, final BaseActionSource src) {
         if (!(input instanceof IAEItemStack)) {
@@ -390,6 +429,13 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
                         if (this.myLastLink != null) {
                             leftover = ((CraftingLink) this.myLastLink).injectItems(what, type);
+                        }
+
+                        if (getRequester() != null) {
+                            FMLCommonHandler.instance().firePlayerCraftingEvent(
+                                    getRequester(),
+                                    what.getItemStack(),
+                                    simpleNull);
                         }
 
                         if (this.finalOutput.getStackSize() <= 0) {
@@ -509,6 +555,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.craftCancelListeners.clear(); // complete listener will clean external state
                                            // so cancel listener is not called here.
         this.craftUpdateListeners.clear();
+
+        setRequester(null);
     }
 
     private EntityPlayerMP getPlayerByName(String playerName) {
@@ -637,6 +685,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.craftCancelListeners.clear();
         this.craftUpdateListeners.clear();
         this.storeItems(); // marks dirty
+        setRequester(null);
     }
 
     public void updateCraftingLogic(final IGrid grid, final IEnergyGrid eg, final CraftingGridCache cc) {
@@ -745,7 +794,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         if (input[x] != null) {
                             found = false;
                             for (IAEItemStack ias : getExtractItems(input[x], details)) {
-                                if (details.isCraftable()
+                                if ((details.isCraftable() || (ias != null && ias.getItem() instanceof IVirtualItem))
                                         && !details.isValidItemForSlot(x, ias.getItemStack(), this.getWorld())) {
                                     continue;
                                 }
@@ -782,7 +831,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
                 }
 
-                if (m.pushPattern(details, ic)) {
+                if (m.pushPatternWithCluster(details, ic, this)) {
                     eg.extractAEPower(sum, Actionable.MODULATE, PowerMultiplier.CONFIG);
                     this.somethingChanged = true;
                     this.remainingOperations--;
@@ -1295,6 +1344,13 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             list.appendTag(tmp);
         }
         data.setTag("providers", list);
+
+        if (getRequester() != null) {
+            NBTTagCompound reqData = new NBTTagCompound();
+            reqData.setString("name", requester.getCommandSenderName());
+            reqData.setString("uuid", requester.getUniqueID().toString());
+            data.setTag("requester", reqData);
+        }
     }
 
     private NBTTagCompound writeItem(final IAEItemStack finalOutput2) {
@@ -1429,6 +1485,12 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     this.unreadNotifications.put(playerName, notifications);
                 }
             }
+        }
+
+        if (data.hasKey("requester")) {
+            NBTTagCompound reqData = data.getCompoundTag("requester");
+            requester_name = reqData.getString("name");
+            requester_uuid = UUID.fromString(reqData.getString("uuid"));
         }
     }
 
