@@ -93,6 +93,7 @@ import appeng.api.util.DimensionalCoord;
 import appeng.api.util.IInterfaceViewable;
 import appeng.api.util.WorldCoord;
 import appeng.container.ContainerNull;
+import appeng.container.implementations.ContainerCraftingCPU;
 import appeng.core.AELog;
 import appeng.core.localization.GuiText;
 import appeng.core.localization.PlayerMessages;
@@ -1571,6 +1572,13 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             this.playersFollowingCurrentCraft.remove(name);
         } else {
             this.playersFollowingCurrentCraft.add(name);
+        }
+
+        final Iterator<Entry<IMEMonitorHandlerReceiver<IAEItemStack>, Object>> i = this.getListeners();
+        while (i.hasNext()) {
+            if (i.next().getKey() instanceof ContainerCraftingCPU cccpu) {
+                cccpu.sendUpdateFollowPacket(playersFollowingCurrentCraft);
+            }
         }
     }
 
