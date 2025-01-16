@@ -33,6 +33,7 @@ public enum Upgrades {
     CRAFTING(0),
     PATTERN_REFILLER(0),
     STICKY(0),
+    VOID_OVERFLOW(0),
     /**
      * Diamond Tier Upgrades.
      */
@@ -45,7 +46,8 @@ public enum Upgrades {
     ADVANCED_BLOCKING(1),
     LOCK_CRAFTING(1),
     FAKE_CRAFTING(1),
-    SUPERLUMINALSPEED(1);
+    SUPERLUMINALSPEED(1),
+    DISTRIBUTION(1);
 
     /**
      * @deprecated use {@link Upgrades#getTier()}

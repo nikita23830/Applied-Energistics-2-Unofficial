@@ -78,6 +78,8 @@ public final class ApiMaterials implements IMaterials {
     private final IItemDefinition cardAdvancedBlocking;
     private final IItemDefinition cardLockCrafting;
     private final IItemDefinition cardFakeCrafting;
+    private final IItemDefinition cardVoidOverflow;
+    private final IItemDefinition cardDistribution;
     private final IItemDefinition enderDust;
     private final IItemDefinition flour;
     private final IItemDefinition goldDust;
@@ -187,6 +189,10 @@ public final class ApiMaterials implements IMaterials {
                 itemMultiMaterial.createMaterial(MaterialType.CardLockCrafting));
         this.cardFakeCrafting = new DamagedItemDefinition(
                 itemMultiMaterial.createMaterial(MaterialType.CardFakeCrafting));
+        this.cardVoidOverflow = new DamagedItemDefinition(
+                itemMultiMaterial.createMaterial(MaterialType.CardVoidOverflow));
+        this.cardDistribution = new DamagedItemDefinition(
+                itemMultiMaterial.createMaterial(MaterialType.CardDistribution));
 
         this.enderDust = new DamagedItemDefinition(itemMultiMaterial.createMaterial(MaterialType.EnderDust));
         this.flour = new DamagedItemDefinition(itemMultiMaterial.createMaterial(MaterialType.Flour));
@@ -561,5 +567,15 @@ public final class ApiMaterials implements IMaterials {
     @Override
     public IItemDefinition cardSuperluminalSpeed() {
         return this.cardSuperluminalSpeed;
+    }
+
+    @Override
+    public IItemDefinition cardVoidOverflow() {
+        return this.cardVoidOverflow;
+    }
+
+    @Override
+    public IItemDefinition cardDistribution() {
+        return this.cardDistribution;
     }
 }

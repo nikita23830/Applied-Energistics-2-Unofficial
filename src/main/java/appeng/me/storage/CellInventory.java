@@ -25,8 +25,10 @@ import net.minecraftforge.oredict.OreDictionary;
 import appeng.api.AEApi;
 import appeng.api.config.Actionable;
 import appeng.api.config.FuzzyMode;
+import appeng.api.config.Upgrades;
 import appeng.api.exceptions.AppEngException;
 import appeng.api.implementations.items.IStorageCell;
+import appeng.api.implementations.items.IUpgradeModule;
 import appeng.api.networking.security.BaseActionSource;
 import appeng.api.storage.ICellInventory;
 import appeng.api.storage.IMEInventory;
@@ -57,6 +59,8 @@ public class CellInventory implements ICellInventory {
     private IItemList<IAEItemStack> cellItems;
     private final ItemStack cellItem;
     private IStorageCell cellType;
+    private boolean cardVoidOverflow = false;
+    private boolean cardDistribution = false;
 
     private CellInventory(final ItemStack o, final ISaveProvider container) throws AppEngException {
         if (itemSlots == null) {
@@ -96,6 +100,21 @@ public class CellInventory implements ICellInventory {
         }
         if (this.maxItemTypes < 1) {
             this.maxItemTypes = 1;
+        }
+
+        final IInventory upgrades = this.getUpgradesInventory();
+        for (int x = 0; x < upgrades.getSizeInventory(); x++) {
+            final ItemStack is = upgrades.getStackInSlot(x);
+            if (is != null && is.getItem() instanceof IUpgradeModule) {
+                final Upgrades u = ((IUpgradeModule) is.getItem()).getType(is);
+                if (u != null) {
+                    switch (u) {
+                        case VOID_OVERFLOW -> cardVoidOverflow = true;
+                        case DISTRIBUTION -> cardDistribution = true;
+                        default -> {}
+                    }
+                }
+            }
         }
 
         this.container = container;
@@ -196,9 +215,17 @@ public class CellInventory implements ICellInventory {
         final IAEItemStack l = this.getCellItems().findPrecise(input);
 
         if (l != null) {
-            final long remainingItemSlots = this.getRemainingItemCount();
+            long remainingItemSlots;
+            if (cardDistribution) {
+                remainingItemSlots = this.getRemainingItemsCountDist(l);
+            } else {
+                remainingItemSlots = this.getRemainingItemCount();
+            }
 
-            if (remainingItemSlots < 0) {
+            if (remainingItemSlots <= 0) {
+                if (cardVoidOverflow) {
+                    return null;
+                }
                 return input;
             }
 
@@ -226,7 +253,12 @@ public class CellInventory implements ICellInventory {
 
         if (this.canHoldNewItem()) // room for new type, and for at least one item!
         {
-            final long remainingItemCount = this.getRemainingItemCount() - this.getBytesPerType() * 8L;
+            long remainingItemCount;
+            if (cardDistribution) {
+                remainingItemCount = this.getRemainingItemsCountDist(null);
+            } else {
+                remainingItemCount = this.getRemainingItemCount() - this.getBytesPerType() * 8L;
+            }
 
             if (remainingItemCount > 0) {
                 if (input.getStackSize() > remainingItemCount) {
@@ -518,6 +550,25 @@ public class CellInventory implements ICellInventory {
         final long baseOnTotal = this.getTotalItemTypes() - this.getStoredItemTypes();
 
         return basedOnStorage > baseOnTotal ? baseOnTotal : basedOnStorage;
+    }
+
+    @Override
+    public long getRemainingItemsCountDist(IAEItemStack l) {
+        long remaining;
+        long types = 0;
+        for (int i = 0; i < this.getTotalItemTypes(); i++) {
+            if (this.getConfigInventory().getStackInSlot(i) != null) {
+                types++;
+            }
+        }
+        if (types == 0) types = this.getTotalItemTypes();
+        if (l != null) {
+            remaining = (((this.getTotalBytes() / types) - (int) Math.ceil((double) l.getStackSize() / 8)
+                    - getBytesPerType()) * 8) + (8 - l.getStackSize() % 8);
+        } else {
+            remaining = ((this.getTotalBytes() / types) - this.getBytesPerType()) * 8L;
+        }
+        return remaining > 0 ? remaining : 0;
     }
 
     @Override

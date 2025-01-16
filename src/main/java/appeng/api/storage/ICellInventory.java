@@ -97,6 +97,11 @@ public interface ICellInventory extends IMEInventory<IAEItemStack> {
     long getRemainingItemCount();
 
     /**
+     * @return how many more items can be stored with Distribution card.
+     */
+    long getRemainingItemsCountDist(IAEItemStack l);
+
+    /**
      * @return how many items can be added without consuming another byte.
      */
     int getUnusedItemCount();
