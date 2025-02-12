@@ -129,23 +129,23 @@ public abstract class GuiAmount extends AEBaseGui {
                 || btn == this.minus1000;
 
         if (isPlus || isMinus) {
-            int resultI = addOrderAmount(this.getQty(btn));
-            this.amountTextField.setText(Integer.toString(resultI));
+            long resultI = addOrderAmount(this.getQty(btn));
+            this.amountTextField.setText(Long.toString(resultI));
         }
     }
 
-    protected int addOrderAmount(final int i) {
-        int resultI = getAmount();
+    protected long addOrderAmount(final int i) {
+        long resultL = getAmountLong();
 
-        if (resultI == 1 && i > 1) {
-            resultI = 0;
+        if (resultL == 1 && i > 1) {
+            resultL = 0;
         }
 
-        resultI += i;
-        if (resultI < 1) {
-            resultI = 1;
+        resultL += i;
+        if (resultL < 1) {
+            resultL = 1;
         }
-        return resultI;
+        return resultL;
     }
 
     protected int getAmount() {
@@ -156,6 +156,17 @@ public abstract class GuiAmount extends AEBaseGui {
             return 0;
         } else {
             return (int) ArithHelper.round(resultD, 0);
+        }
+    }
+
+    protected long getAmountLong() {
+        String out = this.amountTextField.getText();
+        double resultD = Calculator.conversion(out);
+
+        if (resultD <= 0 || Double.isNaN(resultD)) {
+            return 0;
+        } else {
+            return (long) ArithHelper.round(resultD, 0);
         }
     }
 

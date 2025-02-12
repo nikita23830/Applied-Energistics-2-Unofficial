@@ -169,6 +169,7 @@ public enum GuiText {
     Simulation,
     Missing,
     CraftingStepLimitExceeded,
+    CraftingSizeLimitExceeded,
     NoCraftingTreeReceived,
     RequestedItem,
     SimulationIncomplete,

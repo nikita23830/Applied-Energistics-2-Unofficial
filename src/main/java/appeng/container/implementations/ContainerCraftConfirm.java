@@ -270,6 +270,7 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
     }
 
     public boolean cpuMatches(final CraftingCPUStatus c) {
+        if (this.getUsedBytes() <= 0) return false;
         if (c.isBusy() && this.cpuCraftingSameItem(c)) {
             return c.getStorage() >= this.getUsedBytes() + c.getUsedStorage();
         }

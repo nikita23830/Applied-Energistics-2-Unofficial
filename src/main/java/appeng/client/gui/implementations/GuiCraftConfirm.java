@@ -403,7 +403,9 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
         final String byteUsed = Platform.formatByteDouble(BytesUsed);
         final String bannerText;
         if (jobTree != null && !jobTree.getErrorMessage().isEmpty()) {
-            bannerText = StatCollector.translateToLocal(jobTree.getErrorMessage());
+            if (jobTree.getErrorMessage().equals("java.lang.ArithmeticException: long overflow")) {
+                bannerText = GuiText.CraftingSizeLimitExceeded.getLocal();
+            } else bannerText = StatCollector.translateToLocal(jobTree.getErrorMessage());
         } else if (BytesUsed > 0) {
             bannerText = byteUsed;
         } else {
