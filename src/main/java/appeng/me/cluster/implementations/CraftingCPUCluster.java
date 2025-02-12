@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
@@ -121,8 +123,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private final WorldCoord min;
     private final WorldCoord max;
     private final int[] usedOps = new int[3];
-    private final Map<ICraftingPatternDetails, TaskProgress> tasks = new HashMap<>();
-    private Map<ICraftingPatternDetails, TaskProgress> workableTasks = new HashMap<>();
+    private final Comparator<ICraftingPatternDetails> priorityComparator = Comparator
+            .comparing(ICraftingPatternDetails::getPriority).thenComparing(ICraftingPatternDetails::hashCode);
+    private final Map<ICraftingPatternDetails, TaskProgress> tasks = new TreeMap<>(priorityComparator);
+    private Map<ICraftingPatternDetails, TaskProgress> workableTasks = new TreeMap<>(priorityComparator);
     private HashSet<ICraftingMedium> knownBusyMediums = new HashSet<>();
     // INSTANCE sate
     private final LinkedList<TileCraftingTile> tiles = new LinkedList<>();
@@ -682,7 +686,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         final int started = this.remainingOperations;
 
         // Shallow copy tasks so we may remove them after visiting
-        this.workableTasks = new HashMap<>(this.tasks);
+        this.workableTasks.clear();
+        this.workableTasks.putAll(this.tasks);
         this.knownBusyMediums.clear();
         if (this.remainingOperations > 0) {
             do {
@@ -694,7 +699,6 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.usedOps[1] = this.usedOps[0];
         this.usedOps[0] = started - this.remainingOperations;
 
-        this.workableTasks.clear();
         this.knownBusyMediums.clear();
 
         if (this.remainingOperations > 0 && !this.somethingChanged) {
