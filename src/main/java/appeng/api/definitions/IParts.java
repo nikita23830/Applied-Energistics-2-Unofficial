@@ -102,6 +102,8 @@ public interface IParts {
 
     IItemDefinition storageMonitor();
 
+    IItemDefinition throughputMonitor();
+
     IItemDefinition conversionMonitor();
 
     IItemDefinition patternTerminalEx();

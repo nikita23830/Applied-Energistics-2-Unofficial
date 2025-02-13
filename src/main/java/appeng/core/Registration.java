@@ -361,6 +361,7 @@ public final class Registration {
         target.partCraftingTerminal = this.converter.of(source.craftingTerminal());
         target.partTerminal = this.converter.of(source.terminal());
         target.partStorageMonitor = this.converter.of(source.storageMonitor());
+        target.partThroughputMonitor = this.converter.of(source.throughputMonitor());
         target.partConversionMonitor = this.converter.of(source.conversionMonitor());
     }
 

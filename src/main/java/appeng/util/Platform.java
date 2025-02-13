@@ -160,9 +160,9 @@ public class Platform {
             UUID.fromString("839eb18c-50bc-400c-8291-9383f09763e7"),
             "[AE2Player]");
     private static final String[] BYTE_UNIT = { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB", "BB" };
-    private static final String[] NUM_UNIT = { "K", "M", "B", "T" };
+    private static final char[] NUM_UNIT = "kMGTPE".toCharArray();
     private static final double[] BYTE_LIMIT;
-    private static final long[] NUM_LIMIT = { 1_000, 1_000_000, 1_000_000_000, 1_000_000_000_000l };
+    private static final int DIVISION_BASE = 1000;
     private static final DecimalFormat df = new DecimalFormat("#.##");
 
     static {
@@ -1887,15 +1887,51 @@ public class Platform {
         return (n / BYTE_LIMIT[0]) + " " + BYTE_UNIT[0];
     }
 
-    public static String formatNumberLong(final long n) {
-        if (n > 1_000) {
-            for (int i = 1; i < NUM_LIMIT.length; i++) {
-                if (n < NUM_LIMIT[i]) {
-                    return String.valueOf(n / NUM_LIMIT[i - 1]) + " " + NUM_UNIT[i - 1];
-                }
-            }
+    /**
+     * From large double to num with unit
+     * 
+     * @param n number wait to format
+     * @return String
+     */
+    public static String formatNumberDouble(final double n) {
+        return formatNumberDoubleRestrictedByWidth(n, 3);
+    }
+
+    /**
+     * From large double to num with unit
+     * 
+     * @param n number wait to format
+     * @return String
+     */
+    public static String formatNumberDoubleRestrictedByWidth(final double n, final int width) {
+        final String numberString = df.format(n);
+        int numberSize = numberString.length();
+        if (numberSize <= width) {
+            return numberString;
         }
 
-        return String.valueOf(n);
+        double base = n;
+        double last = base * 1000;
+        int exponent = -1;
+        String postFix = "";
+
+        while (base >= 1000) {
+            last = base;
+            base /= DIVISION_BASE;
+
+            // adds +1 due to the postfix
+            exponent++;
+            postFix = String.valueOf(NUM_UNIT[exponent]);
+        }
+
+        final String withPrecision = df.format(last / DIVISION_BASE);
+        final String withoutPrecision = Long.toString((long) base);
+
+        final String slimResult = (withPrecision.length() <= width) ? withPrecision : withoutPrecision;
+
+        // post condition
+        assert slimResult.length() <= width;
+
+        return slimResult + postFix;
     }
 }

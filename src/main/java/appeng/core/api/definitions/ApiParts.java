@@ -68,6 +68,7 @@ public final class ApiParts implements IParts {
     private final IItemDefinition terminal;
     private final IItemDefinition storageMonitor;
     private final IItemDefinition conversionMonitor;
+    private final IItemDefinition throughputMonitor;
 
     public ApiParts(final DefinitionConstructor constructor, final IPartHelper partHelper) {
         final ItemMultiPart itemMultiPart = new ItemMultiPart(partHelper);
@@ -119,6 +120,7 @@ public final class ApiParts implements IParts {
         this.terminal = new DamagedItemDefinition(itemMultiPart.createPart(PartType.Terminal));
         this.storageMonitor = new DamagedItemDefinition(itemMultiPart.createPart(PartType.StorageMonitor));
         this.conversionMonitor = new DamagedItemDefinition(itemMultiPart.createPart(PartType.ConversionMonitor));
+        this.throughputMonitor = new DamagedItemDefinition(itemMultiPart.createPart(PartType.ThroughputMonitor));
     }
 
     @Override
@@ -343,5 +345,10 @@ public final class ApiParts implements IParts {
     @Override
     public IItemDefinition conversionMonitor() {
         return this.conversionMonitor;
+    }
+
+    @Override
+    public IItemDefinition throughputMonitor() {
+        return this.throughputMonitor;
     }
 }

@@ -71,6 +71,7 @@ public enum AEFeature {
     ExportBus(Constants.CATEGORY_NETWORK_BUSES),
     StorageBus(Constants.CATEGORY_NETWORK_BUSES),
     PartConversionMonitor(Constants.CATEGORY_NETWORK_BUSES),
+    PartThroughputMonitor(Constants.CATEGORY_NETWORK_BUSES),
 
     PortableCell(Constants.CATEGORY_PORTABLE_CELL),
 

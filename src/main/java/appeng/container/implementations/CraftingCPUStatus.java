@@ -14,8 +14,10 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.util.IWideReadableNumberConverter;
 import appeng.util.ItemSorters;
 import appeng.util.Platform;
+import appeng.util.ReadableNumberConverter;
 import appeng.util.item.AEItemStack;
 import io.netty.buffer.ByteBuf;
 
@@ -23,6 +25,8 @@ import io.netty.buffer.ByteBuf;
  * Summary status for the crafting CPU selection widget
  */
 public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
+
+    private static final IWideReadableNumberConverter NUMBER_CONVERTER = ReadableNumberConverter.INSTANCE;
 
     @Nullable
     private final ICraftingCPU serverCluster;
@@ -183,7 +187,8 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
     }
 
     public String formatShorterCoprocessors() {
-        return Platform.formatNumberLong(getCoprocessors());
+        return NUMBER_CONVERTER.toWideReadableForm(getCoprocessors());
+        // return Platform.formatNumberLong(getCoprocessors());
     }
 
     public String formatStorage() {

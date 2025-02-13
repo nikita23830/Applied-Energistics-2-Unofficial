@@ -695,6 +695,7 @@ item.appliedenergistics2.ItemPart.CableDense.name=ME致密智能线缆
 item.appliedenergistics2.ItemPart.CableDenseCovered.name=ME致密包层线缆
 item.appliedenergistics2.ItemPart.StorageMonitor.name=ME存储监控器
 item.appliedenergistics2.ItemPart.ConversionMonitor.name=ME交换监控器
+item.appliedenergistics2.ItemPart.ThroughputMonitor.name=ME吞吐量监控器
 item.appliedenergistics2.ItemPart.SemiDarkMonitor.name=照明面板
 item.appliedenergistics2.ItemPart.Monitor.name=亮色照明面板
 item.appliedenergistics2.ItemPart.DarkMonitor.name=暗色照明面板

@@ -54,6 +54,7 @@ import appeng.client.me.InternalSlotME;
 import appeng.client.me.SlotME;
 import appeng.container.guisync.GuiSync;
 import appeng.container.guisync.SyncData;
+import appeng.container.implementations.ContainerCellWorkbench;
 import appeng.container.implementations.ContainerUpgradeable;
 import appeng.container.slot.AppEngSlot;
 import appeng.container.slot.SlotCraftingMatrix;
@@ -72,7 +73,7 @@ import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.ICustomNameObject;
 import appeng.helpers.InventoryAction;
 import appeng.items.materials.ItemMultiMaterial;
-import appeng.parts.automation.StackUpgradeInventory;
+import appeng.parts.automation.UpgradeInventory;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
 import appeng.util.inv.AdaptorPlayerHand;
@@ -525,11 +526,15 @@ public abstract class AEBaseContainer extends Container {
                     }
 
                     // For shift click upgrade card logic
-                    if (ItemMultiMaterial.instance.getType(tis) != null && this instanceof ContainerUpgradeable) {
-                        // Check source or target
-                        if (!((d.inventory instanceof StackUpgradeInventory)
-                                || (clickSlot.inventory instanceof StackUpgradeInventory))) {
-                            continue;
+                    if (ItemMultiMaterial.instance.getType(tis) != null) {
+                        // Check now container is upgradeable or it's subclass
+                        if (ContainerUpgradeable.class.isAssignableFrom(this.getClass())) {
+                            // Check source or target
+                            if (!((d.inventory instanceof UpgradeInventory)
+                                    || (clickSlot.inventory instanceof UpgradeInventory)
+                                    || (d.inventory instanceof ContainerCellWorkbench.Upgrades))) {
+                                continue;
+                            }
                         }
                     }
 

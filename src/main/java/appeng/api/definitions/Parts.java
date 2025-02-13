@@ -98,5 +98,7 @@ public class Parts {
 
     public AEItemDefinition partStorageMonitor;
 
+    public AEItemDefinition partThroughputMonitor;
+
     public AEItemDefinition partConversionMonitor;
 }

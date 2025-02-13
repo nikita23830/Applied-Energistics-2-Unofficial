@@ -248,7 +248,7 @@ public class ContainerCellWorkbench extends ContainerUpgradeable {
         this.copyMode = copyMode;
     }
 
-    private class Upgrades implements IInventory {
+    public class Upgrades implements IInventory {
 
         @Override
         public int getSizeInventory() {

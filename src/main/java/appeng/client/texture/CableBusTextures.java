@@ -57,6 +57,11 @@ public enum CableBusTextures {
     PartConversionMonitor_Dark("PartConversionMonitor_Dark"),
     PartConversionMonitor_Dark_Locked("PartConversionMonitor_Dark_Locked"),
 
+    PartThroughputMonitor_Bright("PartThroughputMonitor_Bright"),
+    PartThroughputMonitor_Colored("PartThroughputMonitor_Colored"),
+    PartThroughputMonitor_Dark("PartThroughputMonitor_Dark"),
+    PartThroughputMonitor_Dark_Locked("PartThroughputMonitor_Dark_Locked"),
+
     PartInterfaceTerm_Bright("PartInterfaceTerm_Bright"),
     PartInterfaceTerm_Colored("PartInterfaceTerm_Colored"),
     PartInterfaceTerm_Dark("PartInterfaceTerm_Dark"),

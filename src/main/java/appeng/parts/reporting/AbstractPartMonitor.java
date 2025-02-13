@@ -316,6 +316,12 @@ public abstract class AbstractPartMonitor extends AbstractPartDisplay
             GL11.glEnable(GL12.GL_RESCALE_NORMAL);
         }
 
+        this.tesrRenderItemNumber(ais);
+
+        // GL11.glPopAttrib();
+    }
+
+    public void tesrRenderItemNumber(final IAEItemStack ais) {
         GL11.glTranslatef(0.0f, 0.14f, -0.24f);
         GL11.glScalef(1.0f / 62.0f, 1.0f / 62.0f, 1.0f / 62.0f);
 
@@ -326,8 +332,6 @@ public abstract class AbstractPartMonitor extends AbstractPartDisplay
         final int width = fr.getStringWidth(renderedStackSize);
         GL11.glTranslatef(-0.5f * width, 0.0f, -1.0f);
         fr.drawString(renderedStackSize, 0, 0, 0);
-
-        // GL11.glPopAttrib();
     }
 
     @Override

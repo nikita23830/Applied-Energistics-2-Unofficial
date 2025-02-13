@@ -59,6 +59,7 @@ import appeng.parts.reporting.PartPatternTerminalEx;
 import appeng.parts.reporting.PartSemiDarkPanel;
 import appeng.parts.reporting.PartStorageMonitor;
 import appeng.parts.reporting.PartTerminal;
+import appeng.parts.reporting.PartThroughputMonitor;
 
 public enum PartType {
 
@@ -148,6 +149,9 @@ public enum PartType {
 
     StorageMonitor(400, EnumSet.of(AEFeature.StorageMonitor), EnumSet.noneOf(IntegrationType.class),
             PartStorageMonitor.class),
+
+    ThroughputMonitor(410, EnumSet.of(AEFeature.PartThroughputMonitor), EnumSet.noneOf(IntegrationType.class),
+            PartThroughputMonitor.class),
 
     ConversionMonitor(420, EnumSet.of(AEFeature.PartConversionMonitor), EnumSet.noneOf(IntegrationType.class),
             PartConversionMonitor.class),
