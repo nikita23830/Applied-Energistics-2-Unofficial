@@ -1698,35 +1698,35 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             return this.remainingOperations;
         }
     }
+
+    public void tryExtractItems() {
+        if (this.waitingForMissing.isEmpty()) return;
+        if (countToTryExtractItems > 1200) {
+            countToTryExtractItems = 0;
+            for (IAEItemStack waitingForItem : this.waitingForMissing) {
+                final IGrid grid = this.getGrid();
+                if (grid != null) {
+                    final IStorageGrid pg = grid.getCache(IStorageGrid.class);
+                    if (pg != null) {
+                        IAEItemStack extractedItems = pg.getItemInventory()
+                                .extractItems(waitingForItem, Actionable.MODULATE, this.machineSrc);
+                        if (extractedItems != null) {
+                            IAEStack notInjected = injectItems(extractedItems, Actionable.MODULATE, this.machineSrc);
+                            if (notInjected != null) { // not sure if this even need, but still
+                                AELog.logSimple(Level.INFO, "MISSING MODE OVERFLOW! TELL DEVS ASAP!");
+                                pg.getItemInventory()
+                                        .injectItems((IAEItemStack) notInjected, Actionable.MODULATE, this.machineSrc);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            countToTryExtractItems++;
+        }
+    }
   
     private static class TaskProgress {
-        public void tryExtractItems() {
-          if (this.waitingForMissing.isEmpty()) return;
-          if (countToTryExtractItems > 1200) {
-              countToTryExtractItems = 0;
-              for (IAEItemStack waitingForItem : this.waitingForMissing) {
-                  final IGrid grid = this.getGrid();
-                  if (grid != null) {
-                      final IStorageGrid pg = grid.getCache(IStorageGrid.class);
-                      if (pg != null) {
-                          IAEItemStack extractedItems = pg.getItemInventory()
-                                  .extractItems(waitingForItem, Actionable.MODULATE, this.machineSrc);
-                          if (extractedItems != null) {
-                              IAEStack notInjected = injectItems(extractedItems, Actionable.MODULATE, this.machineSrc);
-                              if (notInjected != null) { // not sure if this even need, but still
-                                  AELog.logSimple(Level.INFO, "MISSING MODE OVERFLOW! TELL DEVS ASAP!");
-                                  pg.getItemInventory()
-                                          .injectItems((IAEItemStack) notInjected, Actionable.MODULATE, this.machineSrc);
-                              }
-                          }
-                      }
-                  }
-              }
-          } else {
-              countToTryExtractItems++;
-          }
-      } 
-
       private long value;
     }
 
