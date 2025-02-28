@@ -33,11 +33,10 @@ import appeng.parts.misc.PartToggleBus;
 import appeng.parts.networking.PartCableCovered;
 import appeng.parts.networking.PartCableGlass;
 import appeng.parts.networking.PartCableSmart;
+import appeng.parts.networking.PartCreativeEnergy;
 import appeng.parts.networking.PartDenseCable;
 import appeng.parts.networking.PartDenseCableCovered;
 import appeng.parts.networking.PartQuartzFiber;
-import appeng.parts.networking.PartUltraDenseCableCovered;
-import appeng.parts.networking.PartUltraDenseCableSmart;
 import appeng.parts.p2p.PartP2PGT5Power;
 import appeng.parts.p2p.PartP2PIC2Power;
 import appeng.parts.p2p.PartP2PInterface;
@@ -60,6 +59,7 @@ import appeng.parts.reporting.PartPatternTerminalEx;
 import appeng.parts.reporting.PartSemiDarkPanel;
 import appeng.parts.reporting.PartStorageMonitor;
 import appeng.parts.reporting.PartTerminal;
+import appeng.parts.reporting.PartThroughputMonitor;
 
 public enum PartType {
 
@@ -99,23 +99,6 @@ public enum PartType {
 
     CableDenseCovered(520, EnumSet.of(AEFeature.Core), EnumSet.noneOf(IntegrationType.class),
             PartDenseCableCovered.class) {
-
-        @Override
-        public boolean isCable() {
-            return true;
-        }
-    },
-
-    CableUltraDenseCovered(540, EnumSet.of(AEFeature.UltraDenseCables), EnumSet.noneOf(IntegrationType.class),
-            PartUltraDenseCableCovered.class) {
-
-        @Override
-        public boolean isCable() {
-            return true;
-        }
-    },
-    CableUltraDenseSmart(560, EnumSet.of(AEFeature.UltraDenseCables), EnumSet.noneOf(IntegrationType.class),
-            PartUltraDenseCableSmart.class) {
 
         @Override
         public boolean isCable() {
@@ -167,6 +150,9 @@ public enum PartType {
     StorageMonitor(400, EnumSet.of(AEFeature.StorageMonitor), EnumSet.noneOf(IntegrationType.class),
             PartStorageMonitor.class),
 
+    ThroughputMonitor(410, EnumSet.of(AEFeature.PartThroughputMonitor), EnumSet.noneOf(IntegrationType.class),
+            PartThroughputMonitor.class),
+
     ConversionMonitor(420, EnumSet.of(AEFeature.PartConversionMonitor), EnumSet.noneOf(IntegrationType.class),
             PartConversionMonitor.class),
 
@@ -212,7 +198,10 @@ public enum PartType {
             PartInterfaceTerminal.class),
 
     PatternTerminalEx(500, EnumSet.of(AEFeature.Patterns), EnumSet.noneOf(IntegrationType.class),
-            PartPatternTerminalEx.class);
+            PartPatternTerminalEx.class),
+
+    PartCreativeEnergy(690, EnumSet.of(AEFeature.Core), EnumSet.noneOf(IntegrationType.class),
+            PartCreativeEnergy.class);
 
     public final int baseDamage;
     private final Set<AEFeature> features;

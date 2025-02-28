@@ -50,7 +50,7 @@ public class PacketCraftRequest extends AppEngPacket {
         this(craftAmt, shift, CraftingMode.STANDARD);
     }
 
-    public PacketCraftRequest(final int craftAmt, final boolean shift, final CraftingMode craftingMode) {
+    public PacketCraftRequest(final long craftAmt, final boolean shift, final CraftingMode craftingMode) {
         this.amount = craftAmt;
         this.heldShift = shift;
         this.craftingMode = craftingMode;

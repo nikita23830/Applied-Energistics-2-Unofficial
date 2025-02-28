@@ -58,6 +58,7 @@ import appeng.core.features.AEFeature;
 import appeng.core.features.DefinitionConverter;
 import appeng.core.features.IAEFeature;
 import appeng.core.features.IFeatureHandler;
+import appeng.core.features.registries.BlockingModeIgnoreItemRegistry;
 import appeng.core.features.registries.P2PTunnelRegistry;
 import appeng.core.features.registries.entries.BasicCellHandler;
 import appeng.core.features.registries.entries.CreativeCellHandler;
@@ -65,7 +66,6 @@ import appeng.core.features.registries.entries.VoidCellHandler;
 import appeng.core.localization.GuiText;
 import appeng.core.localization.PlayerMessages;
 import appeng.core.stats.PlayerStatsRegistration;
-import appeng.helpers.BlockingModeIgnoreList;
 import appeng.hooks.AETrading;
 import appeng.hooks.SoundEventHandler;
 import appeng.hooks.TickHandler;
@@ -329,13 +329,12 @@ public final class Registration {
         target.partCableGlass = source.cableGlass();
         target.partCableDense = source.cableDense();
         target.partCableDenseCovered = source.cableDenseCovered();
-        target.partCableUltraDenseSmart = source.cableUltraDenseSmart();
-        target.partCableUltraDenseCovered = source.cableUltraDenseCovered();
         // target.partLumenCableSmart = source.lumenCableSmart();
         // target.partLumenCableCovered = source.lumenCableCovered();
         // target.partLumenCableGlass = source.lumenCableGlass();
         // target.partLumenCableDense = source.lumenCableDense();
         target.partQuartzFiber = this.converter.of(source.quartzFiber());
+        target.partCreativeEnergy = this.converter.of(source.partCreativeEnergy());
         target.partToggleBus = this.converter.of(source.toggleBus());
         target.partInvertedToggleBus = this.converter.of(source.invertedToggleBus());
         target.partStorageBus = this.converter.of(source.storageBus());
@@ -362,6 +361,7 @@ public final class Registration {
         target.partCraftingTerminal = this.converter.of(source.craftingTerminal());
         target.partTerminal = this.converter.of(source.terminal());
         target.partStorageMonitor = this.converter.of(source.storageMonitor());
+        target.partThroughputMonitor = this.converter.of(source.throughputMonitor());
         target.partConversionMonitor = this.converter.of(source.conversionMonitor());
     }
 
@@ -610,6 +610,8 @@ public final class Registration {
         Upgrades.PATTERN_CAPACITY.registerItem(parts.p2PTunnelMEInterface(), 3);
         Upgrades.ADVANCED_BLOCKING.registerItem(parts.iface(), 1);
         Upgrades.ADVANCED_BLOCKING.registerItem(blocks.iface(), 1);
+        Upgrades.FAKE_CRAFTING.registerItem(parts.iface(), 1);
+        Upgrades.FAKE_CRAFTING.registerItem(blocks.iface(), 1);
         Upgrades.LOCK_CRAFTING.registerItem(parts.iface(), 1);
         Upgrades.LOCK_CRAFTING.registerItem(blocks.iface(), 1);
         Upgrades.LOCK_CRAFTING.registerItem(parts.p2PTunnelMEInterface(), 1);
@@ -617,6 +619,7 @@ public final class Registration {
         // IO Port!
         Upgrades.SPEED.registerItem(blocks.iOPort(), 3);
         Upgrades.SUPERSPEED.registerItem(blocks.iOPort(), 3);
+        Upgrades.SUPERLUMINALSPEED.registerItem(blocks.iOPort(), 3);
         Upgrades.REDSTONE.registerItem(blocks.iOPort(), 1);
 
         // Level Emitter!
@@ -643,41 +646,57 @@ public final class Registration {
         Upgrades.INVERTER.registerItem(items.cell1k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell1k(), 1);
         Upgrades.STICKY.registerItem(items.cell1k(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cell1k(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cell1k(), 1);
 
         Upgrades.FUZZY.registerItem(items.cell4k(), 1);
         Upgrades.INVERTER.registerItem(items.cell4k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell4k(), 1);
         Upgrades.STICKY.registerItem(items.cell4k(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cell4k(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cell4k(), 1);
 
         Upgrades.FUZZY.registerItem(items.cell16k(), 1);
         Upgrades.INVERTER.registerItem(items.cell16k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell16k(), 1);
         Upgrades.STICKY.registerItem(items.cell16k(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cell16k(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cell16k(), 1);
 
         Upgrades.FUZZY.registerItem(items.cell64k(), 1);
         Upgrades.INVERTER.registerItem(items.cell64k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell64k(), 1);
         Upgrades.STICKY.registerItem(items.cell64k(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cell64k(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cell64k(), 1);
 
         Upgrades.FUZZY.registerItem(items.cell256k(), 1);
         Upgrades.INVERTER.registerItem(items.cell256k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell256k(), 1);
         Upgrades.STICKY.registerItem(items.cell256k(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cell256k(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cell256k(), 1);
 
         Upgrades.FUZZY.registerItem(items.cell1024k(), 1);
         Upgrades.INVERTER.registerItem(items.cell1024k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell1024k(), 1);
         Upgrades.STICKY.registerItem(items.cell1024k(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cell1024k(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cell1024k(), 1);
 
         Upgrades.FUZZY.registerItem(items.cell4096k(), 1);
         Upgrades.INVERTER.registerItem(items.cell4096k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell4096k(), 1);
         Upgrades.STICKY.registerItem(items.cell4096k(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cell4096k(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cell4096k(), 1);
 
         Upgrades.FUZZY.registerItem(items.cell16384k(), 1);
         Upgrades.INVERTER.registerItem(items.cell16384k(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cell16384k(), 1);
         Upgrades.STICKY.registerItem(items.cell16384k(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cell16384k(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cell16384k(), 1);
 
         Upgrades.FUZZY.registerItem(items.cellVoid(), 1);
         Upgrades.INVERTER.registerItem(items.cellVoid(), 1);
@@ -688,21 +707,29 @@ public final class Registration {
         Upgrades.INVERTER.registerItem(items.cellContainer(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cellContainer(), 1);
         Upgrades.STICKY.registerItem(items.cellContainer(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cellContainer(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cellContainer(), 1);
 
         Upgrades.FUZZY.registerItem(items.cellQuantum(), 1);
         Upgrades.INVERTER.registerItem(items.cellQuantum(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cellQuantum(), 1);
         Upgrades.STICKY.registerItem(items.cellQuantum(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cellQuantum(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cellQuantum(), 1);
 
         Upgrades.FUZZY.registerItem(items.cellSingularity(), 1);
         Upgrades.INVERTER.registerItem(items.cellSingularity(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cellSingularity(), 1);
         Upgrades.STICKY.registerItem(items.cellSingularity(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cellSingularity(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cellSingularity(), 1);
 
         Upgrades.FUZZY.registerItem(items.cellUniverse(), 1);
         Upgrades.INVERTER.registerItem(items.cellUniverse(), 1);
         Upgrades.ORE_FILTER.registerItem(items.cellUniverse(), 1);
         Upgrades.STICKY.registerItem(items.cellUniverse(), 1);
+        Upgrades.VOID_OVERFLOW.registerItem(items.cellUniverse(), 1);
+        Upgrades.DISTRIBUTION.registerItem(items.cellUniverse(), 1);
 
         Upgrades.FUZZY.registerItem(items.portableCell(), 1);
         Upgrades.INVERTER.registerItem(items.portableCell(), 1);
@@ -832,7 +859,6 @@ public final class Registration {
         /**
          * Populate list of items that blocking mode should ignore
          */
-        BlockingModeIgnoreList.registerIgnoredMaterials();
-
+        BlockingModeIgnoreItemRegistry.instance().registerDefault();
     }
 }

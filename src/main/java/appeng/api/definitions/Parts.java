@@ -46,6 +46,8 @@ public class Parts {
 
     public AEItemDefinition partQuartzFiber;
 
+    public AEItemDefinition partCreativeEnergy;
+
     public AEItemDefinition partToggleBus;
 
     public AEItemDefinition partInvertedToggleBus;
@@ -95,6 +97,8 @@ public class Parts {
     public AEItemDefinition partTerminal;
 
     public AEItemDefinition partStorageMonitor;
+
+    public AEItemDefinition partThroughputMonitor;
 
     public AEItemDefinition partConversionMonitor;
 }

@@ -11,6 +11,10 @@
 package appeng.client.me;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -52,8 +56,10 @@ public class ItemRepo implements IDisplayRepo {
     private int rowSize = 9;
 
     private String searchString = "";
+    private Map<IAEItemStack, Boolean> searchCache = new WeakHashMap<>();
     private IPartitionList<IAEItemStack> myPartitionList;
     private boolean hasPower;
+    private boolean paused = false;
 
     public ItemRepo(final IScrollSource src, final ISortSource sortSrc) {
         this.src = src;
@@ -100,33 +106,88 @@ public class ItemRepo implements IDisplayRepo {
 
     @Override
     public void updateView() {
-        this.view.clear();
-        this.dsp.clear();
-
-        this.view.ensureCapacity(this.list.size());
-        this.dsp.ensureCapacity(this.list.size());
-
-        final Enum viewMode = this.sortSrc.getSortDisplay();
-        final Enum searchMode = AEConfig.instance.settings.getSetting(Settings.SEARCH_MODE);
-        final Enum typeFilter = this.sortSrc.getTypeFilter();
-        Predicate<IAEItemStack> itemFilter = getFilter(this.searchString);
-
-        if (NEI.searchField.existsSearchField()) {
-            if (searchMode == SearchBoxMode.NEI_AUTOSEARCH || searchMode == SearchBoxMode.NEI_MANUAL_SEARCH) {
-                NEI.searchField.setText(this.searchString);
+        if (this.paused) {
+            // Update existing view with new data
+            for (int i = 0; i < this.view.size(); i++) {
+                IAEItemStack entry = this.view.get(i);
+                IAEItemStack serverEntry = this.list.findPrecise(entry);
+                if (serverEntry == null) {
+                    entry.setStackSize(0);
+                } else {
+                    this.view.set(i, serverEntry);
+                }
             }
 
-            final Predicate<ItemStack> neiFilter = NEI.searchField.getFilter(this.searchString);
-            itemFilter = is -> neiFilter.test(is.getItemStack());
+            // Append newly added item stacks to the end of the view
+            Set<IAEItemStack> viewSet = new HashSet<>(this.view);
+            ArrayList<IAEItemStack> entriesToAdd = new ArrayList<>();
+            for (IAEItemStack serverEntry : this.list) {
+                if (!viewSet.contains(serverEntry)) {
+                    entriesToAdd.add(serverEntry);
+                }
+            }
+            addEntriesToView(entriesToAdd);
+        } else {
+            this.view.clear();
+            this.view.ensureCapacity(this.list.size());
+            addEntriesToView(this.list);
         }
 
-        if (itemFilter == null) {
-            return;
+        // Don't sort the view if paused.
+        if (!this.paused) {
+            final Enum SortBy = this.sortSrc.getSortBy();
+            final Enum SortDir = this.sortSrc.getSortDir();
+
+            ItemSorters.setDirection((appeng.api.config.SortDir) SortDir);
+            ItemSorters.init();
+
+            if (SortBy == SortOrder.MOD) {
+                this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_MOD);
+            } else if (SortBy == SortOrder.AMOUNT) {
+                this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_SIZE);
+            } else if (SortBy == SortOrder.INVTWEAKS) {
+                this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_INV_TWEAKS);
+            } else {
+                this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_NAME);
+            }
+        }
+
+        this.dsp.clear();
+        this.dsp.ensureCapacity(this.list.size());
+        for (final IAEItemStack is : this.view) {
+            this.dsp.add(is.getItemStack());
+        }
+    }
+
+    private void addEntriesToView(Iterable<IAEItemStack> entries) {
+        final Enum viewMode = this.sortSrc.getSortDisplay();
+        final Enum typeFilter = this.sortSrc.getTypeFilter();
+        Predicate<IAEItemStack> itemFilter = null;
+
+        if (!this.searchString.trim().isEmpty()) {
+            if (NEI.searchField.existsSearchField()) {
+                final Predicate<ItemStack> neiFilter = NEI.searchField.getFilter(this.searchString);
+                itemFilter = is -> neiFilter.test(is.getItemStack());
+            } else {
+                itemFilter = getFilter(this.searchString);
+            }
         }
 
         IItemDisplayRegistry registry = AEApi.instance().registries().itemDisplay();
 
-        out: for (IAEItemStack is : this.list) {
+        out: for (IAEItemStack is : entries) {
+            if (viewMode == ViewItems.CRAFTABLE && !is.isCraftable()) {
+                continue;
+            }
+
+            if (viewMode == ViewItems.STORED && is.getStackSize() == 0) {
+                continue;
+            }
+
+            if (this.myPartitionList != null && !this.myPartitionList.isListed(is)) {
+                continue;
+            }
+
             if (registry.isBlacklisted(is.getItem()) || registry.isBlacklisted(is.getItem().getClass())) {
                 continue;
             }
@@ -135,52 +196,21 @@ public class ItemRepo implements IDisplayRepo {
                 if (!filter.test((TypeFilter) typeFilter, is)) continue out;
             }
 
-            if (this.myPartitionList != null && !this.myPartitionList.isListed(is)) {
-                continue;
-            }
+            if (itemFilter == null || Boolean.TRUE.equals(this.searchCache.computeIfAbsent(is, itemFilter::test))) {
 
-            if (viewMode == ViewItems.CRAFTABLE && !is.isCraftable()) {
-                continue;
-            }
+                if (viewMode == ViewItems.CRAFTABLE) {
+                    is = is.copy();
+                    is.setStackSize(0);
+                }
 
-            if (viewMode == ViewItems.CRAFTABLE) {
-                is = is.copy();
-                is.setStackSize(0);
-            }
-
-            if (viewMode == ViewItems.STORED && is.getStackSize() == 0) {
-                continue;
-            }
-
-            if (itemFilter.test(is)) {
                 this.view.add(is);
             }
-        }
-
-        final Enum SortBy = this.sortSrc.getSortBy();
-        final Enum SortDir = this.sortSrc.getSortDir();
-
-        ItemSorters.setDirection((appeng.api.config.SortDir) SortDir);
-        ItemSorters.init();
-
-        if (SortBy == SortOrder.MOD) {
-            this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_MOD);
-        } else if (SortBy == SortOrder.AMOUNT) {
-            this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_SIZE);
-        } else if (SortBy == SortOrder.INVTWEAKS) {
-            this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_INV_TWEAKS);
-        } else {
-            this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_NAME);
-        }
-
-        for (final IAEItemStack is : this.view) {
-            this.dsp.add(is.getItemStack());
         }
     }
 
     private Predicate<IAEItemStack> getFilter(String innerSearch) {
 
-        if (innerSearch.length() == 0) {
+        if (innerSearch.isEmpty()) {
             return stack -> true;
         }
 
@@ -265,6 +295,34 @@ public class ItemRepo implements IDisplayRepo {
 
     @Override
     public void setSearchString(@Nonnull final String searchString) {
-        this.searchString = searchString;
+        if (!searchString.equals(this.searchString)) {
+            this.searchString = searchString;
+            this.searchCache.clear();
+
+            if (NEI.searchField.existsSearchField()) {
+                final Enum searchMode = AEConfig.instance.settings.getSetting(Settings.SEARCH_MODE);
+                if (searchMode == SearchBoxMode.NEI_AUTOSEARCH || searchMode == SearchBoxMode.NEI_MANUAL_SEARCH) {
+                    NEI.searchField.setText(this.searchString);
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public boolean isPaused() {
+        return this.paused;
+    }
+
+    @Override
+    public void setPaused(boolean paused) {
+        if (this.paused != paused) {
+            this.paused = paused;
+
+            // Update view when un-paused
+            if (!paused) {
+                updateView();
+            }
+        }
     }
 }

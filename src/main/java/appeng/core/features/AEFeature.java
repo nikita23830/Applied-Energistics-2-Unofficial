@@ -57,7 +57,6 @@ public enum AEFeature {
     PowerGen(Constants.CATEGORY_NETWORK_FEATURES),
     Security(Constants.CATEGORY_NETWORK_FEATURES),
     SpatialIO(Constants.CATEGORY_NETWORK_FEATURES),
-    UltraDenseCables(Constants.CATEGORY_NETWORK_FEATURES),
     QuantumNetworkBridge(Constants.CATEGORY_NETWORK_FEATURES),
     Channels(Constants.CATEGORY_NETWORK_FEATURES),
 
@@ -72,6 +71,7 @@ public enum AEFeature {
     ExportBus(Constants.CATEGORY_NETWORK_BUSES),
     StorageBus(Constants.CATEGORY_NETWORK_BUSES),
     PartConversionMonitor(Constants.CATEGORY_NETWORK_BUSES),
+    PartThroughputMonitor(Constants.CATEGORY_NETWORK_BUSES),
 
     PortableCell(Constants.CATEGORY_PORTABLE_CELL),
 

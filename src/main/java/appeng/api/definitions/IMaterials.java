@@ -149,4 +149,12 @@ public interface IMaterials {
     IItemDefinition cardAdvancedBlocking();
 
     IItemDefinition cardLockCrafting();
+
+    IItemDefinition cardFakeCrafting();
+
+    IItemDefinition cardSuperluminalSpeed();
+
+    IItemDefinition cardVoidOverflow();
+
+    IItemDefinition cardDistribution();
 }

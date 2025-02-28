@@ -29,13 +29,12 @@ public final class ApiParts implements IParts {
     private final AEColoredItemDefinition cableGlass;
     private final AEColoredItemDefinition cableDense;
     private final AEColoredItemDefinition cableDenseCovered;
-    private final AEColoredItemDefinition cableUltraDenseSmart;
-    private final AEColoredItemDefinition cableUltraDenseCovered;
     // private final AEColoredItemDefinition lumenCableSmart;
     // private final AEColoredItemDefinition lumenCableCovered;
     // private final AEColoredItemDefinition lumenCableGlass;
     // private final AEColoredItemDefinition lumenCableDense;
     private final IItemDefinition quartzFiber;
+    private final IItemDefinition partCreativeEnergy;
     private final IItemDefinition toggleBus;
     private final IItemDefinition invertedToggleBus;
     private final IItemDefinition storageBus;
@@ -69,6 +68,7 @@ public final class ApiParts implements IParts {
     private final IItemDefinition terminal;
     private final IItemDefinition storageMonitor;
     private final IItemDefinition conversionMonitor;
+    private final IItemDefinition throughputMonitor;
 
     public ApiParts(final DefinitionConstructor constructor, final IPartHelper partHelper) {
         final ItemMultiPart itemMultiPart = new ItemMultiPart(partHelper);
@@ -79,15 +79,12 @@ public final class ApiParts implements IParts {
         this.cableGlass = constructor.constructColoredDefinition(itemMultiPart, PartType.CableGlass);
         this.cableDense = constructor.constructColoredDefinition(itemMultiPart, PartType.CableDense);
         this.cableDenseCovered = constructor.constructColoredDefinition(itemMultiPart, PartType.CableDenseCovered);
-        this.cableUltraDenseSmart = constructor
-                .constructColoredDefinition(itemMultiPart, PartType.CableUltraDenseSmart, true);
-        this.cableUltraDenseCovered = constructor
-                .constructColoredDefinition(itemMultiPart, PartType.CableUltraDenseCovered, true);
         // this.lumenCableSmart = Optional.absent(); // has yet to be implemented, no PartType defined for it yet
         // this.lumenCableCovered = Optional.absent(); // has yet to be implemented, no PartType defined for it yet
         // this.lumenCableGlass = Optional.absent(); // has yet to be implemented, no PartType defined for it yet
         // this.lumenCableDense = Optional.absent(); // has yet to be implemented, no PartType defined for it yet
         this.quartzFiber = new DamagedItemDefinition(itemMultiPart.createPart(PartType.QuartzFiber));
+        this.partCreativeEnergy = new DamagedItemDefinition(itemMultiPart.createPart(PartType.PartCreativeEnergy));
         this.toggleBus = new DamagedItemDefinition(itemMultiPart.createPart(PartType.ToggleBus));
         this.invertedToggleBus = new DamagedItemDefinition(itemMultiPart.createPart(PartType.InvertedToggleBus));
         this.storageBus = new DamagedItemDefinition(itemMultiPart.createPart(PartType.StorageBus));
@@ -123,6 +120,7 @@ public final class ApiParts implements IParts {
         this.terminal = new DamagedItemDefinition(itemMultiPart.createPart(PartType.Terminal));
         this.storageMonitor = new DamagedItemDefinition(itemMultiPart.createPart(PartType.StorageMonitor));
         this.conversionMonitor = new DamagedItemDefinition(itemMultiPart.createPart(PartType.ConversionMonitor));
+        this.throughputMonitor = new DamagedItemDefinition(itemMultiPart.createPart(PartType.ThroughputMonitor));
     }
 
     @Override
@@ -148,16 +146,6 @@ public final class ApiParts implements IParts {
     @Override
     public AEColoredItemDefinition cableDenseCovered() {
         return this.cableDenseCovered;
-    }
-
-    @Override
-    public AEColoredItemDefinition cableUltraDenseSmart() {
-        return this.cableUltraDenseSmart;
-    }
-
-    @Override
-    public AEColoredItemDefinition cableUltraDenseCovered() {
-        return this.cableUltraDenseCovered;
     }
 
     @Override
@@ -187,6 +175,11 @@ public final class ApiParts implements IParts {
     @Override
     public IItemDefinition quartzFiber() {
         return this.quartzFiber;
+    }
+
+    @Override
+    public IItemDefinition partCreativeEnergy() {
+        return this.partCreativeEnergy;
     }
 
     @Override
@@ -352,5 +345,10 @@ public final class ApiParts implements IParts {
     @Override
     public IItemDefinition conversionMonitor() {
         return this.conversionMonitor;
+    }
+
+    @Override
+    public IItemDefinition throughputMonitor() {
+        return this.throughputMonitor;
     }
 }

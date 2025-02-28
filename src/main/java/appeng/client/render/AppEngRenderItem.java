@@ -22,9 +22,11 @@ import net.minecraft.item.ItemStack;
 
 import org.lwjgl.opengl.GL11;
 
+import appeng.api.AEApi;
 import appeng.api.config.TerminalFontSize;
 import appeng.api.storage.IItemDisplayRegistry.ItemRenderHook;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.client.gui.AEBaseGui;
 import appeng.core.AEConfig;
 import appeng.core.localization.GuiText;
 
@@ -36,7 +38,12 @@ import appeng.core.localization.GuiText;
  */
 public class AppEngRenderItem extends AERenderItem {
 
+    public AEBaseGui parent;
+
     private IAEItemStack aeStack = null;
+
+    private static final ItemStack PATTERN = AEApi.instance().definitions().items().encodedPattern().maybeStack(1)
+            .orNull();
 
     /**
      * Post render hooks. All are called.
@@ -88,21 +95,34 @@ public class AppEngRenderItem extends AERenderItem {
                 GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             }
 
-            if (is.stackSize == 0 && showCraftLabelText) {
-                final String craftLabelText = fontSize == TerminalFontSize.SMALL ? GuiText.SmallFontCraft.getLocal()
-                        : GuiText.LargeFontCraft.getLocal();
+            // Display "craftable" text
+            if (showCraftLabelText && this.aeStack != null && this.aeStack.isCraftable()) {
+                if (is.stackSize == 0) {
+                    final String craftLabelText = fontSize == TerminalFontSize.SMALL ? GuiText.SmallFontCraft.getLocal()
+                            : GuiText.LargeFontCraft.getLocal();
 
-                GL11.glDisable(GL11.GL_LIGHTING);
-                GL11.glPushMatrix();
-                this.drawStackSize(par4, par5, craftLabelText, fontRenderer, fontSize);
-                GL11.glPopMatrix();
-                GL11.glEnable(GL11.GL_LIGHTING);
+                    GL11.glDisable(GL11.GL_LIGHTING);
+                    GL11.glPushMatrix();
+                    this.drawStackSize(par4, par5, craftLabelText, fontRenderer, fontSize);
+                    GL11.glPopMatrix();
+                    GL11.glEnable(GL11.GL_LIGHTING);
+                } else {
+                    if (this.parent != null) {
+                        GL11.glDisable(GL11.GL_LIGHTING);
+                        GL11.glPushMatrix();
+                        GL11.glScalef(0.4f, 0.4f, 0.4f);
+                        this.parent.drawItem((int) ((par4 + 10) * 2.5), (int) (par5 * 2.5), PATTERN);
+                        GL11.glScalef(2.5f, 2.5f, 2.5f);
+                        GL11.glPopMatrix();
+                        GL11.glEnable(GL11.GL_LIGHTING);
+                    }
+                }
             }
 
+            // Display stack quantity
             final long amount = this.aeStack != null ? this.aeStack.getStackSize() : is.stackSize;
-
-            if (amount != 0 && showStackSize) {
-
+            final boolean isCraftable = this.aeStack != null && this.aeStack.isCraftable();
+            if (showStackSize && (amount > 0 || !isCraftable)) {
                 GL11.glDisable(GL11.GL_LIGHTING);
                 GL11.glPushMatrix();
                 this.drawStackSize(par4, par5, amount, fontRenderer, fontSize);

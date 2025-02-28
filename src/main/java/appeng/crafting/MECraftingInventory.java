@@ -12,14 +12,23 @@ package appeng.crafting;
 
 import javax.annotation.Nonnull;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.StatCollector;
+
 import appeng.api.AEApi;
 import appeng.api.config.Actionable;
 import appeng.api.networking.security.BaseActionSource;
+import appeng.api.networking.security.PlayerSource;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
+import appeng.core.AELog;
+import appeng.core.localization.PlayerMessages;
 import appeng.util.IterationCounter;
 
 public class MECraftingInventory implements IMEInventory<IAEItemStack> {
@@ -37,6 +46,10 @@ public class MECraftingInventory implements IMEInventory<IAEItemStack> {
 
     private final boolean logMissing;
     private final IItemList<IAEItemStack> missingCache;
+
+    private final IItemList<IAEItemStack> failedToExtract = AEApi.instance().storage().createItemList();
+    private MECraftingInventory cpuinv;
+    private boolean isMissingMode;
 
     public MECraftingInventory() {
         this.localCache = AEApi.instance().storage().createItemList();
@@ -230,6 +243,18 @@ public class MECraftingInventory implements IMEInventory<IAEItemStack> {
         return StorageChannel.ITEMS;
     }
 
+    public IItemList<IAEItemStack> getExtractFailedList() {
+        return failedToExtract;
+    }
+
+    public void setMissingMode(boolean b) {
+        this.isMissingMode = b;
+    }
+
+    public void setCpuInventory(MECraftingInventory cp) {
+        this.cpuinv = cp;
+    }
+
     public IItemList<IAEItemStack> getItemList() {
         return this.localCache;
     }
@@ -237,6 +262,7 @@ public class MECraftingInventory implements IMEInventory<IAEItemStack> {
     public boolean commit(final BaseActionSource src) {
         final IItemList<IAEItemStack> added = AEApi.instance().storage().createItemList();
         final IItemList<IAEItemStack> pulled = AEApi.instance().storage().createItemList();
+        failedToExtract.resetStatus();
         boolean failed = false;
 
         if (this.logInjections) {
@@ -265,8 +291,22 @@ public class MECraftingInventory implements IMEInventory<IAEItemStack> {
                 pulled.add(result = this.target.extractItems(extra, Actionable.MODULATE, src));
 
                 if (result == null || result.getStackSize() != extra.getStackSize()) {
-                    failed = true;
-                    break;
+                    if (isMissingMode) {
+                        if (result == null) {
+                            failedToExtract.add(extra.copy());
+                            cpuinv.localCache.findPrecise(extra).setStackSize(0);
+                            extra.setStackSize(0);
+                        } else if (result.getStackSize() != extra.getStackSize()) {
+                            failedToExtract
+                                    .add(extra.copy().setStackSize(extra.getStackSize() - result.getStackSize()));
+                            cpuinv.localCache.findPrecise(extra).setStackSize(result.getStackSize());
+                            extra.setStackSize(result.getStackSize());
+                        }
+                    } else {
+                        failed = true;
+                        handleCraftExtractFailure(extra, result, src);
+                        break;
+                    }
                 }
             }
         }
@@ -300,6 +340,37 @@ public class MECraftingInventory implements IMEInventory<IAEItemStack> {
         final IAEItemStack list = this.localCache.findPrecise(what);
         if (list != null) {
             list.setStackSize(0);
+        }
+    }
+
+    private void handleCraftExtractFailure(final IAEItemStack expected, final IAEItemStack extracted,
+            final BaseActionSource src) {
+        if (!(src instanceof PlayerSource)) {
+            return;
+        }
+
+        try {
+            EntityPlayer player = ((PlayerSource) src).player;
+            if (player != null) {
+                if (expected != null && expected.getItem() != null) {
+                    IChatComponent missingDisplayName;
+                    String missingName = expected.getItemStack().getUnlocalizedName();
+                    if (StatCollector.canTranslate(missingName + ".name") && StatCollector
+                            .translateToLocal(missingName + ".name").equals(expected.getItemStack().getDisplayName()))
+                        missingDisplayName = new ChatComponentTranslation(missingName + ".name");
+                    else missingDisplayName = new ChatComponentText(expected.getItemStack().getDisplayName());
+
+                    player.addChatMessage(
+                            new ChatComponentTranslation(
+                                    PlayerMessages.CraftingCantExtract.getName(),
+                                    extracted.getStackSize(),
+                                    expected.getStackSize(),
+                                    missingName).appendText(" (").appendSibling(missingDisplayName).appendText(")"));
+                }
+
+            }
+        } catch (Exception ex) {
+            AELog.error(ex, "Could not notify player of crafting failure");
         }
     }
 }

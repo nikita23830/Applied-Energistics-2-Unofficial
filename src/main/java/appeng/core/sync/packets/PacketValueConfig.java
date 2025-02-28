@@ -29,6 +29,7 @@ import appeng.api.util.IConfigurableObject;
 import appeng.client.gui.implementations.GuiCraftingCPU;
 import appeng.container.AEBaseContainer;
 import appeng.container.implementations.ContainerAdvancedNetworkTool;
+import appeng.container.implementations.ContainerCellRestriction;
 import appeng.container.implementations.ContainerCellWorkbench;
 import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.container.implementations.ContainerCraftingCPU;
@@ -95,8 +96,10 @@ public class PacketValueConfig extends AppEngPacket {
             si.onWheel(is, this.Value.equals("WheelUp"));
         } else if (this.Name.equals("CPUTable.Cpu.Set") && c instanceof final ICraftingCPUSelectorContainer qk) {
             qk.selectCPU(Integer.parseInt(this.Value));
+        } else if (this.Name.equals("Terminal.StartWithFollow") && c instanceof final ContainerCraftConfirm qk) {
+        	qk.startJob(this.Value);
         } else if (this.Name.equals("Terminal.Start") && c instanceof final ContainerCraftConfirm qk) {
-            qk.startJob();
+        	qk.startJob();
         } else if(this.Name.equals("Terminal.OptimizePatterns") && c instanceof final ContainerCraftConfirm qk){
             qk.optimizePatterns();
         } else if(this.Name.equals("Interface.DoublePatterns") && c instanceof final ContainerInterface qk){
@@ -165,6 +168,8 @@ public class PacketValueConfig extends AppEngPacket {
             } else if (this.Name.equals("CellWorkbench.Fuzzy")) {
                 ccw.setFuzzy(FuzzyMode.valueOf(this.Value));
             }
+        } else if (this.Name.equals("cellRestriction") && c instanceof final ContainerCellRestriction ccr) {
+            ccr.setCellRestriction(this.Value);
         } else if (c instanceof ContainerNetworkTool) {
             if (this.Name.equals("NetworkTool") && this.Value.equals("Toggle")) {
                 ((ContainerNetworkTool) c).toggleFacadeMode();

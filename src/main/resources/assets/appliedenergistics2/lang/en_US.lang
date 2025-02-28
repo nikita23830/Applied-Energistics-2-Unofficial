@@ -60,8 +60,12 @@ tile.appliedenergistics2.BlockCraftingAccelerator256x.name=256 Core Co-Processin
 tile.appliedenergistics2.BlockCraftingAccelerator1024x.name=1024 Core Co-Processing Unit
 tile.appliedenergistics2.BlockCraftingAccelerator4096x.name=4096 Core Co-Processing Unit
 tile.appliedenergistics2.BlockCraftingUnit.name=Crafting Unit
+tile.appliedenergistics2.BlockAdvancedCraftingStorage.name=Crafting Storage
+tile.appliedenergistics2.BlockAdvancedCraftingUnit.name=Crafting Unit
 tile.appliedenergistics2.BlockMolecularAssembler.name=Molecular Assembler
 tile.appliedenergistics2.BlockPatternOptimizationMatrix.name=Pattern Optimization Matrix
+tile.appliedenergistics2.BlockSingularityCraftingStorage.name=Singularity Crafting Storage
+tile.appliedenergistics2.BlockPaint.name=Paint
 
 # Stairs
 tile.appliedenergistics2.ChiseledQuartzStairBlock.name=Chiseled Certus Quartz Stairs
@@ -75,13 +79,21 @@ tile.appliedenergistics2.SkyStoneStairBlock.name=Sky Stone Stairs
 
 # Slabs
 tile.appliedenergistics2.ChiseledQuartzSlabBlock.name=Chiseled Certus Quartz Slabs
+tile.appliedenergistics2.ChiseledQuartzSlabBlock.double.name=Chiseled Certus Quartz Slabs
 tile.appliedenergistics2.FluixSlabBlock.name=Fluix Slabs
+tile.appliedenergistics2.FluixSlabBlock.double.name=Fluix Slabs
 tile.appliedenergistics2.QuartzPillarSlabBlock.name=Certus Quartz Pillar Slabs
+tile.appliedenergistics2.QuartzPillarSlabBlock.double.name=Certus Quartz Pillar Slabs
 tile.appliedenergistics2.QuartzSlabBlock.name=Certus Quartz Slabs
+tile.appliedenergistics2.QuartzSlabBlock.double.name=Certus Quartz Slabs
 tile.appliedenergistics2.SkyStoneBlockSlabBlock.name=Sky Stone Block Slabs
+tile.appliedenergistics2.SkyStoneBlockSlabBlock.double.name=Sky Stone Block Slabs
 tile.appliedenergistics2.SkyStoneBrickSlabBlock.name=Sky Stone Brick Slabs
+tile.appliedenergistics2.SkyStoneBrickSlabBlock.double.name=Sky Stone Brick Slabs
 tile.appliedenergistics2.SkyStoneSmallBrickSlabBlock.name=Sky Stone Small Brick Slabs
+tile.appliedenergistics2.SkyStoneSmallBrickSlabBlock.double.name=Sky Stone Small Brick Slabs
 tile.appliedenergistics2.SkyStoneSlabBlock.name=Sky Stone Slabs
+tile.appliedenergistics2.SkyStoneSlabBlock.double.name=Sky Stone Slabs
 
 # Chat Messages
 chat.appliedenergistics2.ChestCannotReadStorageCell=ME Chest cannot read storage cell.
@@ -117,6 +129,7 @@ chat.appliedenergistics2.PriorityConfigured=Updated priority to %d
 chat.appliedenergistics2.DriveLocked=Digital Singularity cells in drive were locked to the current item on them
 chat.appliedenergistics2.ChestLocked=Digital Singularity cell in chest was locked to the current item on it
 chat.appliedenergistics2.FinishCraftingRemind=Crafting of %s * %s finished in %s.
+chat.appliedenergistics2.CraftingCantExtract=Can't extract required amount of ingredient from storage: %d / %d | %s
 
 # Creative Tabs
 itemGroup.appliedenergistics2=Applied Energistics 2
@@ -252,7 +265,7 @@ gui.appliedenergistics2.ETAFormat=HH:mm:ss
 gui.appliedenergistics2.SwitchCraftingSimulationDisplayMode=Switch display mode (List/Tree)
 gui.appliedenergistics2.Crafting=Crafting
 gui.appliedenergistics2.Scheduled=Scheduled
-gui.appliedenergistics2.CraftingStatus=Crafting Status
+gui.appliedenergistics2.CraftingStatus=Status
 gui.appliedenergistics2.RemainingOperations=Idle Processors
 gui.appliedenergistics2.FromStorage=Available
 gui.appliedenergistics2.FromStoragePercent=Used
@@ -261,10 +274,12 @@ gui.appliedenergistics2.ToCraftRequests=Steps
 gui.appliedenergistics2.CraftingPlan=Crafting Plan
 gui.appliedenergistics2.Automatic=Automatic
 gui.appliedenergistics2.Start=Start
+gui.appliedenergistics2.StartWithFollow=Start With Follow
 gui.appliedenergistics2.Merge=Merge
 gui.appliedenergistics2.Missing=Missing
 gui.appliedenergistics2.NoCraftingTreeReceived=No crafting tree received
 gui.appliedenergistics2.CraftingStepLimitExceeded=Crafting step limit exceeded
+gui.appliedenergistics2.CraftingSizeLimitExceeded=Crafting size limit exceeded
 gui.appliedenergistics2.RequestedItem=Requested item
 gui.appliedenergistics2.SimulationIncomplete=Simulation incomplete
 gui.appliedenergistics2.Bytes=Storage
@@ -322,6 +337,17 @@ gui.appliedenergistics2.TypesInfo=Types
 gui.appliedenergistics2.BytesInfo=Bytes
 gui.appliedenergistics2.ToFollow=Follow
 gui.appliedenergistics2.ToUnfollow=Unfollow
+gui.appliedenergistics2.CellRestriction=Cell Restriction
+gui.appliedenergistics2.Restricted=Restricted
+gui.appliedenergistics2.CellRestrictionTips=0 for default
+gui.appliedenergistics2.MaxItems=Max Items:
+gui.appliedenergistics2.MaxFluid=Max Fluids:
+gui.appliedenergistics2.MaxTypes=Max Types:
+gui.appliedenergistics2.NumberOfItems=Number of items
+gui.appliedenergistics2.NumberOfFluids=Number of fluids
+gui.appliedenergistics2.ItemsPerByte=Items per byte:
+gui.appliedenergistics2.FluidsPerByte=Fluids per byte:
+gui.appliedenergistics2.BytesPerType=Bytes per type:
 
 # GUI Colors - ARGB
 gui.color.appliedenergistics2.SearchboxFocused=6E000000
@@ -402,9 +428,9 @@ gui.tooltips.appliedenergistics2.SearchMode=Search Box Mode
 gui.tooltips.appliedenergistics2.PartitionStorageHint=Configures Partition based on currently stored items.
 gui.tooltips.appliedenergistics2.ClearSettings=Clear Config/Settings
 gui.tooltips.appliedenergistics2.Craftable=Craftable
-gui.tooltips.appliedenergistics2.MoveWhenEmpty=Move to output when empty.
+gui.tooltips.appliedenergistics2.MoveWhenEmpty=Move to output when cell is empty or network was emptied.
 gui.tooltips.appliedenergistics2.MoveWhenWorkIsDone=Move to output when work is done.
-gui.tooltips.appliedenergistics2.MoveWhenFull=Move to output when full.
+gui.tooltips.appliedenergistics2.MoveWhenFull=Move to output when cell is full or network was filled.
 gui.tooltips.appliedenergistics2.Disabled=Disabled
 gui.tooltips.appliedenergistics2.Enable=Enabled
 gui.tooltips.appliedenergistics2.Blocking=Do not push crafting items if inventory contains items.
@@ -425,6 +451,7 @@ gui.tooltips.appliedenergistics2.TerminalStyle_Full=Full Screen Terminal
 gui.tooltips.appliedenergistics2.TerminalStyle_Tall=Tall Centered Terminal
 gui.tooltips.appliedenergistics2.TerminalStyle_Small=Small Centered Terminal
 gui.tooltips.appliedenergistics2.SaveAsImage=Save as image
+gui.tooltips.appliedenergistics2.HideStored=Hide Stored Items
 
 gui.tooltips.appliedenergistics2.DoesntDespawn=This item won't de-spawn.
 gui.tooltips.appliedenergistics2.EmitterMode=Crafting Emitter Mode
@@ -533,7 +560,11 @@ gui.tooltips.appliedenergistics2.ToUnfollow=Click to stop following this craft\n
 gui.tooltips.appliedenergistics2.StringOrder=Sorting
 gui.tooltips.appliedenergistics2.StringOrderNatural=Default
 gui.tooltips.appliedenergistics2.StringOrderAlphanum=Natural Order
+gui.tooltips.appliedenergistics2.CellRestrictionLabel=Cell Restriction
+gui.tooltips.appliedenergistics2.CellRestrictionHint=Setup Cell Restriction
 
+gui.tooltips.appliedenergistics2.SearchGotoNext=Find next
+gui.tooltips.appliedenergistics2.SearchGotoPrev=Find prev
 # Units
 gui.appliedenergistics2.units.appliedenergstics=AE
 gui.appliedenergistics2.units.ic2=Energy Units
@@ -599,12 +630,16 @@ item.appliedenergistics2.ItemEncodedPattern.name=Encoded Pattern
 item.appliedenergistics2.ItemViewCell.name=View Cell
 item.appliedenergistics2.ItemFacade.name=Cable Facade
 
+item.appliedenergistics2.ItemCrystalSeed.name=Seed
 item.appliedenergistics2.ItemCrystalSeed.Certus.name=Certus Quartz Seed
 item.appliedenergistics2.ItemCrystalSeed.Nether.name=Nether Quartz Seed
 item.appliedenergistics2.ItemCrystalSeed.Fluix.name=Fluix Seed
 
 item.appliedenergistics2.ItemPart.InvalidType.name=Disabled Item
 item.appliedenergistics2.ItemMaterial.InvalidType.name=This Item Is Disabled.
+
+item.appliedenergistics2.ItemMaterial.name=ME Component
+item.appliedenergistics2.ItemPart.name=ME Cable and/or Bus
 
 item.appliedenergistics2.ItemMaterial.BlankPattern.name=Blank Pattern
 item.appliedenergistics2.ItemMaterial.FormationCore.name=Formation Core
@@ -625,6 +660,10 @@ item.appliedenergistics2.ItemMaterial.CardPatternRefiller.name=Pattern Refiller 
 item.appliedenergistics2.ItemMaterial.CardAdvancedBlocking.name=Advanced Blocking Card
 item.appliedenergistics2.ItemMaterial.CardLockCrafting.name=Locking Card
 item.appliedenergistics2.ItemMaterial.CardSticky.name=Sticky Card
+item.appliedenergistics2.ItemMaterial.CardVoidOverflow.name=Overflow Void Card
+item.appliedenergistics2.ItemMaterial.CardDistribution.name=Equal Distribution Card
+item.appliedenergistics2.ItemMaterial.CardFakeCrafting.name=Fake Crafting Card
+item.appliedenergistics2.ItemMaterial.CardSuperluminalSpeed.name=Superluminal Acceleration Card
 
 item.appliedenergistics2.ItemMaterial.Cell2SpatialPart.name=2³ Spatial Component
 item.appliedenergistics2.ItemMaterial.Cell16SpatialPart.name=16³ Spatial Component
@@ -696,10 +735,9 @@ item.appliedenergistics2.ItemPart.CableGlass.name=ME Glass Cable
 item.appliedenergistics2.ItemPart.CableSmart.name=ME Smart Cable
 item.appliedenergistics2.ItemPart.CableDense.name=ME Dense Smart Cable
 item.appliedenergistics2.ItemPart.CableDenseCovered.name=ME Dense Covered Cable
-item.appliedenergistics2.ItemPart.CableUltraDenseCovered.name=ME Backbone Covered Cable
-item.appliedenergistics2.ItemPart.CableUltraDenseSmart.name=ME Backbone Smart Cable
 item.appliedenergistics2.ItemPart.StorageMonitor.name=ME Storage Monitor
 item.appliedenergistics2.ItemPart.ConversionMonitor.name=ME Conversion Monitor
+item.appliedenergistics2.ItemPart.ThroughputMonitor.name=ME Throughput Monitor
 item.appliedenergistics2.ItemPart.SemiDarkMonitor.name=Illuminated Panel
 item.appliedenergistics2.ItemPart.Monitor.name=Bright Illuminated Panel
 item.appliedenergistics2.ItemPart.DarkMonitor.name=Dark Illuminated Panel
@@ -712,6 +750,7 @@ item.appliedenergistics2.ItemPart.P2PTunnel.name=P2P Tunnel
 item.appliedenergistics2.ItemPart.PatternTerminal.name=ME Pattern Terminal
 item.appliedenergistics2.ItemPart.PatternTerminalEx.name=ME Processing Pattern Terminal
 item.appliedenergistics2.ItemPart.QuartzFiber.name=Quartz Fiber
+item.appliedenergistics2.ItemPart.PartCreativeEnergy.name=Creative Energy Anchor
 item.appliedenergistics2.ItemPart.StorageBus.name=ME Storage Bus
 item.appliedenergistics2.ItemPart.Terminal.name=ME Terminal
 item.appliedenergistics2.ItemPart.CraftingTerminal.name=ME Crafting Terminal

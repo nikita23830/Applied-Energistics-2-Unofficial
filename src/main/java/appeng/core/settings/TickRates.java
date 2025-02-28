@@ -40,7 +40,9 @@ public enum TickRates {
 
     OpenComputersTunnel(1, 5),
 
-    PressureTunnel(1, 120);
+    PressureTunnel(1, 120),
+
+    ThroughputMonitor(20, 100);
 
     private int min;
     private int max;

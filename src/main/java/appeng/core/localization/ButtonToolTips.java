@@ -97,6 +97,7 @@ public enum ButtonToolTips {
     TerminalStyle_Tall,
     TerminalStyle_Small,
     SaveAsImage,
+    HideStored,
 
     Stash,
     StashDesc,
@@ -221,7 +222,13 @@ public enum ButtonToolTips {
 
     StringOrder,
     StringOrderNatural,
-    StringOrderAlphanum;
+    StringOrderAlphanum,
+
+    CellRestrictionLabel,
+    CellRestrictionHint,
+
+    SearchGotoNext,
+    SearchGotoPrev;
 
     private final String root;
 

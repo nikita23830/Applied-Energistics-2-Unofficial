@@ -9,9 +9,10 @@ import appeng.api.config.InsertionMode;
 import appeng.api.config.Settings;
 import appeng.api.config.Upgrades;
 import appeng.api.storage.IMEMonitor;
+import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
-import appeng.helpers.BlockingModeIgnoreList;
+import appeng.core.features.registries.BlockingModeIgnoreItemRegistry;
 import appeng.helpers.DualityInterface;
 import appeng.helpers.IInterfaceHost;
 import appeng.util.item.AEItemStack;
@@ -57,7 +58,7 @@ public class AdaptorDualityInterface extends AdaptorIInventory {
                 // This works okay, it'll loop as much as (or even less than) a normal inventory because the iterator
                 // hides empty slots or stacks of size 0
                 for (IAEItemStack stack : itemList) {
-                    if (!BlockingModeIgnoreList.isIgnored(stack.getItemStack())) {
+                    if (!BlockingModeIgnoreItemRegistry.instance().isIgnored(stack.getItemStack())) {
                         hasMEItems = true;
                         break;
                     }
@@ -65,8 +66,8 @@ public class AdaptorDualityInterface extends AdaptorIInventory {
             } else {
                 hasMEItems = !dual.getItemInventory().getStorageList().isEmpty();
             }
-
-            hasMEItems |= !dual.getFluidInventory().getStorageList().isEmpty();
+            IMEMonitor<IAEFluidStack> dualFluidInventory = dual.getFluidInventory();
+            if (dualFluidInventory != null) hasMEItems |= !dualFluidInventory.getStorageList().isEmpty();
         }
         return hasMEItems || super.containsItems();
     }

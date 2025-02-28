@@ -158,6 +158,7 @@ public enum GuiText {
     CraftingPlan,
     CalculatingWait,
     Start,
+    StartWithFollow,
     Merge,
     Bytes,
     Set,
@@ -168,6 +169,7 @@ public enum GuiText {
     Simulation,
     Missing,
     CraftingStepLimitExceeded,
+    CraftingSizeLimitExceeded,
     NoCraftingTreeReceived,
     RequestedItem,
     SimulationIncomplete,
@@ -249,7 +251,18 @@ public enum GuiText {
     TypesInfo,
     BytesInfo,
     ToFollow,
-    ToUnfollow;
+    ToUnfollow,
+    CellRestriction,
+    CellRestrictionTips,
+    Restricted,
+    MaxItems,
+    MaxFluid,
+    MaxTypes,
+    NumberOfItems,
+    NumberOfFluids,
+    ItemsPerByte,
+    FluidsPerByte,
+    BytesPerType;
 
     private final String root;
 

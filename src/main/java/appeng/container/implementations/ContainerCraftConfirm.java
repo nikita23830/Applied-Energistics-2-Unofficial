@@ -272,6 +272,7 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
     }
 
     public boolean cpuMatches(final CraftingCPUStatus c) {
+        if (this.getUsedBytes() <= 0) return false;
         if (c.isBusy() && this.cpuCraftingSameItem(c)) {
             return c.getStorage() >= this.getUsedBytes() + c.getUsedStorage();
         }
@@ -291,6 +292,24 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
                     (selected == null) ? null : selected.getServerCluster(),
                     true,
                     this.getActionSrc());
+            this.setAutoStart(false);
+            if (g != null) {
+                this.switchToOriginalGUI();
+            }
+        }
+    }
+
+    public void startJob(String playerName) {
+        if (this.result != null && !this.isSimulation() && getGrid() != null) {
+            final ICraftingGrid cc = this.getGrid().getCache(ICraftingGrid.class);
+            CraftingCPUStatus selected = this.cpuTable.getSelectedCPU();
+            final ICraftingLink g = cc.submitJob(
+                    this.result,
+                    null,
+                    (selected == null) ? null : selected.getServerCluster(),
+                    true,
+                    this.getActionSrc());
+            selected.getServerCluster().togglePlayerFollowStatus(playerName);
             this.setAutoStart(false);
             if (g != null) {
                 this.switchToOriginalGUI();
