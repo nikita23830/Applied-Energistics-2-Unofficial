@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import appeng.api.storage.IListenerInjectItems;
+import appeng.api.storage.data.IAEItemStack;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -74,7 +75,7 @@ public class NetworkMonitor<T extends IAEStack<T>> implements IMEMonitor<T> {
 
     @Override
     public void addListener(final IMEMonitorHandlerReceiver<T> l, final Object verificationToken) {
-        if (l instanceof IListenerInjectItems<T>) {
+        if (l instanceof IListenerInjectItems) {
             this.injectListeners.add((IListenerInjectItems<T>) l);
             return;
         }

@@ -13,6 +13,7 @@ package appeng.services;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,8 +54,7 @@ public final class CompassService {
         Preconditions.checkNotNull(worldCompassFolder);
 
         this.worldCompassFolder = worldCompassFolder;
-        this.executor = Executors.newSingleThreadExecutor(factory);
-        this.jobSize = 0;
+        this.executor = Executors.newSingleThreadScheduledExecutor(factory);
         MinecraftForge.EVENT_BUS.register(this);
     }
 
