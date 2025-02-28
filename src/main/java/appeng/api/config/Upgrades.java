@@ -13,6 +13,7 @@
 
 package appeng.api.config;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,6 +66,11 @@ public enum Upgrades {
      * @return list of Items/Blocks that support this upgrade, and how many it supports.
      */
     public Map<ItemStack, Integer> getSupported() {
+        for (ItemStack is : new ArrayList<>(supportedMax.keySet())) {
+            if (is == null || is.getItem() == null) {
+                supportedMax.remove(is);
+            }
+        }
         return this.supportedMax;
     }
 

@@ -1,12 +1,20 @@
 package appeng.crafting.v2;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import appeng.api.networking.security.IActionHost;
+import appeng.api.networking.security.MachineSource;
+import appeng.api.networking.security.PlayerSource;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 import org.apache.logging.log4j.Level;
@@ -46,6 +54,7 @@ public class CraftingJobV2 implements ICraftingJob, Future<ICraftingJob>, ITreeS
     public CraftingRequest<IAEItemStack> originalRequest;
     protected ICraftingCallback callback;
     protected String errorMessage = "";
+    private long nano = 0;
 
     protected enum State {
         RUNNING,
@@ -72,6 +81,7 @@ public class CraftingJobV2 implements ICraftingJob, Future<ICraftingJob>, ITreeS
                 craftingMode);
         this.context.addRequest(this.originalRequest);
         this.context.itemModel.ignore(what);
+        this.nano = System.nanoTime();
     }
 
     public CraftingJobV2(CraftingTreeSerializer serializer, ITreeSerializable parent) throws IOException {
@@ -216,6 +226,10 @@ public class CraftingJobV2 implements ICraftingJob, Future<ICraftingJob>, ITreeS
         if (!taskState.needsMoreWork) {
             getByteTotal();
             this.state = State.FINISHED;
+            long nt = System.nanoTime() - nano;
+            if (nt >= (5L * 1000000000L)) {
+                System.out.println("Finish crafting job for " + originalRequest.toString() + " in " + (nt / 1000000000L) + "sec. Requester: " + getReq());
+            }
             if (AELog.isCraftingDebugLogEnabled()) {
                 AELog.log(Level.INFO, "Crafting job for %s finished with resolved steps:", originalRequest.toString());
                 AELog.logSimple(Level.INFO, context.toString());
@@ -226,6 +240,78 @@ public class CraftingJobV2 implements ICraftingJob, Future<ICraftingJob>, ITreeS
         }
 
         return taskState.needsMoreWork;
+    }
+
+//    public boolean simulateFor(int milli) {
+//        if (this.state != State.RUNNING) {
+//            return false;
+//        }
+//        final long startTime = System.currentTimeMillis();
+//        final long finishTime = startTime + milli;
+//        CraftingTask.State taskState = CraftingTask.State.NEEDS_MORE_WORK;
+//
+//        // Создаем пул потоков
+//        ExecutorService executor = Executors.newFixedThreadPool(Runtime);
+//        List<Future<CraftingTask.State>> futures = new ArrayList<>();
+//
+//        try {
+//            do {
+//                // Отправляем задачи на выполнение в разные потоки
+//                futures.add(executor.submit(() -> {
+//                    CraftingTask.State localTaskState = context.doWork();
+//                    totalByteCost = -1;
+//                    return localTaskState;
+//                }));
+//
+//                // Проверяем результаты выполнения задач
+//                for (Future<CraftingTask.State> future : futures) {
+//                    taskState = future.get();
+//                    if (!taskState.needsMoreWork) {
+//                        break;
+//                    }
+//                }
+//            } while (taskState.needsMoreWork && System.currentTimeMillis() < finishTime && (state == State.RUNNING));
+//        } catch (Exception e) {
+//            AELog.error(e, "Error while simulating crafting for " + originalRequest);
+//            errorMessage = e.toString();
+//            this.state = State.CANCELLED;
+//            if (callback != null) {
+//                callback.calculationComplete(this);
+//            }
+//            return false;
+//        } finally {
+//            executor.shutdown();
+//        }
+//
+//        if (!taskState.needsMoreWork) {
+//            getByteTotal();
+//            this.state = State.FINISHED;
+//            long nt = System.nanoTime() - nano;
+////            if (nt >= (5L * 1000000000L)) {
+//                System.out.println("Finish crafting job for " + originalRequest.toString() + " in " + nt + "ns. Requester: " + getReq());
+////            }
+//            if (AELog.isCraftingDebugLogEnabled()) {
+//                AELog.log(Level.INFO, "Crafting job for %s finished with resolved steps:", originalRequest.toString());
+//                AELog.logSimple(Level.INFO, context.toString());
+//            }
+//            if (callback != null) {
+//                callback.calculationComplete(this);
+//            }
+//        }
+//
+//        return taskState.needsMoreWork;
+//    }
+
+    private String getReq() {
+        if (context.actionSource.isPlayer()) {
+            return "Player: " + ((PlayerSource) context.actionSource).player.getCommandSenderName();
+        } else {
+            IActionHost te = ((MachineSource) context.actionSource).via;
+            if (te instanceof TileEntity)
+                return "TileEntity: " + te.getClass().getSimpleName() + " at " + ((TileEntity) te).xCoord + ", " + ((TileEntity) te).yCoord + ", " + ((TileEntity) te).zCoord;
+            else
+                return "Unknown";
+        }
     }
 
     @Override
@@ -276,7 +362,11 @@ public class CraftingJobV2 implements ICraftingJob, Future<ICraftingJob>, ITreeS
     @Override
     public CraftingJobV2 get() throws InterruptedException, ExecutionException {
         this.simulateFor(Integer.MAX_VALUE);
-        return this;
+        return switch (this.state) {
+            case CANCELLED -> throw new CancellationException();
+            case FINISHED -> this;
+            default -> throw new IllegalStateException();
+        };
     }
 
     @Override

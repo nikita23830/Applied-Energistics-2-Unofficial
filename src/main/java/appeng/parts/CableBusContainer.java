@@ -532,6 +532,7 @@ public class CableBusContainer extends CableBusStorage implements AEMultiTile, I
             final IPart part = this.getPart(s);
             if (part != null) {
                 part.removeFromWorld();
+                setSide(s, null);
             }
         }
 

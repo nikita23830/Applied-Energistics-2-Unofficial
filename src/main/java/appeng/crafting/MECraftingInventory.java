@@ -160,6 +160,12 @@ public class MECraftingInventory implements IMEInventory<IAEItemStack> {
     }
 
     @Override
+    public String toString() {
+        return "MECraftingInventory{" + "localCache=" + localCache + ", extractedCache=" + extractedCache
+                + ", injectedCache=" + injectedCache + ", missingCache=" + missingCache + '}';
+    }
+
+    @Override
     public IAEItemStack extractItems(final IAEItemStack request, final Actionable mode, final BaseActionSource src) {
         if (request == null) {
             return null;

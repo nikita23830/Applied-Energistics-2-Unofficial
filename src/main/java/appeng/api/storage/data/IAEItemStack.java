@@ -26,7 +26,7 @@ import net.minecraft.item.ItemStack;
  * <p>
  * Construct with Util.createItemStack( ItemStack )
  */
-public interface IAEItemStack extends IAEStack<IAEItemStack> {
+public interface IAEItemStack extends IAEStack<IAEItemStack>, Comparable<IAEItemStack> {
 
     /**
      * creates a standard MC ItemStack for the item.
@@ -90,4 +90,7 @@ public interface IAEItemStack extends IAEStack<IAEItemStack> {
      * @return true if it is the same type (same item, damage, nbt)
      */
     boolean isSameType(ItemStack stored);
+
+    @Override
+    int compareTo(IAEItemStack o);
 }

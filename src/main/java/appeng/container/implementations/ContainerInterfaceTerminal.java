@@ -23,6 +23,7 @@ import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -91,6 +92,17 @@ public final class ContainerInterfaceTerminal extends AEBaseContainer {
         }
 
         final IGridNode agn = this.anchor.getActionableNode();
+        if (agn == null) {
+            if (!this.crafters.isEmpty()) {
+                for (ICrafting crafter : this.crafters) {
+                    if (crafter instanceof EntityPlayerMP) {
+                        ((EntityPlayerMP) crafter).closeContainer();
+                    }
+                }
+            }
+
+            return;
+        }
 
         if (!agn.isActive()) {
             /*

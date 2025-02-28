@@ -10,6 +10,7 @@
 
 package appeng.container.slot;
 
+import appeng.api.util.EventCrafingInventory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -120,7 +121,9 @@ public class AppEngCraftingSlot extends AppEngSlot {
 
     @Override
     public void onPickupFromSlot(final EntityPlayer par1EntityPlayer, final ItemStack par2ItemStack) {
-        FMLCommonHandler.instance().firePlayerCraftingEvent(par1EntityPlayer, par2ItemStack, this.craftMatrix);
+        EventCrafingInventory.executors.execute(() -> {
+            FMLCommonHandler.instance().firePlayerCraftingEvent(par1EntityPlayer, par2ItemStack.copy(), new EventCrafingInventory(this.craftMatrix));
+        });
         this.onCrafting(par2ItemStack);
 
         for (int i = 0; i < this.craftMatrix.getSizeInventory(); ++i) {

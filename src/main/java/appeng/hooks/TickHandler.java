@@ -189,7 +189,9 @@ public class TickHandler {
 
             // tick networks.
             for (final Grid g : this.getRepo().networks) {
+                long startTime = System.nanoTime();
                 g.update();
+                g.pushUpdateTime(System.nanoTime() - startTime);
             }
 
             // cross world queue.

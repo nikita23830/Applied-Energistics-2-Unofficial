@@ -11,12 +11,14 @@
 package appeng.block;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.google.common.base.Objects;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
@@ -58,6 +60,9 @@ import appeng.util.SettingsFrom;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public abstract class AEBaseTileBlock extends AEBaseBlock implements IAEFeature, ITileEntityProvider {
+    // TODO gamerforEA code start
+    public static final ThreadLocal<Boolean> IS_BLOCK_BREAKING = new ThreadLocal<>();
+    // TODO gamerforEA code end
 
     @Nonnull
     private Class<? extends TileEntity> tileEntityType;
@@ -81,6 +86,26 @@ public abstract class AEBaseTileBlock extends AEBaseBlock implements IAEFeature,
         this.isInventory = IInventory.class.isAssignableFrom(c);
         this.setTileProvider(this.hasBlockTileEntity());
     }
+
+    // TODO gamerforEA code start
+    public static boolean needClearInvOnBreak() {
+        return Objects.firstNonNull(IS_BLOCK_BREAKING.get(), Boolean.FALSE);
+    }
+
+    public static void getInventoryContent(IInventory inventory, Collection<ItemStack> stacks, boolean clearInventory, boolean forceCopyStacks) {
+        if (inventory != null)
+            for (int slot = 0; slot < inventory.getSizeInventory(); slot++) {
+                ItemStack stack = inventory.getStackInSlot(slot);
+                if (stack != null && stack.stackSize > 0 && stack.getItem() != null) {
+                    if (clearInventory) {
+                        stacks.add(stack.copy());
+                        inventory.setInventorySlotContents(slot, null);
+                    } else
+                        stacks.add(forceCopyStacks ? stack.copy() : stack);
+                }
+            }
+    }
+    // TODO gamerforEA code end
 
     // update Block value.
     private void setTileProvider(final boolean b) {
@@ -133,11 +158,28 @@ public abstract class AEBaseTileBlock extends AEBaseBlock implements IAEFeature,
         final AEBaseTile te = this.getTileEntity(w, x, y, z);
         if (te != null) {
             final ArrayList<ItemStack> drops = new ArrayList<>();
-            if (te.dropItems()) {
-                te.getDrops(w, x, y, z, drops);
-            } else {
-                te.getNoDrops(w, x, y, z, drops);
+
+			/* TODO gamerforEA code replace, old code:
+			if (te.dropItems())
+				te.getDrops(w, x, y, z, drops);
+			else
+				te.getNoDrops(w, x, y, z, drops); */
+            Boolean prevBreaking = IS_BLOCK_BREAKING.get();
+            IS_BLOCK_BREAKING.set(Boolean.TRUE);
+            try {
+                if (te.dropItems()) te.getDrops(w, x, y, z, drops);
+                else te.getNoDrops(w, x, y, z, drops);
             }
+            finally {
+                IS_BLOCK_BREAKING.set(prevBreaking);
+            }
+
+            if (te instanceof IInventory inventory) {
+                for (int slot = 0; slot < inventory.getSizeInventory(); slot++) {
+                    if (inventory.getStackInSlot(slot) != null) inventory.setInventorySlotContents(slot, null);
+                }
+            }
+            // TODO gamerforEA code end
 
             // Cry ;_; ...
             Platform.spawnDrops(w, x, y, z, drops);

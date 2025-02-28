@@ -13,6 +13,7 @@ package appeng.tile.crafting;
 import java.io.IOException;
 import java.util.List;
 
+import appeng.api.util.EventCrafingInventory;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
@@ -100,7 +101,7 @@ public class TileMolecularAssembler extends AENetworkInvTile
         return 5;
     }
 
-    CraftingCPUCluster cluster;
+    protected CraftingCPUCluster cluster;
 
     @Override
     public boolean pushPatternWithCluster(ICraftingPatternDetails patternDetails, InventoryCrafting table, ForgeDirection ejectionDirection, CraftingCPUCluster cluster) {
@@ -409,17 +410,19 @@ public class TileMolecularAssembler extends AENetworkInvTile
             final ItemStack output = this.myPlan.getOutput(this.craftingInv, this.getWorldObj());
             if (output != null) {
                 IAEItemStack outC = this.myPlan.getOutputs().length <= 0 ? AEApi.instance().storage().createItemStack(output) : this.myPlan.getOutputs()[0];
-                if (cluster != null && cluster.getRequester() != null && cluster.isActiveTask(outC)) {
-                    FMLCommonHandler.instance().firePlayerCraftingEvent(
-                            cluster.getRequester(),
-                            output,
-                            this.craftingInv);
-                } else {
-                    FMLCommonHandler.instance().firePlayerCraftingEvent(
-                            Platform.getPlayer((WorldServer) this.getWorldObj()),
-                            output,
-                            this.craftingInv);
-                }
+                EventCrafingInventory.executors.execute(() -> {
+                    if (cluster != null && cluster.getRequester() != null && cluster.isActiveTask(outC)) {
+                        FMLCommonHandler.instance().firePlayerCraftingEvent(
+                                cluster.getRequester(),
+                                output.copy(),
+                                new EventCrafingInventory(this.craftingInv));
+                    } else {
+                        FMLCommonHandler.instance().firePlayerCraftingEvent(
+                                Platform.getPlayer((WorldServer) this.getWorldObj()),
+                                output.copy(),
+                                new EventCrafingInventory(this.craftingInv));
+                    }
+                });
 
                 this.pushOut(output.copy());
 

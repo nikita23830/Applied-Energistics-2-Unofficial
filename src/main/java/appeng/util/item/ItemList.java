@@ -12,11 +12,16 @@ package appeng.util.item;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraftforge.oredict.OreDictionary;
 
 import appeng.api.config.FuzzyMode;
@@ -26,7 +31,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 public final class ItemList implements IItemList<IAEItemStack> {
 
-    private final NavigableMap<IAEItemStack, IAEItemStack> records = new ConcurrentSkipListMap<>();
+    private final Object2ObjectAVLTreeMap<IAEItemStack, IAEItemStack> records = new Object2ObjectAVLTreeMap<>();
     private final ObjectOpenHashSet<IAEItemStack> setRecords = new ObjectOpenHashSet<>();
 
     @Override
@@ -207,6 +212,11 @@ public final class ItemList implements IItemList<IAEItemStack> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "{ItemList: [" + this.setRecords.toString() + "]}";
+    }
+
     public void clear() {
         this.setRecords.clear();
         this.records.clear();
@@ -221,7 +231,29 @@ public final class ItemList implements IItemList<IAEItemStack> {
             final boolean ignoreMeta) {
         final IAEItemStack low = filter.getLow(fuzzy, ignoreMeta);
         final IAEItemStack high = filter.getHigh(fuzzy, ignoreMeta);
-
-        return this.records.subMap(low, true, high, true).descendingMap().values();
+        ObjectArrayList<IAEItemStack> ias = new ObjectArrayList<>();
+        for (Map.Entry<IAEItemStack, IAEItemStack> iks : records.entrySet()) {
+            IAEItemStack ik = iks.getKey();
+            if (ik.getItem() != filter.getItem())
+                continue;
+            if (filter.hasTagCompound()) {
+                if (ik.hasTagCompound()) {
+                    if (!filter.getTagCompound().equals(ik.getTagCompound())) {
+                        continue;
+                    } else {
+                        if (ik.getItemDamage() >= low.getItemDamage() && ik.getItemDamage() <= high.getItemDamage()) {
+                            ias.add(iks.getValue());
+                        }
+                    }
+                }
+            } else if (!ik.hasTagCompound()) {
+                if (ik.getItemDamage() >= low.getItemDamage() && ik.getItemDamage() <= high.getItemDamage()) {
+                    ias.add(iks.getValue());
+                }
+            }
+        }
+        ias.sort(Comparator.comparing(IAEItemStack::getItemDamage).reversed());
+        return ias;
+//        return this.records.subMap(low, true, high, true).descendingMap().values();
     }
 }

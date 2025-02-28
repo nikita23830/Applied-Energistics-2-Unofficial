@@ -60,6 +60,7 @@ public class TESRWrapper extends TileEntitySpecialRenderer {
 
                     GL11.glPopMatrix();
                 } catch (final Throwable t) {
+                    GL11.glPopMatrix();
                     AELog.error("Hi, Looks like there was a crash while rendering something...");
                     t.printStackTrace();
                     AELog.error("MC will now crash ( probably )!");

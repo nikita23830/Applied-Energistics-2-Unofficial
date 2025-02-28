@@ -279,24 +279,29 @@ public class AEBaseTile extends TileEntity implements IOrientable, ICommonTile, 
 
     @Nonnull
     private Map<TileEventType, List<AETileEventHandler>> getEventToHandlers() {
-        final Class<? extends AEBaseTile> clazz = this.getClass();
-        final Map<TileEventType, List<AETileEventHandler>> storedHandlers = HANDLERS.get(clazz);
+        try {
+            final Class<? extends AEBaseTile> clazz = this.getClass();
+            final Map<TileEventType, List<AETileEventHandler>> storedHandlers = HANDLERS.get(clazz);
 
-        if (storedHandlers == null) {
-            final Map<TileEventType, List<AETileEventHandler>> newStoredHandlers = new EnumMap<>(TileEventType.class);
+            if (storedHandlers == null) {
+                final Map<TileEventType, List<AETileEventHandler>> newStoredHandlers = new EnumMap<>(TileEventType.class);
 
-            HANDLERS.put(clazz, newStoredHandlers);
+                HANDLERS.put(clazz, newStoredHandlers);
 
-            for (final Method method : clazz.getMethods()) {
-                final TileEvent event = method.getAnnotation(TileEvent.class);
-                if (event != null) {
-                    this.addHandler(newStoredHandlers, event.value(), method);
+                for (final Method method : clazz.getMethods()) {
+                    final TileEvent event = method.getAnnotation(TileEvent.class);
+                    if (event != null) {
+                        this.addHandler(newStoredHandlers, event.value(), method);
+                    }
                 }
-            }
 
-            return newStoredHandlers;
-        } else {
-            return storedHandlers;
+                return newStoredHandlers;
+            } else {
+                return storedHandlers;
+            }
+        } catch (Throwable g) {
+            System.out.println("ERROR IN TILE " + getClass().getName());
+            throw g;
         }
     }
 

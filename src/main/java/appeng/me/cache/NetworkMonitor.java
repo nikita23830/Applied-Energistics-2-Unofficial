@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -21,6 +22,7 @@ import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import appeng.api.storage.IListenerInjectItems;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -61,6 +63,8 @@ public class NetworkMonitor<T extends IAEStack<T>> implements IMEMonitor<T> {
     @Nonnegative
     private int localDepthSemaphore = 0;
 
+    private List<IListenerInjectItems<T>> injectListeners = Lists.newArrayList();
+
     public NetworkMonitor(final GridStorageCache cache, final StorageChannel chan) {
         this.myGridCache = cache;
         this.myChannel = chan;
@@ -70,6 +74,10 @@ public class NetworkMonitor<T extends IAEStack<T>> implements IMEMonitor<T> {
 
     @Override
     public void addListener(final IMEMonitorHandlerReceiver<T> l, final Object verificationToken) {
+        if (l instanceof IListenerInjectItems<T>) {
+            this.injectListeners.add((IListenerInjectItems<T>) l);
+            return;
+        }
         this.listeners.put(l, verificationToken);
     }
 
@@ -133,7 +141,19 @@ public class NetworkMonitor<T extends IAEStack<T>> implements IMEMonitor<T> {
     }
 
     @Override
-    public T injectItems(final T input, final Actionable mode, final BaseActionSource src) {
+    public T injectItems(T input, final Actionable mode, final BaseActionSource src) {
+        for (final IListenerInjectItems<T> listener : this.injectListeners) {
+            input = listener.preInject(input, mode, src);
+            if (input == null) {
+                return null;
+            }
+        }
+        if (input == null) {
+            return null;
+        }
+        if (this.getHandler() == null) {
+            return input;
+        }
         if (mode == Actionable.SIMULATE) {
             return this.getHandler().injectItems(input, mode, src);
         }
@@ -156,6 +176,10 @@ public class NetworkMonitor<T extends IAEStack<T>> implements IMEMonitor<T> {
 
     @Override
     public void removeListener(final IMEMonitorHandlerReceiver<T> l) {
+        if (l instanceof IListenerInjectItems) {
+            this.injectListeners.remove(l);
+            return;
+        }
         this.listeners.remove(l);
     }
 

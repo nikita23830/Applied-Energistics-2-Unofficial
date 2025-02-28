@@ -350,9 +350,10 @@ public class CraftingRequest<StackType extends IAEStack<StackType>> implements I
             }
             if (found == null) {
                 found = resolver.resolvedStack.copy();
-            } else {
-                throw new IllegalStateException("Found multiple item types resolving " + this);
             }
+//            else {
+//                throw new IllegalStateException("Found multiple item types resolving " + this);
+//            }
         }
         if (found == null) {
             throw new IllegalStateException("Found no resolution for " + this);

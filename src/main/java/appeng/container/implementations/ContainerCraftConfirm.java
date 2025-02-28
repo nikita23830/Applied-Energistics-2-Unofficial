@@ -235,6 +235,7 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
                     // :P
                 }
             } catch (final Throwable e) {
+                e.printStackTrace();
                 this.getPlayerInv().player.addChatMessage(new ChatComponentText("Error: " + e.toString()));
                 AELog.debug(e);
                 this.setValidContainer(false);

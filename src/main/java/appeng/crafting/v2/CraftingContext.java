@@ -240,7 +240,6 @@ public final class CraftingContext {
                 output[i] = null;
                 continue;
             }
-            Item item = mcOut.getItem();
             ItemStack container = Platform.getContainerItem(mcOut);
             if (container != null) {
                 if (container.stackSize <= 0) {
@@ -260,6 +259,15 @@ public final class CraftingContext {
         return output;
     }
 
+    private void checkStepLimit() {
+        if (resolvedTasks.size() > AEConfig.instance.maxCraftingSteps) {
+            this.finishedState = State.FAILURE;
+            tasksToProcess.clear();
+            liveRequests.clear();
+            throw new CraftingStepLimitExceeded();
+        }
+    }
+
     /**
      * Does one unit of work towards solving the crafting problem.
      *
@@ -271,20 +279,12 @@ public final class CraftingContext {
         }
         // Limit number of crafting steps on dedicated servers to prevent abuse, in singleplayer the lag only affects
         // the player.
-        if (FMLCommonHandler.instance().getSide() == Side.SERVER
-                && resolvedTasks.size() > AEConfig.instance.maxCraftingSteps) {
-            this.finishedState = State.FAILURE;
-            for (CraftingTask task : tasksToProcess) {
-                if (task.request != null) {
-                    task.request.incomplete = true;
-                }
-            }
-            throw new CraftingStepLimitExceeded();
-        }
+        checkStepLimit();
         final CraftingTask frontTask = tasksToProcess.getFirst();
         if (frontTask.getState() == CraftingTask.State.SUCCESS || frontTask.getState() == CraftingTask.State.FAILURE) {
             resolvedTasks.add(frontTask);
             tasksToProcess.removeFirst();
+            checkStepLimit();
             return CraftingTask.State.NEEDS_MORE_WORK;
         }
         doingWork = true;
@@ -303,6 +303,7 @@ public final class CraftingContext {
             if (tasksToProcess.getFirst() != frontTask) {
                 throw new IllegalStateException("A crafting task got added to the queue without requesting more work.");
             }
+            checkStepLimit();
             resolvedTasks.add(frontTask);
             tasksToProcess.removeFirst();
             finishedState = CraftingTask.State.SUCCESS;

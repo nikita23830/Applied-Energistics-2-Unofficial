@@ -11,8 +11,12 @@
 package appeng.util.item;
 
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import java.util.WeakHashMap;
 
+import com.koloboke.collect.map.ObjObjMap;
+import com.koloboke.collect.map.hash.HashObjObjMaps;
+import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -30,12 +34,20 @@ public class AESharedNBT extends NBTTagCompound implements IAETagCompound {
     /*
      * Shared Tag Compound Cache.
      */
-    private static final WeakHashMap<SharedSearchObject, WeakReference<SharedSearchObject>> SHARED_TAG_COMPOUND = new WeakHashMap<>();
+    private static final Map<SharedSearchObject, WeakReference<SharedSearchObject>> SHARED_TAG_COMPOUND;
     private final Item item;
     private final int meta;
     private SharedSearchObject sso;
     private int hash;
     private IItemComparison comp;
+
+    static {
+        if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
+            SHARED_TAG_COMPOUND = HashObjObjMaps.newMutableMap();
+        } else {
+            SHARED_TAG_COMPOUND = new WeakHashMap<>();
+        }
+    }
 
     private AESharedNBT(final Item itemID, final int damageValue) {
         this.item = itemID;

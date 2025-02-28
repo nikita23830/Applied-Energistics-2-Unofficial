@@ -36,7 +36,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 
-public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemStack, Comparable<AEItemStack> {
+public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemStack {
 
     private AEItemDef def;
 
@@ -459,7 +459,8 @@ public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemS
     }
 
     @Override
-    public int compareTo(final AEItemStack b) {
+    public int compareTo(final IAEItemStack ba) {
+        final AEItemStack b = (AEItemStack) ba;
         final int id = this.getDefinition().getItemID() - b.getDefinition().getItemID();
         if (id != 0) {
             return id;

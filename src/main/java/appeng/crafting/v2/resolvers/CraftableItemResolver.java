@@ -356,7 +356,7 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
                             inputs[slot] = resolvedItem.copy();
                         }
                     }
-                    final IAEItemStack[] leftovers = context.simulateComplexCrafting(inputs, pattern);
+                    final IAEItemStack[] leftovers = pattern.canBeEventSended() ? context.simulateComplexCrafting(inputs, pattern) : new IAEItemStack[0];
 
                     for (IAEItemStack leftover : leftovers) {
                         if (leftover == null || leftover.getStackSize() <= 0) {

@@ -35,6 +35,7 @@ import java.util.stream.IntStream;
 
 import appeng.api.events.EventFinishCraft;
 import appeng.api.implementations.tiles.ICraftingMachine;
+import appeng.api.util.EventCrafingInventory;
 import appeng.api.util.IVirtualItem;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.EntityPlayer;
@@ -231,7 +232,11 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         if (this.unreadNotifications.containsKey(playerName)) {
             List<CraftNotification> notifications = this.unreadNotifications.get(playerName);
             for (CraftNotification notification : notifications) {
-                player.addChatMessage(notification.createMessage());
+                EventFinishCraft craft = new EventFinishCraft(player, notification.finalOutput);
+                MinecraftForge.EVENT_BUS.post(craft);
+                if (!craft.isCanceled()) {
+                    player.addChatMessage(notification.createMessage());
+                }
             }
             player.worldObj.playSoundAtEntity(player, "random.levelup", 1f, 1f);
             this.unreadNotifications.remove(playerName);
@@ -432,10 +437,12 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         }
 
                         if (getRequester() != null) {
-                            FMLCommonHandler.instance().firePlayerCraftingEvent(
-                                    getRequester(),
-                                    what.getItemStack(),
-                                    simpleNull);
+                            EventCrafingInventory.executors.execute(() -> {
+                                FMLCommonHandler.instance().firePlayerCraftingEvent(
+                                        getRequester(),
+                                        what.getItemStack().copy(),
+                                        new EventCrafingInventory(simpleNull));
+                            });
                         }
 
                         if (this.finalOutput.getStackSize() <= 0) {
@@ -601,8 +608,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         ArrayList<IAEItemStack> list = new ArrayList<>();
         if (patternDetails.canSubstitute()) {
             for (IAEItemStack fuzz : this.inventory.getItemList().findFuzzy(ingredient, FuzzyMode.IGNORE_ALL)) {
-                if (!patternDetails.isCraftable() && fuzz.getStackSize() <= 0) continue;
-                if (patternDetails.isCraftable()) {
+                if ((!patternDetails.isCraftable() && !(ingredient.getItem() instanceof IVirtualItem)) && fuzz.getStackSize() <= 0) continue;
+                if (patternDetails.isCraftable() || ingredient.getItem() instanceof IVirtualItem) {
                     final IAEItemStack[] inputSlots = patternDetails.getInputs();
                     final IAEItemStack finalIngredient = ingredient; // have to copy because of Java lambda capture
                                                                      // rules here
@@ -861,10 +868,13 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
 
                     if (details.isCraftable()) {
-                        FMLCommonHandler.instance().firePlayerCraftingEvent(
-                                Platform.getPlayer((WorldServer) this.getWorld()),
-                                details.getOutput(ic, this.getWorld()),
-                                ic);
+                        InventoryCrafting finalIc = ic;
+//                        EventCrafingInventory.executors.execute(() -> {
+//                            FMLCommonHandler.instance().firePlayerCraftingEvent(
+//                                    Platform.getPlayer((WorldServer) this.getWorld()),
+//                                    details.getOutput(finalIc, this.getWorld()).copy(),
+//                                    new EventCrafingInventory(finalIc));
+//                        });
 
                         for (int x = 0; x < ic.getSizeInventory(); x++) {
                             final ItemStack output = Platform.getContainerItem(ic.getStackInSlot(x));
@@ -1631,7 +1641,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         }
     }
 
-    private static class TaskProgress {
+    public static class TaskProgress {
 
         private long value;
     }

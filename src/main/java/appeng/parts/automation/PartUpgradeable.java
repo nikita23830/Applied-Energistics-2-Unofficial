@@ -12,6 +12,7 @@ package appeng.parts.automation;
 
 import java.util.List;
 
+import appeng.block.AEBaseTileBlock;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
@@ -104,11 +105,15 @@ public abstract class PartUpgradeable extends PartBasicState implements IAEAppEn
 
     @Override
     public void getDrops(final List<ItemStack> drops, final boolean wrenched) {
-        for (final ItemStack is : this.upgrades) {
-            if (is != null) {
-                drops.add(is);
-            }
-        }
+        // TODO gamerforEA code start
+        AEBaseTileBlock.getInventoryContent(this.upgrades, drops, AEBaseTileBlock.needClearInvOnBreak(), false);
+
+//        for (final ItemStack is : this.upgrades) {
+//            if (is != null) {
+//                drops.add(is);
+//            }
+//        }
+        // TODO gamerforEA code end
     }
 
     @Override

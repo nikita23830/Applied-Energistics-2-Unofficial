@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
 import com.google.common.base.Preconditions;
@@ -55,6 +56,7 @@ public final class CompassService {
         this.worldCompassFolder = worldCompassFolder;
         this.executor = Executors.newSingleThreadExecutor(factory);
         this.jobSize = 0;
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     public Future<?> getCompassDirection(final DimensionalCoord coord, final int maxRange, final ICompassCallback cc) {

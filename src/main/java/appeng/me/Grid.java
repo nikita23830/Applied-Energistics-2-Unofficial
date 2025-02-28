@@ -11,6 +11,7 @@
 package appeng.me;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -30,6 +31,7 @@ import appeng.api.util.IReadOnlyCollection;
 import appeng.core.worlddata.WorldData;
 import appeng.hooks.TickHandler;
 import appeng.me.cache.CraftingGridCache;
+import appeng.server.LongRingBuffer;
 import appeng.util.ReadOnlyCollection;
 
 public class Grid implements IGrid {
@@ -64,6 +66,29 @@ public class Grid implements IGrid {
         TickHandler.INSTANCE.addNetwork(this);
         center.setGrid(this);
     }
+
+    // TODO gamerforEA code start
+    private static final int UPDATE_TIME_LIST_SIZE = 20;
+    private final LongRingBuffer updateTimeList = new LongRingBuffer(UPDATE_TIME_LIST_SIZE);
+
+    public long getAverageUpdateTime()
+    {
+        return this.updateTimeList.getAverage();
+    }
+
+    public void pushUpdateTime(long updateTime)
+    {
+        this.updateTimeList.push(updateTime);
+    }
+    // TODO gamerforEA code end
+
+    // TODO gamerforEA code start
+    public final Collection<IGridNode> getMachinesFast(Class<? extends IGridHost> c)
+    {
+        MachineSet s = this.machines.get(c);
+        return s == null ? Collections.emptySet() : s;
+    }
+    // TODO gamerforEA code end
 
     int getPriority() {
         return this.priority;
