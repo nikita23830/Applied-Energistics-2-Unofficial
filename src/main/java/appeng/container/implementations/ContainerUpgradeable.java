@@ -10,6 +10,7 @@
 
 package appeng.container.implementations;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -154,7 +155,7 @@ public class ContainerUpgradeable extends AEBaseContainer implements IOptionalSl
 
     protected void setupUpgrades() {
         final IInventory upgrades = this.getUpgradeable().getInventoryByName("upgrades");
-        if (this.availableUpgrades() > 0) {
+        if (this.availableUpgrades(upgradeable) > 0) {
             this.addSlotToContainer(
                     (new SlotRestrictedInput(
                             SlotRestrictedInput.PlacableItemType.UPGRADES,
@@ -164,7 +165,7 @@ public class ContainerUpgradeable extends AEBaseContainer implements IOptionalSl
                             8,
                             this.getInventoryPlayer())).setNotDraggable());
         }
-        if (this.availableUpgrades() > 1) {
+        if (this.availableUpgrades(upgradeable) > 1) {
             this.addSlotToContainer(
                     (new SlotRestrictedInput(
                             SlotRestrictedInput.PlacableItemType.UPGRADES,
@@ -174,7 +175,7 @@ public class ContainerUpgradeable extends AEBaseContainer implements IOptionalSl
                             8 + 18,
                             this.getInventoryPlayer())).setNotDraggable());
         }
-        if (this.availableUpgrades() > 2) {
+        if (this.availableUpgrades(upgradeable) > 2) {
             this.addSlotToContainer(
                     (new SlotRestrictedInput(
                             SlotRestrictedInput.PlacableItemType.UPGRADES,
@@ -184,7 +185,7 @@ public class ContainerUpgradeable extends AEBaseContainer implements IOptionalSl
                             8 + 18 * 2,
                             this.getInventoryPlayer())).setNotDraggable());
         }
-        if (this.availableUpgrades() > 3) {
+        if (this.availableUpgrades(upgradeable) > 3) {
             this.addSlotToContainer(
                     (new SlotRestrictedInput(
                             SlotRestrictedInput.PlacableItemType.UPGRADES,
@@ -202,6 +203,10 @@ public class ContainerUpgradeable extends AEBaseContainer implements IOptionalSl
 
     public int availableUpgrades() {
         return 4;
+    }
+
+    public int availableUpgrades(IUpgradeableHost ih) {
+        return availableUpgrades();
     }
 
     @Override

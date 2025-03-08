@@ -10,6 +10,7 @@
 
 package appeng.client.gui.implementations;
 
+import appeng.api.IExtendDuality;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 
@@ -54,6 +55,16 @@ public class GuiInterface extends GuiUpgradeable {
     public GuiInterface(final InventoryPlayer inventoryPlayer, final IInterfaceHost te) {
         super(new ContainerInterface(inventoryPlayer, te));
         this.ySize = 211;
+    }
+
+    @Override
+    public void drawBG(int offsetX, int offsetY, int mouseX, int mouseY) {
+        super.drawBG(offsetX, offsetY, mouseX, mouseY);
+        if (this.bc instanceof IExtendDuality) {
+            inventorySlots.inventorySlots.forEach(s -> {
+                ((IExtendDuality) this.bc).onRender(this, (ContainerInterface) this.cvb, s);
+            });
+        }
     }
 
     @Override

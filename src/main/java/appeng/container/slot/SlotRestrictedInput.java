@@ -10,6 +10,7 @@
 
 package appeng.container.slot;
 
+import appeng.api.config.Upgrades;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;

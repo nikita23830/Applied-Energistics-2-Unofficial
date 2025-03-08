@@ -13,6 +13,7 @@ package appeng.helpers;
 import static com.gtnewhorizon.gtnhlib.capability.Capabilities.getCapability;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import appeng.api.IExtendDuality;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.IInventory;
@@ -113,17 +115,17 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
     private static final Collection<Block> BAD_BLOCKS = new HashSet<>(100);
     private final int[] sides = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-    private final IAEItemStack[] requireWork = { null, null, null, null, null, null, null, null, null };
+    private IAEItemStack[] requireWork = { null, null, null, null, null, null, null, null, null };
     private final MultiCraftingTracker craftingTracker;
     protected final AENetworkProxy gridProxy;
     private final IInterfaceHost iHost;
     private final BaseActionSource mySource;
     private final BaseActionSource interfaceRequestSource;
     private final ConfigManager cm = new ConfigManager(this);
-    private final AppEngInternalAEInventory config = new AppEngInternalAEInventory(this, NUMBER_OF_CONFIG_SLOTS);
-    private final AppEngInternalInventory storage = new AppEngInternalInventory(this, NUMBER_OF_STORAGE_SLOTS);
-    private final AppEngInternalInventory patterns = new AppEngInternalInventory(this, NUMBER_OF_PATTERN_SLOTS * 4);
-    private final WrapperInvSlot slotInv = new WrapperInvSlot(this.storage);
+    private AppEngInternalAEInventory config = new AppEngInternalAEInventory(this, getNumberOfConfigSlots(NUMBER_OF_CONFIG_SLOTS));
+    private AppEngInternalInventory storage = new AppEngInternalInventory(this, getNumberOfStorageSlots(NUMBER_OF_STORAGE_SLOTS));
+    private AppEngInternalInventory patterns = new AppEngInternalInventory(this, getNumberOfPatternSlots(NUMBER_OF_PATTERN_SLOTS * 4));
+    private WrapperInvSlot slotInv = new WrapperInvSlot(this.storage);
     private final MEMonitorPassThrough<IAEItemStack> items = new MEMonitorPassThrough<>(
             new NullInventory<IAEItemStack>(),
             StorageChannel.ITEMS);
@@ -166,6 +168,44 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         this.items.setChangeSource(actionSource);
 
         this.interfaceRequestSource = new InterfaceRequestSource(this.iHost);
+        if (ih instanceof IExtendDuality dual) {
+            config = new AppEngInternalAEInventory(this, dual.getNumberOfConfigSlots(NUMBER_OF_CONFIG_SLOTS));
+            storage = new AppEngInternalInventory(this, dual.getNumberOfStorageSlots(NUMBER_OF_STORAGE_SLOTS));
+            patterns = new AppEngInternalInventory(this, dual.getNumberOfPatternSlots(NUMBER_OF_PATTERN_SLOTS * 4));
+            requireWork = new IAEItemStack[dual.getNumberOfConfigSlots(NUMBER_OF_CONFIG_SLOTS)];
+            Arrays.fill(requireWork, null);
+            slotInv = new WrapperInvSlot(this.storage);
+        }
+    }
+
+    public int getSizeStorage_() {
+        return storage.getSizeInventory();
+    }
+
+    public int getSizeConfig_() {
+        return config.getSizeInventory();
+    }
+
+    public int getSizePatterns_() {
+        return patterns.getSizeInventory();
+    }
+
+    protected int getNumberOfStorageSlots(int a) {
+        if (this.getHost() != null && this.getHost() instanceof IExtendDuality)
+            return ((IExtendDuality) this.getHost()).getNumberOfStorageSlots(a);
+        return a;
+    }
+
+    protected int getNumberOfConfigSlots(int a) {
+        if (this.getHost() != null && this.getHost() instanceof IExtendDuality)
+            return ((IExtendDuality) this.getHost()).getNumberOfConfigSlots(a);
+        return a;
+    }
+
+    protected int getNumberOfPatternSlots(int a) {
+        if (this.getHost() != null && this.getHost() instanceof IExtendDuality)
+            return ((IExtendDuality) this.getHost()).getNumberOfPatternSlots(a);
+        return a;
     }
 
     @Override
@@ -348,7 +388,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
         final boolean had = this.hasWorkToDo();
 
-        for (int x = 0; x < NUMBER_OF_CONFIG_SLOTS; x++) {
+        for (int x = 0; x < getNumberOfConfigSlots(NUMBER_OF_CONFIG_SLOTS); x++) {
             this.updatePlan(x);
         }
 
@@ -667,7 +707,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     private boolean updateStorage() {
         boolean didSomething = false;
 
-        for (int x = 0; x < NUMBER_OF_STORAGE_SLOTS; x++) {
+        for (int x = 0; x < getNumberOfStorageSlots(NUMBER_OF_STORAGE_SLOTS); x++) {
             if (this.requireWork[x] != null) {
                 didSomething = this.usePlan(x, this.requireWork[x]) || didSomething;
             }

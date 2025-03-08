@@ -12,6 +12,8 @@ package appeng.container.implementations;
 
 import java.util.ArrayList;
 
+import appeng.api.IExtendDuality;
+import appeng.api.implementations.IUpgradeableHost;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -79,7 +81,7 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
         this.myDuality = te.getInterfaceDuality();
         patternRows = getPatternCapacityCardsInstalled();
 
-        for (int row = 0; row < 4; ++row) {
+        for (int row = 0; row < (int) Math.ceil(myDuality.getSizePatterns_() / 9d); ++row) {
             for (int x = 0; x < DualityInterface.NUMBER_OF_PATTERN_SLOTS; x++) {
                 this.addSlotToContainer(
                         new OptionalSlotRestrictedInput(
@@ -94,12 +96,18 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
             }
         }
 
-        for (int x = 0; x < DualityInterface.NUMBER_OF_CONFIG_SLOTS; x++) {
-            this.addSlotToContainer(new SlotFake(this.myDuality.getConfig(), x, 8 + 18 * x, 15));
-        }
+        int y = 15;
+        int cirle = (int) Math.ceil(myDuality.getSizeConfig_() / 9d);
 
-        for (int x = 0; x < DualityInterface.NUMBER_OF_STORAGE_SLOTS; x++) {
-            this.addSlotToContainer(new SlotNormal(this.myDuality.getStorage(), x, 8 + 18 * x, 15 + 18));
+        for (int c = 0; c < cirle; ++c) {
+            for (int x = 0; x < DualityInterface.NUMBER_OF_CONFIG_SLOTS; x++) {
+                this.addSlotToContainer(new SlotFake(this.myDuality.getConfig(), (c * DualityInterface.NUMBER_OF_CONFIG_SLOTS) + x, 8 + 18 * x, y));
+            }
+            y += 18;
+            for (int x = 0; x < DualityInterface.NUMBER_OF_STORAGE_SLOTS; x++) {
+                this.addSlotToContainer(new SlotNormal(this.myDuality.getStorage(), (c * DualityInterface.NUMBER_OF_STORAGE_SLOTS) + x, 8 + 18 * x, y));
+            }
+            y += 20;
         }
     }
 
@@ -114,7 +122,9 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
     }
 
     @Override
-    public int availableUpgrades() {
+    public int availableUpgrades(IUpgradeableHost ih) {
+        if (ih instanceof IExtendDuality)
+            return ((IExtendDuality) ih).getNumblerUpgrades_();
         return 4;
     }
 

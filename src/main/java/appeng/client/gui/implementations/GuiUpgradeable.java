@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import appeng.api.IExtendDuality;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -161,11 +162,14 @@ public class GuiUpgradeable extends AEBaseGui implements INEIGuiHandler {
     public void drawBG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
         this.handleButtonVisibility();
 
-        this.bindTexture(this.getBackground());
+        if (this.bc instanceof IExtendDuality && ((IExtendDuality) this.bc).renderDefaultBack(this, this.cvb) != null)
+            mc.getTextureManager().bindTexture(((IExtendDuality) this.bc).renderDefaultBack(this, this.cvb));
+        else
+            this.bindTexture(this.getBackground());
 
         this.drawTexturedModalRect(offsetX, offsetY, 0, 0, 211 - 34, this.ySize);
         if (this.drawUpgrades()) {
-            this.drawTexturedModalRect(offsetX + 177, offsetY, 177, 0, 35, 14 + this.cvb.availableUpgrades() * 18);
+            this.drawTexturedModalRect(offsetX + 177, offsetY, 177, 0, 35, 14 + this.cvb.availableUpgrades(this.bc) * 18);
         }
         if (this.hasToolbox()) {
             switch (this.getToolboxSize()) {

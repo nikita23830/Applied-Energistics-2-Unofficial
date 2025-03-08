@@ -60,13 +60,17 @@ import io.netty.buffer.ByteBuf;
 public class TileInterface extends AENetworkInvTile implements IGridTickable, ITileStorageMonitorable,
         IStorageMonitorable, IInventoryDestination, IInterfaceHost, IPriorityHost, IPowerChannelState {
 
-    private final DualityInterface duality = new DualityInterface(this.getProxy(), this);
+    private final DualityInterface duality = getDuality$penta();
     private ForgeDirection pointAt = ForgeDirection.UNKNOWN;
 
     private static final int POWERED_FLAG = 1;
     private static final int CHANNEL_FLAG = 2;
     private static final int BOOTING_FLAG = 4;
     private int clientFlags = 0; // sent as byte.
+
+    protected DualityInterface getDuality$penta() {
+        return new DualityInterface(this.getProxy(), this);
+    }
 
     @MENetworkEventSubscribe
     public void stateChange(final MENetworkChannelsChanged c) {
