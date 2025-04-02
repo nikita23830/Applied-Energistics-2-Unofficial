@@ -15,9 +15,6 @@ import java.util.Comparator;
 import appeng.api.config.SortDir;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
-import appeng.integration.IntegrationRegistry;
-import appeng.integration.IntegrationType;
-import appeng.integration.abstraction.IInvTweaks;
 
 public class ItemSorters {
 
@@ -33,30 +30,17 @@ public class ItemSorters {
     public static final Comparator<IAEItemStack> CONFIG_BASED_SORT_BY_SIZE = Comparator
             .comparing(IAEStack::getStackSize, (a, b) -> Long.compare(b, a) * direction.sortHint);
 
-    private static IInvTweaks api;
     public static final Comparator<IAEItemStack> CONFIG_BASED_SORT_BY_INV_TWEAKS = new Comparator<>() {
 
         @Override
         public int compare(final IAEItemStack o1, final IAEItemStack o2) {
-            if (api == null) {
+            if (!InvTweakSortingModule.isLoaded()) {
                 return CONFIG_BASED_SORT_BY_NAME.compare(o1, o2);
             }
 
-            return api.compareItems(o1.getItemStack(), o2.getItemStack()) * direction.sortHint;
+            return InvTweakSortingModule.compareItems(o1.getItemStack(), o2.getItemStack()) * direction.sortHint;
         }
     };
-
-    public static void init() {
-        if (api != null) {
-            return;
-        }
-
-        if (IntegrationRegistry.INSTANCE.isEnabled(IntegrationType.InvTweaks)) {
-            api = (IInvTweaks) IntegrationRegistry.INSTANCE.getInstance(IntegrationType.InvTweaks);
-        } else {
-            api = null;
-        }
-    }
 
     public static int compareInt(final int a, final int b) {
         // for backwards compat for ext mods...

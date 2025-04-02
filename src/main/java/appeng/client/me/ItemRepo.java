@@ -139,7 +139,6 @@ public class ItemRepo implements IDisplayRepo {
             final Enum SortDir = this.sortSrc.getSortDir();
 
             ItemSorters.setDirection((appeng.api.config.SortDir) SortDir);
-            ItemSorters.init();
 
             if (SortBy == SortOrder.MOD) {
                 this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_MOD);
