@@ -267,7 +267,9 @@ public enum GuiText {
     NumberOfFluids,
     ItemsPerByte,
     FluidsPerByte,
-    BytesPerType;
+    BytesPerType,
+
+    CellView;
 
     private final String root;
 
