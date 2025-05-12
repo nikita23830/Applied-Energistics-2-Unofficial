@@ -24,9 +24,9 @@ dependencies {
     compileOnly('api:immibis:1')
     compileOnly('curse.maven:computercraft-67504:2269339')
 
-    // Uncomment to add thermal expansion + foundation for testing
-//    runtimeOnlyNonPublishable('curse.maven:thermal-foundation-222880:2388753')
-//    runtimeOnlyNonPublishable('curse.maven:thermal-expansion-69163:2388759')
+    //Uncomment to add thermal expansion + foundation for testing
+    //runtimeOnlyNonPublishable('curse.maven:thermal-foundation-222880:2388753')
+    //runtimeOnlyNonPublishable('curse.maven:thermal-expansion-69163:2388759')
 
     testImplementation('junit:junit:4.12')
     functionalTestImplementation(platform('org.junit:junit-bom:5.9.2'))
