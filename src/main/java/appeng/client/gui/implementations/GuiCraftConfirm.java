@@ -225,18 +225,18 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
 
         this.start = new GuiButton(
                 0,
-                this.guiLeft + this.xSize - 76,
+                this.guiLeft + this.xSize - 78,
                 this.guiTop + this.ySize - 25,
-                50,
+                52,
                 20,
                 GuiText.Start.getLocal());
         this.start.enabled = false;
         this.buttonList.add(this.start);
         this.startWithFollow = new GuiButton(
                 0,
-                this.guiLeft + (219 - 100) / 2,
+                this.guiLeft + (219 - 96) / 2,
                 this.guiTop + this.ySize - 25,
-                100,
+                96,
                 20,
                 GuiText.StartWithFollow.getLocal());
         this.startWithFollow.enabled = false;
@@ -256,7 +256,7 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 0,
                 this.guiLeft + 6,
                 this.guiTop + this.ySize - 25,
-                50,
+                52,
                 20,
                 GuiText.Cancel.getLocal());
         this.buttonList.add(this.cancel);
@@ -347,6 +347,7 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
     @Override
     public void drawScreen(final int mouseX, final int mouseY, final float btn) {
         this.updateCPUButtonText();
+        this.updateCancelButtonText();
         cpuTable.drawScreen();
 
         this.start.enabled = !(this.ccc.hasNoCPU() || this.isSimulation());
@@ -412,6 +413,16 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
 
     private void drawTreeScreen(final int mouseX, final int mouseY, final float btn) {
         this.craftingTree.drawTooltip(mouseX, mouseY);
+    }
+
+    private void updateCancelButtonText() {
+
+        if (!this.missing.isEmpty() && isShiftKeyDown()) {
+            this.cancel.displayString = GuiText.AddToBookmark.getLocal();
+        } else {
+            this.cancel.displayString = GuiText.Cancel.getLocal();
+        }
+
     }
 
     private void updateCPUButtonText() {

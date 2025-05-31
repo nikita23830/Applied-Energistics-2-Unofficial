@@ -151,6 +151,7 @@ public enum GuiText {
     Scheduled,
     CraftingStatus,
     RemainingOperations,
+    AddToBookmark,
     Cancel,
     ETA,
     ETAFormat,

@@ -54,7 +54,6 @@ import appeng.integration.modules.NEIHelpers.NEIOreDictionaryFilter;
 import appeng.integration.modules.NEIHelpers.NEISearchField;
 import appeng.integration.modules.NEIHelpers.NEIWorldCraftingHandler;
 import appeng.integration.modules.NEIHelpers.TerminalCraftingSlotFinder;
-import codechicken.nei.BookmarkPanel.BookmarkRecipe;
 import codechicken.nei.BookmarkPanel.BookmarkViewMode;
 import codechicken.nei.ItemsGrid;
 import codechicken.nei.LayoutManager;
@@ -65,7 +64,8 @@ import codechicken.nei.api.ItemFilter.ItemFilterProvider;
 import codechicken.nei.guihook.GuiContainerManager;
 import codechicken.nei.guihook.IContainerObjectHandler;
 import codechicken.nei.guihook.IContainerTooltipHandler;
-import codechicken.nei.recipe.BookmarkRecipeId;
+import codechicken.nei.recipe.Recipe;
+import codechicken.nei.recipe.Recipe.RecipeId;
 
 public class NEI implements INEI, IContainerTooltipHandler, IIntegrationModule, IContainerObjectHandler {
 
@@ -240,8 +240,8 @@ public class NEI implements INEI, IContainerTooltipHandler, IIntegrationModule, 
 
     @Override
     public ItemStack getStackUnderMouse(GuiContainer gui, int mousex, int mousey) {
-        if (gui instanceof IGuiTooltipHandler) {
-            return ((IGuiTooltipHandler) gui).getHoveredStack();
+        if (gui instanceof IGuiTooltipHandler handler) {
+            return handler.getHoveredStack();
         }
         return null;
     }
@@ -264,13 +264,12 @@ public class NEI implements INEI, IContainerTooltipHandler, IIntegrationModule, 
         grid.setPage(grid.getNumPages() - 1);
 
         if (output != null) {
-            BookmarkRecipe recipe = new BookmarkRecipe(output);
-            recipe.recipeId = new BookmarkRecipeId("craft-confirm", missing);
-            recipe.ingredients = missing;
+            Recipe recipe = Recipe.of(Arrays.asList(output), "craft-confirm", missing);
+            recipe.setCustomRecipeId(RecipeId.of(output, "craft-confirm", missing));
 
-            LayoutManager.bookmarkPanel.addBookmarkGroup(Arrays.asList(recipe), BookmarkViewMode.TODO_LIST, false);
+            LayoutManager.bookmarkPanel.addGroup(Arrays.asList(recipe), BookmarkViewMode.TODO_LIST, false);
         } else {
-            LayoutManager.bookmarkPanel.addBookmarkGroup(missing, BookmarkViewMode.DEFAULT);
+            LayoutManager.bookmarkPanel.addGroup(missing, BookmarkViewMode.DEFAULT, false);
         }
     }
 }
