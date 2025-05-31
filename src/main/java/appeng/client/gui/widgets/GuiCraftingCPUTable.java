@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -239,6 +241,13 @@ public class GuiCraftingCPUTable {
             }
             IAEItemStack crafting = hoveredCpu.getCrafting();
             if (crafting != null && crafting.getStackSize() > 0) {
+                final long elapsedInMilliseconds = TimeUnit.MILLISECONDS
+                        .convert(hoveredCpu.getCraftingElapsedTime(), TimeUnit.NANOSECONDS);
+                final String elapsedTimeText = DurationFormatUtils
+                        .formatDuration(elapsedInMilliseconds, GuiText.ETAFormat.getLocal());
+
+                double craftingPercentage = 100
+                        - (double) (hoveredCpu.getRemainingItems()) / (double) hoveredCpu.getTotalItems() * 100;
                 tooltip.append(GuiText.Crafting.getLocal());
                 tooltip.append(": ");
                 tooltip.append(NumberFormat.getInstance().format(crafting.getStackSize()));
@@ -248,8 +257,15 @@ public class GuiCraftingCPUTable {
                 tooltip.append(NumberFormat.getInstance().format(hoveredCpu.getRemainingItems()));
                 tooltip.append(" / ");
                 tooltip.append(NumberFormat.getInstance().format(hoveredCpu.getTotalItems()));
+                tooltip.append(String.format(" %02.2f %%", craftingPercentage));
+                tooltip.append('\n');
+
+                tooltip.append(GuiText.TimeUsed.getLocal());
+                tooltip.append(": ");
+                tooltip.append(elapsedTimeText);
                 tooltip.append('\n');
             }
+
             if (hoveredCpu.getUsedStorage() > 0) {
                 tooltip.append(GuiText.BytesUsed.getLocal());
                 tooltip.append(": ");

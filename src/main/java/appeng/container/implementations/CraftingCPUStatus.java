@@ -42,6 +42,7 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
     private final long remainingItems;
     private final IAEItemStack crafting;
     private final CraftingAllow allowMode;
+    private final long craftingElapsedTime;
 
     public CraftingCPUStatus() {
         this.serverCluster = null;
@@ -55,6 +56,7 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         this.remainingItems = 0;
         this.crafting = null;
         this.allowMode = CraftingAllow.ALLOW_ALL;
+        this.craftingElapsedTime = 0;
     }
 
     public CraftingCPUStatus(ICraftingCPU cluster, int serial) {
@@ -67,11 +69,13 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
             usedStorage = cluster.getUsedStorage();
             totalItems = cluster.getStartItemCount();
             remainingItems = cluster.getRemainingItemCount();
+            craftingElapsedTime = cluster.getElapsedTime();
         } else {
             crafting = null;
             usedStorage = 0;
             totalItems = 0;
             remainingItems = 0;
+            craftingElapsedTime = 0;
         }
         this.storage = cluster.getAvailableStorage();
         this.coprocessors = cluster.getCoProcessors();
@@ -91,6 +95,7 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         this.crafting = i.hasKey("crafting") ? AEItemStack.loadItemStackFromNBT(i.getCompoundTag("crafting")) : null;
         this.allowMode = i.hasKey("allowMode") ? CraftingAllow.values()[i.getInteger("allowMode")]
                 : CraftingAllow.ALLOW_ALL;
+        this.craftingElapsedTime = i.hasKey("craftingElapsedTime") ? i.getLong("craftingElapsedTime") : 0;
     }
 
     public CraftingCPUStatus(ByteBuf packet) throws IOException {
@@ -116,6 +121,7 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         i.setBoolean("isBusy", isBusy);
         i.setLong("totalItems", totalItems);
         i.setLong("remainingItems", remainingItems);
+        i.setLong("craftingElapsedTime", craftingElapsedTime);
         if (crafting != null) {
             NBTTagCompound stack = new NBTTagCompound();
             crafting.writeToNBT(stack);
@@ -182,6 +188,10 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
 
     public CraftingAllow allowMode() {
         return allowMode;
+    }
+
+    public long getCraftingElapsedTime() {
+        return craftingElapsedTime;
     }
 
     @Override

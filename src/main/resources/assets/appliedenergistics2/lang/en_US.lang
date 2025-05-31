@@ -223,6 +223,7 @@ gui.appliedenergistics2.StorageCells=ME Storage Cells
 gui.appliedenergistics2.IOBuses=ME Import/Export Bus
 gui.appliedenergistics2.Stores=Stores
 gui.appliedenergistics2.BytesUsed=Bytes Used
+gui.appliedenergistics2.TimeUsed=Time Used
 gui.appliedenergistics2.Types=Types
 gui.appliedenergistics2.Blank=Blank
 gui.appliedenergistics2.Unlinked=Unlinked

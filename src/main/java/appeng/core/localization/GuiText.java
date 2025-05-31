@@ -44,6 +44,7 @@ public enum GuiText {
 
     IOPort,
     BytesUsed,
+    TimeUsed,
     Types,
     QuantumLinkChamber,
     PortableCell,

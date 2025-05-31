@@ -140,6 +140,7 @@ gui.appliedenergistics2.StorageCells=ME存儲元件
 gui.appliedenergistics2.IOBuses=ME輸入/輸出總線
 gui.appliedenergistics2.Stores=Stores
 gui.appliedenergistics2.BytesUsed=字節已使用
+gui.appliedenergistics2.TimeUsed=已使用時間
 gui.appliedenergistics2.Types=類型
 gui.appliedenergistics2.Blank=空白
 gui.appliedenergistics2.Unlinked=未鏈接
