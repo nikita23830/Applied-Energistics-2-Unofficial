@@ -453,7 +453,8 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
             for (final IAEStack s : myList) {
                 final long totalStackSize = s.getStackSize();
                 if (totalStackSize > 0) {
-                    final IAEStack stack = destination.injectItems(s, Actionable.SIMULATE, this.mySrc);
+                    final IAEStack stack = destination
+                            .injectItems(s.setCraftable(false), Actionable.SIMULATE, this.mySrc);
 
                     long possible = 0;
                     if (stack == null) {
@@ -469,7 +470,8 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
                         final IAEStack extracted = src.extractItems(s, Actionable.MODULATE, this.mySrc);
                         if (extracted != null) {
                             possible = extracted.getStackSize();
-                            final IAEStack failed = Platform.poweredInsert(energy, destination, extracted, this.mySrc);
+                            final IAEStack failed = Platform
+                                    .poweredInsert(energy, destination, extracted.setCraftable(false), this.mySrc);
 
                             if (failed != null) {
                                 possible -= failed.getStackSize();
@@ -546,7 +548,7 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
         final IAEStack test = myList.getFirstItem();
         if (test != null) {
             test.setStackSize(1);
-            return src.injectItems(test, Actionable.SIMULATE, this.mySrc) != null;
+            return src.injectItems(test.setCraftable(false), Actionable.SIMULATE, this.mySrc) != null;
         } else if (om == OperationMode.EMPTY) {
             // If emptying into network and mode is set to "Move on full", move when network is full
             return didWork;
