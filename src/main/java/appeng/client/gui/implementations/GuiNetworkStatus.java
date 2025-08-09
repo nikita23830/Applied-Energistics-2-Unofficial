@@ -42,7 +42,7 @@ import appeng.client.gui.widgets.GuiScrollbar;
 import appeng.client.gui.widgets.ISortSource;
 import appeng.client.me.ItemRepo;
 import appeng.client.me.SlotME;
-import appeng.client.render.BlockPosHighlighter;
+import appeng.client.render.highlighter.BlockPosHighlighter;
 import appeng.container.implementations.ContainerNetworkStatus;
 import appeng.core.AEConfig;
 import appeng.core.localization.GuiColors;

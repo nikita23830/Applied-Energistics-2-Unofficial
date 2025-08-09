@@ -1,4 +1,4 @@
-package appeng.client.render;
+package appeng.client.render.highlighter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,28 +15,37 @@ import org.lwjgl.opengl.GL11;
 
 import appeng.api.util.DimensionalCoord;
 import appeng.api.util.WorldCoord;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 // taken from McJty's McJtyLib
-/** use {@link appeng.client.render.highlighter.BlockPosHighlighter} instead */
-@Deprecated
-public class BlockPosHighlighter {
+public class BlockPosHighlighter implements IHighlighter {
 
-    private static final List<DimensionalCoord> highlightedBlocks = new ArrayList<>();
-    private static long expireHighlightTime;
-    private static final int MIN_TIME = 3000;
-    private static final int MAX_TIME = MIN_TIME * 10;
+    static final BlockPosHighlighter INSTANCE = new BlockPosHighlighter();
+
+    protected final List<DimensionalCoord> highlightedBlocks = new ArrayList<>();
+    protected long expireHighlightTime;
+    protected final int MIN_TIME = 3000;
+    protected final int MAX_TIME = MIN_TIME * 10;
+
+    protected int dimension;
+    protected double doubleX;
+    protected double doubleY;
+    protected double doubleZ;
+
+    BlockPosHighlighter() {}
 
     public static void highlightBlocks(EntityPlayer player, List<DimensionalCoord> interfaces, String deviceName,
             String foundMsg, String wrongDimMsg) {
-        clear();
-        int highlightDuration = MIN_TIME;
+        INSTANCE.clear();
+        int highlightDuration = INSTANCE.MIN_TIME;
         for (DimensionalCoord coord : interfaces) {
 
-            highlightedBlocks.add(coord);
+            INSTANCE.highlightedBlocks.add(coord);
             highlightDuration = Math.max(
                     highlightDuration,
-                    MathHelper.clamp_int(500 * WorldCoord.getTaxicabDistance(coord, player), MIN_TIME, MAX_TIME));
+                    MathHelper.clamp_int(
+                            500 * WorldCoord.getTaxicabDistance(coord, player),
+                            INSTANCE.MIN_TIME,
+                            INSTANCE.MAX_TIME));
 
             if (player.worldObj.provider.dimensionId == coord.getDimension()) {
                 if (foundMsg == null) continue;
@@ -55,7 +64,7 @@ public class BlockPosHighlighter {
                 }
             }
         }
-        expireHighlightTime = System.currentTimeMillis() + highlightDuration;
+        INSTANCE.expireHighlightTime = System.currentTimeMillis() + highlightDuration;
     }
 
     public static void highlightBlocks(EntityPlayer player, List<DimensionalCoord> interfaces, String foundMsg,
@@ -63,32 +72,24 @@ public class BlockPosHighlighter {
         highlightBlocks(player, interfaces, "", foundMsg, wrongDimMsg);
     }
 
-    private static void clear() {
+    public void clear() {
         highlightedBlocks.clear();
         expireHighlightTime = -1;
     }
 
-    @SubscribeEvent
+    @Override
+    public boolean noWork() {
+        return highlightedBlocks.isEmpty();
+    }
+
     public void renderHighlightedBlocks(RenderWorldLastEvent event) {
-        if (highlightedBlocks.isEmpty()) {
-            return;
-        }
-        long time = System.currentTimeMillis();
-        if (time > expireHighlightTime) {
-            clear();
-            return;
-        }
-        if (((time / 500) & 1) == 0) {
-            // this does the blinking effect
-            return;
-        }
         Minecraft mc = Minecraft.getMinecraft();
-        int dimension = mc.theWorld.provider.dimensionId;
+        dimension = mc.theWorld.provider.dimensionId;
 
         EntityPlayerSP p = mc.thePlayer;
-        double doubleX = p.lastTickPosX + (p.posX - p.lastTickPosX) * event.partialTicks;
-        double doubleY = p.lastTickPosY + (p.posY - p.lastTickPosY) * event.partialTicks;
-        double doubleZ = p.lastTickPosZ + (p.posZ - p.lastTickPosZ) * event.partialTicks;
+        doubleX = p.lastTickPosX + (p.posX - p.lastTickPosX) * event.partialTicks;
+        doubleY = p.lastTickPosY + (p.posY - p.lastTickPosY) * event.partialTicks;
+        doubleZ = p.lastTickPosZ + (p.posZ - p.lastTickPosZ) * event.partialTicks;
 
         for (DimensionalCoord c : highlightedBlocks) {
             if (dimension != c.getDimension()) {
@@ -109,7 +110,7 @@ public class BlockPosHighlighter {
         }
     }
 
-    private static void renderHighLightedBlocksOutline(double x, double y, double z) {
+    void renderHighLightedBlocksOutline(double x, double y, double z) {
         Tessellator tess = Tessellator.instance;
         tess.startDrawing(GL11.GL_LINE_STRIP);
 
@@ -145,5 +146,10 @@ public class BlockPosHighlighter {
         tess.addVertex(x, y, z + 1);
 
         tess.draw();
+    }
+
+    @Override
+    public long getExpireTime() {
+        return expireHighlightTime;
     }
 }
