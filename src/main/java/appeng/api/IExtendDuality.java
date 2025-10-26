@@ -23,8 +23,10 @@ public interface IExtendDuality {
     default int getNumblerUpgrades_() {
         return 4;
     }
-    default void onRender(GuiInterface gi, ContainerInterface ci, Slot sl) {}
-    default ResourceLocation renderDefaultBack(GuiUpgradeable gi, ContainerUpgradeable ci) {
+
+
+    default void onRender(Object guiInterface, Object containerInterface, Slot sl) {}
+    default ResourceLocation renderDefaultBack(Object guiUpgradeable, ContainerUpgradeable ci) {
         return null;
     }
 }

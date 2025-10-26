@@ -25,6 +25,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
 import appeng.util.inv.ItemListIgnoreCrafting;
+import appeng.api.config.StorageFilter;
 
 public class MEMonitorPassThrough<T extends IAEStack<T>> extends MEPassThrough<T>
         implements IMEMonitor<T>, IMEMonitorHandlerReceiver<T> {
@@ -32,12 +33,21 @@ public class MEMonitorPassThrough<T extends IAEStack<T>> extends MEPassThrough<T
     private final HashMap<IMEMonitorHandlerReceiver<T>, Object> listeners = new HashMap<>();
     private BaseActionSource changeSource;
     private IMEMonitor<T> monitor;
+    private StorageFilter mode = StorageFilter.EXTRACTABLE_ONLY;
 
     public MEMonitorPassThrough(final IMEInventory<T> i, final StorageChannel channel) {
         super(i, channel);
         if (i instanceof IMEMonitor) {
             this.monitor = (IMEMonitor<T>) i;
         }
+    }
+
+    public void setMode(final StorageFilter mode) {
+        this.mode = mode;
+    }
+
+    public StorageFilter getMode() {
+        return this.mode;
     }
 
     @Override

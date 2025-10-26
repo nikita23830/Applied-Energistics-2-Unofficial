@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import appeng.api.config.CraftingAllow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -814,6 +815,38 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.CellRestrictionLabel,
                     ButtonToolTips.CellRestrictionHint);
 
+            this.registerApp(
+                    16 * 14 + 3,
+                    Settings.CRAFTING_ALLOW,
+                    CraftingAllow.ALLOW_ALL,
+                    ButtonToolTips.CPUAllowMode,
+                    ButtonToolTips.CPUAllowAllDesc);
+            this.registerApp(
+                    16 * 14 + 4,
+                    Settings.CRAFTING_ALLOW,
+                    CraftingAllow.ONLY_PLAYER,
+                    ButtonToolTips.CPUAllowMode,
+                    ButtonToolTips.CPUOnlyAllowPlayerDesc);
+            this.registerApp(
+                    16 * 14 + 5,
+                    Settings.CRAFTING_ALLOW,
+                    CraftingAllow.ONLY_NONPLAYER,
+                    ButtonToolTips.CPUAllowMode,
+                    ButtonToolTips.CPUOnlyAllowNonPlayerDesc);
+
+            this.registerApp(
+                    16 * 3 + 7,
+                    Settings.ACTIONS,
+                    ActionItems.TOGGLE_SHOW_ONLY_SUBSTITUTE_ON,
+                    ButtonToolTips.ToggleShowOnlySubstitute,
+                    ButtonToolTips.ToggleShowOnlySubstituteOnDesc);
+
+            this.registerApp(
+                    16 * 3 + 4,
+                    Settings.ACTIONS,
+                    ActionItems.TOGGLE_SHOW_ONLY_SUBSTITUTE_OFF,
+                    ButtonToolTips.ToggleShowOnlySubstitute,
+                    ButtonToolTips.ToggleShowOnlySubstituteOffDesc);
         }
     }
 

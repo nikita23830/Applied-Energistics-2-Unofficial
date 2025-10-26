@@ -11,6 +11,7 @@
 package appeng.integration.modules.waila.tile;
 
 import java.util.List;
+import java.util.WeakHashMap;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -22,8 +23,6 @@ import appeng.api.networking.energy.IAEPowerStorage;
 import appeng.core.localization.WailaText;
 import appeng.integration.modules.waila.BaseWailaDataProvider;
 import appeng.util.Platform;
-import gnu.trove.map.TObjectLongMap;
-import gnu.trove.map.hash.TObjectLongHashMap;
 import mcp.mobius.waila.api.ITaggedList;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
@@ -50,7 +49,7 @@ public final class PowerStorageWailaDataProvider extends BaseWailaDataProvider {
      * <p/>
      * The cache will be updated from the server.
      */
-    private final TObjectLongMap<TileEntity> cache = new TObjectLongHashMap<>();
+    private final WeakHashMap<TileEntity, Long> cache = new WeakHashMap<>();
 
     /**
      * Adds the current and max power to the tool tip Will ignore if the tile has an energy buffer ( &gt; 0 )
@@ -63,7 +62,7 @@ public final class PowerStorageWailaDataProvider extends BaseWailaDataProvider {
      */
     @Override
     public List<String> getWailaBody(final ItemStack itemStack, final List<String> currentToolTip,
-            final IWailaDataAccessor accessor, final IWailaConfigHandler config) {
+                                     final IWailaDataAccessor accessor, final IWailaConfigHandler config) {
         // Removes RF tooltip on WAILA 1.5.9+
         ((ITaggedList<String, String>) currentToolTip).removeEntries("RFEnergyStorage");
 
@@ -104,7 +103,7 @@ public final class PowerStorageWailaDataProvider extends BaseWailaDataProvider {
      */
     @Override
     public NBTTagCompound getNBTData(final EntityPlayerMP player, final TileEntity te, final NBTTagCompound tag,
-            final World world, final int x, final int y, final int z) {
+                                     final World world, final int x, final int y, final int z) {
         if (te instanceof IAEPowerStorage storage) {
 
             if (storage.getAEMaxPower() > 0) {

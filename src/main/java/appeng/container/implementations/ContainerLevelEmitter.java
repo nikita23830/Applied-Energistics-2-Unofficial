@@ -10,6 +10,7 @@
 
 package appeng.container.implementations;
 
+import appeng.client.gui.widgets.MEGuiTextField;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -34,7 +35,7 @@ public class ContainerLevelEmitter extends ContainerUpgradeable {
     private final PartLevelEmitter lvlEmitter;
 
     @SideOnly(Side.CLIENT)
-    private GuiTextField textField;
+    private MEGuiTextField textField;
 
     @GuiSync(2)
     public LevelType lvType;
@@ -51,9 +52,8 @@ public class ContainerLevelEmitter extends ContainerUpgradeable {
     }
 
     @SideOnly(Side.CLIENT)
-    public void setTextField(final GuiTextField level) {
+    public void setTextField(final MEGuiTextField level) {
         this.textField = level;
-        this.textField.setText(String.valueOf(this.EmitterValue));
     }
 
     public void setLevel(final long l, final EntityPlayer player) {
@@ -106,10 +106,7 @@ public class ContainerLevelEmitter extends ContainerUpgradeable {
         }
 
         final IInventory inv = this.getUpgradeable().getInventoryByName("config");
-        final int y = 40;
-        final int x = 80 + 44;
-
-        this.addSlotToContainer(new SlotFakeTypeOnly(inv, 0, x, y));
+        this.addSlotToContainer(new SlotFakeTypeOnly(inv, 0, 17, 42));
     }
 
     @Override
@@ -145,6 +142,10 @@ public class ContainerLevelEmitter extends ContainerUpgradeable {
         if (field.equals("EmitterValue")) {
             if (this.textField != null) {
                 this.textField.setText(String.valueOf(this.EmitterValue));
+
+                if (String.valueOf(oldValue).equals("-1")) {
+                    this.textField.setCursorPositionEnd();
+                }
             }
         }
     }

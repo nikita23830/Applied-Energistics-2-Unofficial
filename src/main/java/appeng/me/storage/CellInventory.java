@@ -10,6 +10,7 @@
 
 package appeng.me.storage;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -189,6 +190,30 @@ public class CellInventory implements ICellInventory {
                 .isEmpty();
     }
 
+    // TODO nikita23830 experiment start
+    public List<IAEItemStack> injectMultiItems(final IItemList<IAEItemStack> input, final Actionable mode, final BaseActionSource src) {
+        markSave = false;
+        List<IAEItemStack> res = new ArrayList<>();
+        for (IAEItemStack iaeItemStack : input) {
+            res.add(_injectItems(iaeItemStack, mode, src));
+        }
+        if (mode == Actionable.MODULATE && markSave)
+            saveChanges();
+        return res;
+    }
+
+    boolean markSave = false;
+
+    @Override
+    public IAEItemStack injectItemsNotSave(IAEItemStack input, Actionable mode, BaseActionSource src) {
+        return _injectItems(input, mode, src);
+    }
+
+    @Override
+    public void _saveChanges() {
+        saveChanges();
+    }
+
     @Override
     public IAEItemStack injectItems(final IAEItemStack input, final Actionable mode, final BaseActionSource src) {
         if (input == null) {
@@ -290,6 +315,111 @@ public class CellInventory implements ICellInventory {
                     this.updateItemCount(input.getStackSize());
                     this.cellItems.add(input);
                     this.saveChanges();
+                }
+
+                return null;
+            }
+        }
+
+        return input;
+    }
+
+    public IAEItemStack _injectItems(final IAEItemStack input, final Actionable mode, final BaseActionSource src) {
+        if (input == null) {
+            return null;
+        }
+
+        if (input.getStackSize() == 0) {
+            return null;
+        }
+
+        if (isBlackListed(input) || this.cellType.isBlackListed(this.cellItem, input)) {
+            return input;
+        }
+
+        if (CellInventory.isStorageCell(input)) {
+            final IMEInventory<IAEItemStack> meInventory = getCell(input.getItemStack(), null);
+
+            if (meInventory != null && !this.isEmpty(meInventory)) {
+                return input;
+            }
+        }
+
+        if (input.isCraftable()) {
+            AELog.error(
+                    new Throwable(),
+                    "FATAL: DETECTED ILLEGAL ITEM TO BE INSERTED ON STORAGE CELL, PLEASE REPORT ON GITHUB! STACKTRACE:");
+            input.setCraftable(false);
+        }
+
+        final IAEItemStack l = this.getCellItems().findPrecise(input);
+
+        if (l != null) {
+            long remainingItemSlots;
+            if (cardDistribution) {
+                remainingItemSlots = this.getRemainingItemsCountDist(l);
+            } else {
+                remainingItemSlots = this.getRemainingItemCount();
+            }
+
+            if (remainingItemSlots <= 0) {
+                if (cardVoidOverflow) {
+                    return null;
+                }
+                return input;
+            }
+
+            if (input.getStackSize() > remainingItemSlots) {
+                final IAEItemStack r = input.copy();
+                r.setStackSize(r.getStackSize() - remainingItemSlots);
+
+                if (mode == Actionable.MODULATE) {
+                    l.setStackSize(l.getStackSize() + remainingItemSlots);
+                    this.updateItemCount(remainingItemSlots);
+                }
+
+                return r;
+            } else {
+                if (mode == Actionable.MODULATE) {
+                    l.setStackSize(l.getStackSize() + input.getStackSize());
+                    this.updateItemCount(input.getStackSize());
+                }
+
+                return null;
+            }
+        }
+
+        if (this.canHoldNewItem()) // room for new type, and for at least one item!
+        {
+            long remainingItemCount;
+            if (cardDistribution) {
+                remainingItemCount = this.getRemainingItemsCountDist(null);
+            } else {
+                if (restrictionLong > 0) {
+                    remainingItemCount = restrictionLong;
+                } else {
+                    remainingItemCount = this.getRemainingItemCount() - this.getBytesPerType() * 8L;
+                }
+            }
+
+            if (remainingItemCount > 0) {
+                if (input.getStackSize() > remainingItemCount) {
+                    final IAEItemStack toReturn = input.copy();
+                    toReturn.decStackSize(remainingItemCount);
+
+                    if (mode == Actionable.MODULATE) {
+                        final IAEItemStack toWrite = input.copy();
+                        toWrite.setStackSize(remainingItemCount);
+
+                        this.cellItems.add(toWrite);
+                        this.updateItemCount(toWrite.getStackSize());
+                    }
+                    return toReturn;
+                }
+
+                if (mode == Actionable.MODULATE) {
+                    this.updateItemCount(input.getStackSize());
+                    this.cellItems.add(input);
                 }
 
                 return null;
@@ -579,10 +709,9 @@ public class CellInventory implements ICellInventory {
         if (types == 0) types = this.getTotalItemTypes();
         if (l != null) {
             if (restrictionLong > 0) {
-                remaining = Math.min((restrictionLong / types) - l.getStackSize(), this.getUnusedItemCount());
+                remaining = Math.min((restrictionLong / types) - l.getStackSize(), getRemainingItemCount());
             } else {
-                remaining = (((this.getTotalBytes() / types) - (int) Math.ceil((double) l.getStackSize() / 8)
-                        - getBytesPerType()) * 8) + (8 - l.getStackSize() % 8);
+                remaining = (((getTotalBytes() / types) - getBytesPerType()) * 8) - l.getStackSize();
             }
         } else {
             if (restrictionLong > 0) {

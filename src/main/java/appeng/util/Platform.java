@@ -316,7 +316,7 @@ public class Platform {
     }
 
     private static boolean isNotValidSetting(final Enum e) {
-        if (e == SortOrder.INVTWEAKS && !IntegrationRegistry.INSTANCE.isEnabled(IntegrationType.InvTweaks)) {
+        if (e == SortOrder.INVTWEAKS && !InvTweakSortingModule.isLoaded()) {
             return true;
         }
 
@@ -463,8 +463,8 @@ public class Platform {
                         return false;
                     }
 
-                    final List<NBTBase> tag = tagList(lA);
-                    final List<NBTBase> aTag = tagList(lB);
+                    final List<NBTBase> tag = lA.tagList;
+                    final List<NBTBase> aTag = lB.tagList;
                     if (tag.size() != aTag.size()) {
                         return false;
                     }
@@ -514,29 +514,29 @@ public class Platform {
         return false;
     }
 
-    private static List<NBTBase> tagList(final NBTTagList lB) {
-        if (tagList == null) {
-            try {
-                tagList = lB.getClass().getDeclaredField("tagList");
-            } catch (final Throwable t) {
-                try {
-                    tagList = lB.getClass().getDeclaredField("field_74747_a");
-                } catch (final Throwable z) {
-                    AELog.debug(t);
-                    AELog.debug(z);
-                }
-            }
-        }
-
-        try {
-            tagList.setAccessible(true);
-            return (List<NBTBase>) tagList.get(lB);
-        } catch (final Throwable t) {
-            AELog.debug(t);
-        }
-
-        return new ArrayList<>();
-    }
+//    private static List<NBTBase> tagList(final NBTTagList lB) {
+//        if (tagList == null) {
+//            try {
+//                tagList = lB.getClass().getDeclaredField("tagList");
+//            } catch (final Throwable t) {
+//                try {
+//                    tagList = lB.getClass().getDeclaredField("field_74747_a");
+//                } catch (final Throwable z) {
+//                    AELog.debug(t);
+//                    AELog.debug(z);
+//                }
+//            }
+//        }
+//
+//        try {
+//            tagList.setAccessible(true);
+//            return (List<NBTBase>) tagList.get(lB);
+//        } catch (final Throwable t) {
+//            AELog.debug(t);
+//        }
+//
+//        return new ArrayList<>();
+//    }
 
     /*
      * Orderless hash on NBT Data, used to work thought huge piles fast, but ignores the order just in case MC decided
@@ -564,7 +564,7 @@ public class Platform {
                 final NBTTagList lA = (NBTTagList) nbt;
                 hash += 9 * lA.tagCount();
 
-                final List<NBTBase> l = tagList(lA);
+                final List<NBTBase> l = lA.tagList;
                 for (int x = 0; x < l.size(); x++) {
                     hash += ((Integer) x).hashCode() ^ NBTOrderlessHash(l.get(x));
                 }

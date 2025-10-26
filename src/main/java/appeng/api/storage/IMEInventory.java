@@ -16,10 +16,15 @@ package appeng.api.storage;
 import javax.annotation.Nonnull;
 
 import appeng.api.config.Actionable;
+import appeng.api.config.FuzzyMode;
 import appeng.api.networking.security.BaseActionSource;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.util.IterationCounter;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * AE's Equivalent to IInventory, used to reading contents, and manipulating contents of ME Inventories.
@@ -42,6 +47,16 @@ public interface IMEInventory<StackType extends IAEStack> {
      * @return returns the number of items not added.
      */
     StackType injectItems(StackType input, Actionable type, BaseActionSource src);
+
+    default StackType injectItemsNotSave(StackType input, final Actionable mode, final BaseActionSource src) {
+        return null;
+    }
+
+    default void _saveChanges() {}
+
+    default List<StackType> injectMultiItems(IItemList<StackType> input, Actionable type, BaseActionSource src) {
+        return new ArrayList<>();
+    }
 
     /**
      * Extract the specified item from the ME Inventory
@@ -114,6 +129,28 @@ public interface IMEInventory<StackType extends IAEStack> {
     default StackType getAvailableItem(@Nonnull StackType request, int iteration) {
         return getAvailableItems((IItemList<StackType>) getChannel().createList(), iteration).findPrecise(request);
     }
+
+    /**
+     * Request a full report of all available items that match a fuzzy filter, in order of priority (descending order).
+     * Mostly relevant for extract-only inventories.
+     *
+     * @param out       the Collection the results will be written to
+     * @param fuzzyItem the AEItemStack that will be passed to
+     *                  {@link appeng.util.item.ItemList#findFuzzy(IAEItemStack filter, FuzzyMode fuzzy)} as the filter
+     * @param fuzzyMode the FuzzyMode instance that will be passed to
+     *                  {@link appeng.util.item.ItemList#findFuzzy(IAEItemStack filter, FuzzyMode fuzzy)}
+     * @param iteration numeric id for this iteration, use {@link appeng.util.IterationCounter#fetchNewId()} to avoid
+     *                  conflicts
+     * @return returns a list of objects in the AE2 network sorted by storage priority
+     */
+    default Collection<StackType> getSortedFuzzyItems(Collection<StackType> out, StackType fuzzyItem,
+                                                      FuzzyMode fuzzyMode, int iteration) {
+        return out;
+    }
+
+    /**
+     * @return the type of channel your handler should be part of
+     */
 
     /**
      * @return the type of channel your handler should be part of

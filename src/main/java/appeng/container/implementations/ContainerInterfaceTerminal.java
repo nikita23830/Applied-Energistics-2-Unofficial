@@ -21,6 +21,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import appeng.tile.AEBaseInvTile;
+import appeng.tile.inventory.InvOperation;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ICrafting;
@@ -28,6 +30,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.primitives.Ints;
@@ -169,14 +172,16 @@ public final class ContainerInterfaceTerminal extends AEBaseContainer {
                             /* Nothing happens */
                             return;
                         }
-                        inv.patterns.setInventorySlotContents(slot, playerHand.removeItems(1, null, null));
+                        ItemStack ic = playerHand.removeItems(1, null, null);
+                        inv.patterns.setInventorySlotContents(slot, ic);
                     } else {
                         /* Exchange? */
                         if (handStack != null && handStack.stackSize > 1) {
                             /* Exchange is impossible, abort */
                             return;
                         }
-                        inv.patterns.setInventorySlotContents(slot, playerHand.removeItems(1, null, null));
+                        ItemStack ic = playerHand.removeItems(1, null, null);
+                        inv.patterns.setInventorySlotContents(slot, ic);
                         playerHand.addItems(slotStack.copy());
                     }
                     syncIfaceSlot(inv, id, slot, inv.patterns.getStackInSlot(slot));
@@ -257,6 +262,8 @@ public final class ContainerInterfaceTerminal extends AEBaseContainer {
         inv.updateNBT();
         this.dirty.addOverwriteEntry(id).setItems(validIndices, list);
         this.isDirty = true;
+        if (inv.tile instanceof AEBaseInvTile)
+            ((AEBaseInvTile) inv.tile).onChangeInventory(inv.patterns, slot, InvOperation.markDirty, stack, stack);
     }
 
     /**
@@ -376,6 +383,7 @@ public final class ContainerInterfaceTerminal extends AEBaseContainer {
         private final ForgeDirection side;
         private boolean online;
         private NBTTagList invNbt;
+        private TileEntity tile;
 
         InvTracker(long id, IInterfaceViewable machine, boolean online) {
             DimensionalCoord location = machine.getLocation();
@@ -392,6 +400,7 @@ public final class ContainerInterfaceTerminal extends AEBaseContainer {
             this.side = machine instanceof AEBasePart hasSide ? hasSide.getSide() : ForgeDirection.UNKNOWN;
             this.online = online;
             this.invNbt = new NBTTagList();
+            this.tile = machine.getTileEntity();
             updateNBT();
         }
 

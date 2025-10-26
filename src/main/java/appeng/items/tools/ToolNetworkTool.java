@@ -12,6 +12,7 @@ package appeng.items.tools;
 
 import java.util.EnumSet;
 
+import appeng.api.implementations.items.INetworkToolItem;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -54,7 +55,7 @@ import cofh.api.item.IToolHammer;
         value = { @Interface(iface = "cofh.api.item.IToolHammer", iname = IntegrationType.CoFHWrench),
                 @Interface(iface = "buildcraft.api.tools.IToolWrench", iname = IntegrationType.BuildCraftCore) })
 public class ToolNetworkTool extends AEBaseItem
-        implements IGuiItem, IAEWrench, IToolWrench, IToolHammer, HasServerSideToolLogic {
+        implements IGuiItem, IAEWrench, IToolWrench, IToolHammer, HasServerSideToolLogic, INetworkToolItem {
 
     public ToolNetworkTool() {
         super(Optional.absent());
@@ -67,7 +68,12 @@ public class ToolNetworkTool extends AEBaseItem
     @Override
     public IGuiItemObject getGuiObject(final ItemStack is, final World world, final int x, final int y, final int z) {
         final TileEntity te = world.getTileEntity(x, y, z);
-        return new NetworkToolViewer(is, (IGridHost) (te instanceof IGridHost ? te : null), 3);
+        return new NetworkToolViewer(is, (IGridHost) (te instanceof IGridHost ? te : null), getInventorySize());
+    }
+
+    @Override
+    public int getInventorySize() {
+        return 3;
     }
 
     @Override

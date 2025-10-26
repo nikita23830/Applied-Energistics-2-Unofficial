@@ -225,18 +225,18 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
 
         this.start = new GuiButton(
                 0,
-                this.guiLeft + this.xSize - 76,
+                this.guiLeft + this.xSize - 78,
                 this.guiTop + this.ySize - 25,
-                50,
+                52,
                 20,
                 GuiText.Start.getLocal());
         this.start.enabled = false;
         this.buttonList.add(this.start);
         this.startWithFollow = new GuiButton(
                 0,
-                this.guiLeft + (219 - 100) / 2,
+                this.guiLeft + (219 - 96) / 2,
                 this.guiTop + this.ySize - 25,
-                100,
+                96,
                 20,
                 GuiText.StartWithFollow.getLocal());
         this.startWithFollow.enabled = false;
@@ -256,7 +256,7 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 0,
                 this.guiLeft + 6,
                 this.guiTop + this.ySize - 25,
-                50,
+                52,
                 20,
                 GuiText.Cancel.getLocal());
         this.buttonList.add(this.cancel);
@@ -347,10 +347,10 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
     @Override
     public void drawScreen(final int mouseX, final int mouseY, final float btn) {
         this.updateCPUButtonText();
+        this.updateCancelButtonText();
         cpuTable.drawScreen();
 
         this.start.enabled = !(this.ccc.hasNoCPU() || this.isSimulation());
-        this.startWithFollow.enabled = this.start.enabled;
         if (this.start.enabled) {
             CraftingCPUStatus selected = this.cpuTable.getContainer().getSelectedCPU();
             if (selected != null && this.ccc.cpuCraftingSameItem(selected)) {
@@ -362,6 +362,7 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 this.start.enabled = false;
             }
         }
+        this.startWithFollow.enabled = this.start.enabled;
 
         this.selectCPU.enabled = (displayMode == DisplayMode.LIST) && !this.isSimulation();
         this.optimizeButton.enabled = (displayMode == DisplayMode.LIST) && !this.isSimulation()
@@ -379,6 +380,16 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
         }
 
         super.drawScreen(mouseX, mouseY, btn);
+    }
+
+    private void updateCancelButtonText() {
+
+        if (!this.missing.isEmpty() && isShiftKeyDown()) {
+            this.cancel.displayString = GuiText.AddToBookmark.getLocal();
+        } else {
+            this.cancel.displayString = GuiText.Cancel.getLocal();
+        }
+
     }
 
     private void drawListScreen(final int mouseX, final int mouseY, final float btn) {

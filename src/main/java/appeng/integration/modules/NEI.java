@@ -44,6 +44,7 @@ import appeng.integration.modules.NEIHelpers.NEIAEBookmarkContainerHandler;
 import appeng.integration.modules.NEIHelpers.NEIAEShapedRecipeHandler;
 import appeng.integration.modules.NEIHelpers.NEIAEShapelessRecipeHandler;
 import appeng.integration.modules.NEIHelpers.NEIAETerminalBookmarkContainerHandler;
+import appeng.integration.modules.NEIHelpers.NEICellViewHandler;
 import appeng.integration.modules.NEIHelpers.NEICraftingHandler;
 import appeng.integration.modules.NEIHelpers.NEIFacadeRecipeHandler;
 import appeng.integration.modules.NEIHelpers.NEIGrinderRecipeHandler;
@@ -53,7 +54,6 @@ import appeng.integration.modules.NEIHelpers.NEIOreDictionaryFilter;
 import appeng.integration.modules.NEIHelpers.NEISearchField;
 import appeng.integration.modules.NEIHelpers.NEIWorldCraftingHandler;
 import appeng.integration.modules.NEIHelpers.TerminalCraftingSlotFinder;
-import codechicken.nei.BookmarkPanel.BookmarkRecipe;
 import codechicken.nei.BookmarkPanel.BookmarkViewMode;
 import codechicken.nei.ItemsGrid;
 import codechicken.nei.LayoutManager;
@@ -64,7 +64,6 @@ import codechicken.nei.api.ItemFilter.ItemFilterProvider;
 import codechicken.nei.guihook.GuiContainerManager;
 import codechicken.nei.guihook.IContainerObjectHandler;
 import codechicken.nei.guihook.IContainerTooltipHandler;
-import codechicken.nei.recipe.BookmarkRecipeId;
 
 public class NEI implements INEI, IContainerTooltipHandler, IIntegrationModule, IContainerObjectHandler {
 
@@ -109,6 +108,9 @@ public class NEI implements INEI, IContainerTooltipHandler, IIntegrationModule, 
         this.registerRecipeHandler(new NEIAEShapelessRecipeHandler());
         this.registerRecipeHandler(new NEIInscriberRecipeHandler());
         this.registerRecipeHandler(new NEIWorldCraftingHandler());
+
+        this.registerUsageHandler.invoke(this.apiClass, new NEICellViewHandler());
+
         if (AEConfig.instance.isFeatureEnabled(AEFeature.GrindStone)) {
             this.registerRecipeHandler(new NEIGrinderRecipeHandler());
         }
@@ -119,21 +121,21 @@ public class NEI implements INEI, IContainerTooltipHandler, IIntegrationModule, 
         this.registerBookmarkContainerHandler = this.apiClass
                 .getDeclaredMethod("registerBookmarkContainerHandler", Class.class, IBookmarkContainerHandler.class);
         this.registerBookmarkContainerHandler.invoke(apiClass, GuiSkyChest.class, new NEIAEBookmarkContainerHandler()); // Skystone
-                                                                                                                        // chests
+        // chests
         this.registerBookmarkContainerHandler
                 .invoke(apiClass, GuiCraftingTerm.class, new NEIAETerminalBookmarkContainerHandler()); // Crafting
-                                                                                                       // Terminal
+        // Terminal
         this.registerBookmarkContainerHandler
                 .invoke(apiClass, GuiMEMonitorable.class, new NEIAETerminalBookmarkContainerHandler()); // Terminal
         this.registerBookmarkContainerHandler
                 .invoke(apiClass, GuiWirelessTerm.class, new NEIAETerminalBookmarkContainerHandler()); // Wireless
-                                                                                                       // Terminal
+        // Terminal
         this.registerBookmarkContainerHandler
                 .invoke(apiClass, GuiPatternTerm.class, new NEIAETerminalBookmarkContainerHandler()); // Pattern
-                                                                                                      // terminal
+        // terminal
         this.registerBookmarkContainerHandler
                 .invoke(apiClass, GuiPatternTermEx.class, new NEIAETerminalBookmarkContainerHandler()); // Big pattern
-                                                                                                        // terminal
+        // terminal
         this.registerBookmarkContainerHandler
                 .invoke(apiClass, GuiMEPortableCell.class, new NEIAETerminalBookmarkContainerHandler()); // ME chest
         // large stack tooltips
@@ -205,19 +207,19 @@ public class NEI implements INEI, IContainerTooltipHandler, IIntegrationModule, 
 
     @Override
     public List<String> handleTooltip(final GuiContainer arg0, final int arg1, final int arg2,
-            final List<String> current) {
+                                      final List<String> current) {
         return current;
     }
 
     @Override
     public List<String> handleItemDisplayName(final GuiContainer arg0, final ItemStack arg1,
-            final List<String> current) {
+                                              final List<String> current) {
         return current;
     }
 
     @Override
     public List<String> handleItemTooltip(final GuiContainer guiScreen, final ItemStack stack, final int mouseX,
-            final int mouseY, final List<String> currentToolTip) {
+                                          final int mouseY, final List<String> currentToolTip) {
         if (guiScreen instanceof IGuiTooltipHandler) {
             return ((IGuiTooltipHandler) guiScreen).handleItemTooltip(stack, mouseX, mouseY, currentToolTip);
         }
@@ -236,8 +238,8 @@ public class NEI implements INEI, IContainerTooltipHandler, IIntegrationModule, 
 
     @Override
     public ItemStack getStackUnderMouse(GuiContainer gui, int mousex, int mousey) {
-        if (gui instanceof IGuiTooltipHandler) {
-            return ((IGuiTooltipHandler) gui).getHoveredStack();
+        if (gui instanceof IGuiTooltipHandler handler) {
+            return handler.getHoveredStack();
         }
         return null;
     }
@@ -256,17 +258,16 @@ public class NEI implements INEI, IContainerTooltipHandler, IIntegrationModule, 
     }
 
     public void addToBookmark(ItemStack output, List<ItemStack> missing) {
-        ItemsGrid grid = LayoutManager.bookmarkPanel.getGrid();
-        grid.setPage(grid.getNumPages() - 1);
-
-        if (output != null) {
-            BookmarkRecipe recipe = new BookmarkRecipe(output);
-            recipe.recipeId = new BookmarkRecipeId("craft-confirm", missing);
-            recipe.ingredients = missing;
-
-            LayoutManager.bookmarkPanel.addBookmarkGroup(Arrays.asList(recipe), BookmarkViewMode.TODO_LIST, false);
-        } else {
-            LayoutManager.bookmarkPanel.addBookmarkGroup(missing, BookmarkViewMode.DEFAULT);
-        }
+//        ItemsGrid grid = LayoutManager.bookmarkPanel.getGrid();
+//        grid.setPage(grid.getNumPages() - 1);
+//
+//        if (output != null) {
+//            Recipe recipe = Recipe.of(Arrays.asList(output), "craft-confirm", missing);
+//            recipe.setCustomRecipeId(RecipeId.of(output, "craft-confirm", missing));
+//
+//            LayoutManager.bookmarkPanel.addGroup(Arrays.asList(recipe), BookmarkViewMode.TODO_LIST, false);
+//        } else {
+//            LayoutManager.bookmarkPanel.addGroup(missing, BookmarkViewMode.DEFAULT, false);
+//        }
     }
 }

@@ -137,6 +137,9 @@ public class ContainerNetworkStatus extends AEBaseContainer {
     @GuiSync(30)
     public long essentiaCellCount;
 
+    @GuiSync(31)
+    public boolean powerInfinite;
+
     private IGrid network;
     private int delay = 40;
     private boolean isConsume = true;
@@ -166,6 +169,14 @@ public class ContainerNetworkStatus extends AEBaseContainer {
         }
     }
 
+    public boolean isPowerInfinite() {
+        return powerInfinite;
+    }
+
+    public void setPowerInfinite(boolean powerInfinite) {
+        this.powerInfinite = powerInfinite;
+    }
+
     @Override
     public void detectAndSendChanges() {
         this.delay++;
@@ -178,6 +189,7 @@ public class ContainerNetworkStatus extends AEBaseContainer {
                 this.setPowerUsage((long) (100.0 * eg.getAvgPowerUsage()));
                 this.setCurrentPower((long) (100.0 * eg.getStoredPower()));
                 this.setMaxPower((long) (100.0 * eg.getMaxStoredPower()));
+                this.setPowerInfinite(eg.getHasInfiniteStore());
             }
 
             try {

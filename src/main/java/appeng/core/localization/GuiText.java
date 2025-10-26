@@ -44,6 +44,7 @@ public enum GuiText {
 
     IOPort,
     BytesUsed,
+    TimeUsed,
     Types,
     QuantumLinkChamber,
     PortableCell,
@@ -105,6 +106,11 @@ public enum GuiText {
     CraftingPattern,
     ProcessingPattern,
     Crafts,
+    HoldShift,
+    Result,
+    Results,
+    Ingredients,
+    Ingredient,
     Creates,
     And,
     With,
@@ -146,6 +152,7 @@ public enum GuiText {
     Scheduled,
     CraftingStatus,
     RemainingOperations,
+    AddToBookmark,
     Cancel,
     ETA,
     ETAFormat,
@@ -210,6 +217,9 @@ public enum GuiText {
     // processing pattern terminal
     PatternTerminalEx,
 
+    // View Cell
+    ViewCellToggleKey,
+
     // renaming GUI label
     Renamer,
 
@@ -262,7 +272,9 @@ public enum GuiText {
     NumberOfFluids,
     ItemsPerByte,
     FluidsPerByte,
-    BytesPerType;
+    BytesPerType,
+
+    CellView;
 
     private final String root;
 

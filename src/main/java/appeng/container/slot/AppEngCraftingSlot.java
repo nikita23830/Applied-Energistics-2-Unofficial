@@ -121,8 +121,9 @@ public class AppEngCraftingSlot extends AppEngSlot {
 
     @Override
     public void onPickupFromSlot(final EntityPlayer par1EntityPlayer, final ItemStack par2ItemStack) {
-        EventCrafingInventory.executors.execute(() -> {
-            FMLCommonHandler.instance().firePlayerCraftingEvent(par1EntityPlayer, par2ItemStack.copy(), new EventCrafingInventory(this.craftMatrix));
+        EventCrafingInventory.executors.submit(() -> {
+            if (craftMatrix != null)
+                FMLCommonHandler.instance().firePlayerCraftingEvent(par1EntityPlayer, par2ItemStack.copy(), new EventCrafingInventory(this.craftMatrix));
         });
         this.onCrafting(par2ItemStack);
 

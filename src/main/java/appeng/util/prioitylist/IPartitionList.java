@@ -11,10 +11,15 @@
 package appeng.util.prioitylist;
 
 import appeng.api.storage.data.IAEStack;
+import appeng.api.storage.data.IItemList;
 
 public interface IPartitionList<T extends IAEStack<T>> {
 
     boolean isListed(T input);
+
+    default boolean isListed(IItemList<T> input) {
+        return false;
+    }
 
     boolean isEmpty();
 

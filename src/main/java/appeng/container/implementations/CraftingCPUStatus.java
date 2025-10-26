@@ -20,6 +20,7 @@ import appeng.util.Platform;
 import appeng.util.ReadableNumberConverter;
 import appeng.util.item.AEItemStack;
 import io.netty.buffer.ByteBuf;
+import appeng.api.config.CraftingAllow;
 
 /**
  * Summary status for the crafting CPU selection widget
@@ -40,6 +41,8 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
     private final long totalItems;
     private final long remainingItems;
     private final IAEItemStack crafting;
+    private final CraftingAllow allowMode;
+    private final long craftingElapsedTime;
 
     public CraftingCPUStatus() {
         this.serverCluster = null;
@@ -52,6 +55,8 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         this.totalItems = 0;
         this.remainingItems = 0;
         this.crafting = null;
+        this.allowMode = CraftingAllow.ALLOW_ALL;
+        this.craftingElapsedTime = 0;
     }
 
     public CraftingCPUStatus(ICraftingCPU cluster, int serial) {
@@ -64,14 +69,17 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
             usedStorage = cluster.getUsedStorage();
             totalItems = cluster.getStartItemCount();
             remainingItems = cluster.getRemainingItemCount();
+            craftingElapsedTime = cluster.getElapsedTime();
         } else {
             crafting = null;
             usedStorage = 0;
             totalItems = 0;
             remainingItems = 0;
+            craftingElapsedTime = 0;
         }
         this.storage = cluster.getAvailableStorage();
         this.coprocessors = cluster.getCoProcessors();
+        this.allowMode = cluster.getCraftingAllowMode();
     }
 
     public CraftingCPUStatus(NBTTagCompound i) {
@@ -85,6 +93,9 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         this.totalItems = i.getLong("totalItems");
         this.remainingItems = i.getLong("remainingItems");
         this.crafting = i.hasKey("crafting") ? AEItemStack.loadItemStackFromNBT(i.getCompoundTag("crafting")) : null;
+        this.allowMode = i.hasKey("allowMode") ? CraftingAllow.values()[i.getInteger("allowMode")]
+                : CraftingAllow.ALLOW_ALL;
+        this.craftingElapsedTime = i.hasKey("craftingElapsedTime") ? i.getLong("craftingElapsedTime") : 0;
     }
 
     public CraftingCPUStatus(ByteBuf packet) throws IOException {
@@ -110,11 +121,21 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         i.setBoolean("isBusy", isBusy);
         i.setLong("totalItems", totalItems);
         i.setLong("remainingItems", remainingItems);
+        i.setLong("craftingElapsedTime", craftingElapsedTime);
         if (crafting != null) {
             NBTTagCompound stack = new NBTTagCompound();
             crafting.writeToNBT(stack);
             i.setTag("crafting", stack);
         }
+        i.setInteger("allowMode", this.allowMode.ordinal());
+    }
+
+    public CraftingAllow allowMode() {
+        return allowMode;
+    }
+
+    public long getCraftingElapsedTime() {
+        return craftingElapsedTime;
     }
 
     public void writeToPacket(ByteBuf i) throws IOException {

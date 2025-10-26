@@ -67,6 +67,8 @@ import appeng.util.SettingsFrom;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
+import appeng.items.tools.ToolMemoryCard;
+import appeng.parts.automation.UpgradeInventory;
 
 public abstract class AEBasePart implements IPart, IGridProxyable, IActionHost, IUpgradeableHost, ICustomNameObject {
 
@@ -387,6 +389,7 @@ public abstract class AEBasePart implements IPart, IGridProxyable, IActionHost, 
                 final NBTTagCompound data = this.downloadSettings(SettingsFrom.MEMORY_CARD);
                 if (data != null) {
                     memoryCard.setMemoryCardContents(memCardIS, name, data);
+                    ToolMemoryCard.setUpgradesInfo(data, (UpgradeInventory) this.getInventoryByName("upgrades"));
                     memoryCard.notifyUser(player, MemoryCardMessages.SETTINGS_SAVED);
                 }
             } else {
@@ -394,6 +397,10 @@ public abstract class AEBasePart implements IPart, IGridProxyable, IActionHost, 
                 final NBTTagCompound data = memoryCard.getData(memCardIS);
                 if (name.equals(storedName)) {
                     this.uploadSettings(SettingsFrom.MEMORY_CARD, data);
+                    if (data.hasKey("upgradesList")) {
+                        UpgradeInventory up = (UpgradeInventory) getInventoryByName("upgrades");
+                        ToolMemoryCard.insertUpgrades(data, player, up);
+                    }
                     memoryCard.notifyUser(player, MemoryCardMessages.SETTINGS_LOADED);
                 } else {
                     memoryCard.notifyUser(player, MemoryCardMessages.INVALID_MACHINE);

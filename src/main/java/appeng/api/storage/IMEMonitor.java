@@ -13,6 +13,8 @@
 
 package appeng.api.storage;
 
+import appeng.api.config.Actionable;
+import appeng.api.networking.security.BaseActionSource;
 import appeng.api.networking.storage.IBaseMonitor;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;

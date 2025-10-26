@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import appeng.me.storage.MEMonitorPassThrough;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -476,6 +477,9 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                     h.setMode((StorageFilter) this.getConfigManager().getSetting(Settings.STORAGE_FILTER));
                     h.setActionSource(new MachineSource(this));
                     this.monitor = h;
+                }
+                if (inv instanceof MEMonitorPassThrough<?> h) {
+                    h.setMode((StorageFilter) this.getConfigManager().getSetting(Settings.STORAGE_FILTER));
                 }
 
                 if (inv != null) {

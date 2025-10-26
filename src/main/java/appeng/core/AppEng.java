@@ -48,6 +48,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
+import appeng.util.InvTweakSortingModule;
 
 @Mod(
         modid = AppEng.MOD_ID,
@@ -169,6 +170,8 @@ public final class AppEng {
 
             this.startService("AE2 CSV Export", exportProcessThread);
         }
+
+        if (Platform.isClient()) InvTweakSortingModule.init();
 
         this.registration.initialize(event, this.recipeDirectory, this.customRecipeConfig);
         IntegrationRegistry.INSTANCE.init();

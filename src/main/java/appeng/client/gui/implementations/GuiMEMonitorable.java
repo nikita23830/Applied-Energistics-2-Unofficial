@@ -49,6 +49,7 @@ import appeng.container.implementations.ContainerMEMonitorable;
 import appeng.container.slot.AppEngSlot;
 import appeng.container.slot.SlotCraftingMatrix;
 import appeng.container.slot.SlotFakeCraftingMatrix;
+import appeng.container.slot.SlotRestrictedInput;
 import appeng.core.AEConfig;
 import appeng.core.AELog;
 import appeng.core.CommonHelper;
@@ -63,6 +64,7 @@ import appeng.helpers.WirelessTerminalGuiObject;
 import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
 import appeng.integration.modules.NEI;
+import appeng.items.storage.ItemViewCell;
 import appeng.parts.reporting.AbstractPartTerminal;
 import appeng.tile.misc.TileSecurity;
 import appeng.util.IConfigManagerHost;
@@ -107,7 +109,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
     }
 
     public GuiMEMonitorable(final InventoryPlayer inventoryPlayer, final ITerminalHost te,
-            final ContainerMEMonitorable c) {
+                            final ContainerMEMonitorable c) {
 
         super(c);
 
@@ -401,7 +403,32 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
     @Override
     protected void mouseClicked(final int xCoord, final int yCoord, final int btn) {
         searchField.mouseClicked(xCoord, yCoord, btn);
+        if (handleViewCellClick(xCoord, yCoord, btn)) return;
         super.mouseClicked(xCoord, yCoord, btn);
+    }
+
+    private boolean handleViewCellClick(final int xCoord, final int yCoord, final int btn) {
+        if (this.viewCell && monitorableContainer.canAccessViewCells && btn == 1) {
+            Slot slot = getSlot(xCoord, yCoord);
+            if (slot instanceof SlotRestrictedInput cvs) {
+                // if it has an item
+                if (!cvs.getHasStack()) return false;
+                // if its a view cell
+                if (!(cvs.getStack().getItem() instanceof ItemViewCell)) return false;
+
+                // update the view cell
+                try {
+                    NetworkHandler.instance.sendToServer(
+                            new PacketValueConfig("Terminal.UpdateViewCell", Integer.toString(cvs.getSlotIndex())));
+                } catch (IOException e) {
+                    AELog.debug(e);
+                }
+
+                // eat the right-click input if a view cell was successfully toggled
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -473,40 +500,47 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
 
     @Override
     protected void keyTyped(final char character, final int key) {
-        if (!this.checkHotbarKeys(key)) {
+        if (!isAutoFocus) {
+            keyTypedResolver(character, key, false);
+        } else if (!this.checkHotbarKeys(key)) {
+            keyTypedResolver(character, key, true);
+        }
+    }
 
-            if (NEI.searchField.existsSearchField()) {
+    private void keyTypedResolver(final char character, final int key, boolean hotBarCheckPassed) {
+        if (NEI.searchField.existsSearchField()) {
 
-                if ((NEI.searchField.focused() || searchField.isFocused())
-                        && CommonHelper.proxy.isActionKey(ActionKey.TOGGLE_FOCUS, key)) {
-                    final boolean focused = searchField.isFocused();
-                    searchField.setFocused(!focused);
-                    NEI.searchField.setFocus(focused);
-                    return;
-                }
-
-                if (NEI.searchField.focused()) {
-                    return;
-                }
-            }
-
-            if (searchField.isFocused() && key == Keyboard.KEY_RETURN) {
-                searchField.setFocused(false);
+            if ((NEI.searchField.focused() || searchField.isFocused())
+                    && CommonHelper.proxy.isActionKey(ActionKey.TOGGLE_FOCUS, key)) {
+                final boolean focused = searchField.isFocused();
+                searchField.setFocused(!focused);
+                NEI.searchField.setFocus(focused);
                 return;
             }
 
-            if (character == ' ' && searchField.getText().isEmpty()) {
+            if (NEI.searchField.focused()) {
                 return;
             }
+        }
 
-            final boolean mouseInGui = this
-                    .isPointInRegion(0, 0, this.xSize, this.ySize, this.currentMouseX, this.currentMouseY);
+        if (searchField.isFocused() && key == Keyboard.KEY_RETURN) {
+            searchField.setFocused(false);
+            return;
+        }
 
-            if (this.isAutoFocus && !searchField.isFocused() && mouseInGui) {
-                searchField.setFocused(true);
-            }
+        if (character == ' ' && searchField.getText().isEmpty()) {
+            return;
+        }
 
-            if (!searchField.textboxKeyTyped(character, key)) {
+        final boolean mouseInGui = this
+                .isPointInRegion(0, 0, this.xSize, this.ySize, this.currentMouseX, this.currentMouseY);
+
+        if (this.isAutoFocus && !searchField.isFocused() && mouseInGui) {
+            searchField.setFocused(true);
+        }
+
+        if (!searchField.textboxKeyTyped(character, key)) {
+            if (hotBarCheckPassed || !this.checkHotbarKeys(key)) {
                 super.keyTyped(character, key);
             }
         }

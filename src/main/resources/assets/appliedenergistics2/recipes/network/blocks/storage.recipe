@@ -9,3 +9,9 @@ shaped=
     cable _ cable,
     oredictionary:ingotIron ae2:ItemMaterial.EngProcessor oredictionary:ingotIron
     -> ae2:BlockDrive
+
+shaped=
+    ae2:ItemMaterial.Singularity ae2:ItemExtremeStorageCell.Singularity ae2:ItemMaterial.Singularity,
+    ae2:ItemExtremeStorageCell.Singularity mc:nether_star ae2:ItemExtremeStorageCell.Singularity,
+    ae2:ItemMaterial.Singularity ae2:ItemExtremeStorageCell.Singularity ae2:ItemMaterial.Singularity
+    -> ae2:ItemExtremeStorageCell.Universe

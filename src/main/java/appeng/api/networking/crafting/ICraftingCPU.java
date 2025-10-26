@@ -21,6 +21,7 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.util.CraftCancelListener;
 import appeng.api.util.CraftCompleteListener;
 import appeng.api.util.CraftUpdateListener;
+import appeng.api.config.CraftingAllow;
 
 public interface ICraftingCPU extends IBaseMonitor<IAEItemStack> {
 
@@ -102,4 +103,19 @@ public interface ICraftingCPU extends IBaseMonitor<IAEItemStack> {
      * @param onCraftingStatusUpdate
      */
     default void addOnCraftingUpdateListener(CraftUpdateListener onCraftingStatusUpdate) {}
+
+    public default CraftingAllow getCraftingAllowMode() {
+        return CraftingAllow.ALLOW_ALL;
+    }
+
+    public default void changeCraftingAllowMode(CraftingAllow mode) {}
+
+    /**
+     * get this crafting elapsed time
+     *
+     * @return
+     */
+    public default long getElapsedTime() {
+        return 0l;
+    }
 }

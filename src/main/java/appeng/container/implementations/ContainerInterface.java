@@ -13,6 +13,7 @@ package appeng.container.implementations;
 import java.util.ArrayList;
 
 import appeng.api.IExtendDuality;
+import appeng.api.config.FuzzyMode;
 import appeng.api.implementations.IUpgradeableHost;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
@@ -65,6 +66,9 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
 
     @GuiSync(12)
     public LockCraftingMode lockCraftingMode = LockCraftingMode.NONE;
+
+    @GuiSync(16)
+    public FuzzyMode fuzzyMode = FuzzyMode.IGNORE_ALL;
 
     @GuiSync(8)
     public InsertionMode insertionMode = InsertionMode.DEFAULT;
@@ -168,6 +172,14 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
         return drops;
     }
 
+    public FuzzyMode getFuzzyMode() {
+        return this.fuzzyMode;
+    }
+
+    public void setFuzzyMode(FuzzyMode mode) {
+        this.fuzzyMode = mode;
+    }
+
     @Override
     protected void loadSettingsFromHost(final IConfigManager cm) {
         this.setBlockingMode((YesNo) cm.getSetting(Settings.BLOCK));
@@ -177,6 +189,7 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
         this.setPatternOptimization((YesNo) cm.getSetting(Settings.PATTERN_OPTIMIZATION));
         this.setAdvancedBlockingMode((AdvancedBlockingMode) cm.getSetting(Settings.ADVANCED_BLOCKING_MODE));
         this.setLockCraftingMode((LockCraftingMode) cm.getSetting(Settings.LOCK_CRAFTING_MODE));
+        this.setFuzzyMode((FuzzyMode) cm.getSetting(Settings.FUZZY_MODE));
     }
 
     public void doublePatterns(int val) {

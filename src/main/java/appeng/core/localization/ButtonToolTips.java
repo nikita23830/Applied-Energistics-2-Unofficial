@@ -228,7 +228,15 @@ public enum ButtonToolTips {
     CellRestrictionHint,
 
     SearchGotoNext,
-    SearchGotoPrev;
+    SearchGotoPrev,
+
+    CPUAllowMode,
+    CPUAllowAllDesc,
+    CPUOnlyAllowPlayerDesc,
+    CPUOnlyAllowNonPlayerDesc,
+    ToggleShowOnlySubstitute,
+    ToggleShowOnlySubstituteOnDesc,
+    ToggleShowOnlySubstituteOffDesc;
 
     private final String root;
 

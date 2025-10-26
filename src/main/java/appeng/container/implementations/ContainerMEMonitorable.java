@@ -15,6 +15,7 @@ import java.nio.BufferOverflowException;
 
 import javax.annotation.Nonnull;
 
+import appeng.items.storage.ItemViewCell;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -366,6 +367,21 @@ public class ContainerMEMonitorable extends AEBaseContainer
 
     public SlotRestrictedInput getCellViewSlot(final int index) {
         return this.cellView[index];
+    }
+
+    public SlotRestrictedInput[] getCellViewSlots() {
+        return this.cellView;
+    }
+
+    public void toggleViewCell(int slotIdx) {
+        if (!this.canAccessViewCells) return;
+        Slot slot = getSlot(slotIdx);
+        if (!(slot instanceof SlotRestrictedInput)) return;
+        ItemStack cellStack = slot.getStack();
+        if (cellStack == null) return;
+        if (!(cellStack.getItem() instanceof ItemViewCell viewCell)) return;
+        viewCell.toggleViewMode(cellStack);
+        detectAndSendChanges();
     }
 
     public boolean isPowered() {

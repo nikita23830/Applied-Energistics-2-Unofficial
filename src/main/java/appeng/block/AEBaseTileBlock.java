@@ -18,6 +18,9 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import appeng.api.implementations.IUpgradeableHost;
+import appeng.items.tools.ToolMemoryCard;
+import appeng.parts.automation.UpgradeInventory;
 import com.google.common.base.Objects;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
@@ -299,6 +302,11 @@ public abstract class AEBaseTileBlock extends AEBaseBlock implements IAEFeature,
                             final NBTTagCompound data = t.downloadSettings(SettingsFrom.MEMORY_CARD);
                             if (data != null) {
                                 memoryCard.setMemoryCardContents(is, name, data);
+                                if (t instanceof IUpgradeableHost iuh) {
+                                    ToolMemoryCard.setUpgradesInfo(
+                                            data,
+                                            (UpgradeInventory) iuh.getInventoryByName("upgrades"));
+                                }
                                 memoryCard.notifyUser(player, MemoryCardMessages.SETTINGS_SAVED);
                                 return true;
                             }
@@ -309,6 +317,10 @@ public abstract class AEBaseTileBlock extends AEBaseBlock implements IAEFeature,
                         if (this.getUnlocalizedName().equals(name)) {
                             final AEBaseTile t = this.getTileEntity(w, x, y, z);
                             t.uploadSettings(SettingsFrom.MEMORY_CARD, data);
+                            if (t instanceof IUpgradeableHost iuh && data.hasKey("upgradesList")) {
+                                UpgradeInventory up = (UpgradeInventory) iuh.getInventoryByName("upgrades");
+                                ToolMemoryCard.insertUpgrades(data, player, up);
+                            }
                             memoryCard.notifyUser(player, MemoryCardMessages.SETTINGS_LOADED);
                         } else {
                             memoryCard.notifyUser(player, MemoryCardMessages.INVALID_MACHINE);

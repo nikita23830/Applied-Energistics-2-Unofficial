@@ -82,6 +82,7 @@ import appeng.debug.BlockChunkloader;
 import appeng.debug.BlockCubeGenerator;
 import appeng.debug.BlockItemGen;
 import appeng.debug.BlockPhantomNode;
+import appeng.block.networking.BlockCreativeEnergyController;
 
 /**
  * Internal implementation for the API blocks
@@ -114,6 +115,7 @@ public final class ApiBlocks implements IBlocks {
     private final ITileDefinition spatialIOPort;
     private final ITileDefinition multiPart;
     private final ITileDefinition controller;
+    private final ITileDefinition creativeEnergyController;
     private final ITileDefinition drive;
     private final ITileDefinition chest;
     private final ITileDefinition iface;
@@ -210,6 +212,7 @@ public final class ApiBlocks implements IBlocks {
         this.spatialIOPort = constructor.registerTileDefinition(new BlockSpatialIOPort());
         this.multiPart = constructor.registerTileDefinition(new BlockCableBus());
         this.controller = constructor.registerTileDefinition(new BlockController());
+        this.creativeEnergyController = constructor.registerTileDefinition(new BlockCreativeEnergyController());
         this.drive = constructor.registerTileDefinition(new BlockDrive());
         this.chest = constructor.registerTileDefinition(new BlockChest());
         this.iface = constructor.registerTileDefinition(new BlockInterface());
@@ -385,6 +388,11 @@ public final class ApiBlocks implements IBlocks {
     @Override
     public IBlockDefinition skyCompass() {
         return this.skyCompass;
+    }
+
+    @Override
+    public ITileDefinition creativeEnergyController() {
+        return this.creativeEnergyController;
     }
 
     @Override

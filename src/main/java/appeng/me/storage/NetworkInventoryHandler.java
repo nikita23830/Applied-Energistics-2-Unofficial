@@ -31,11 +31,42 @@ import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.cache.SecurityCache;
 import appeng.util.SortedArrayList;
+import appeng.api.config.FuzzyMode;
+import java.util.Collection;
 
 public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHandler<T> {
 
     private static final ThreadLocal<LinkedList> DEPTH_MOD = new ThreadLocal<>();
     private static final ThreadLocal<LinkedList> DEPTH_SIM = new ThreadLocal<>();
+
+    /*
+     * ME Network Inventory checker. Currently used in PartExportBus only, due to reverse-priority order checking of
+     * connected network inventories.
+     */
+    @Override
+    public Collection<T> getSortedFuzzyItems(Collection<T> out, T fuzzyItem, FuzzyMode fuzzyMode, int iteration) {
+        if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
+            return out;
+        }
+
+        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
+        final int size = priorityInventory.size();
+        for (int i = size - 1; i >= 0; i--) {
+            final IMEInventoryHandler<T> invObject = priorityInventory.get(i);
+
+            if (!invObject.isAutoCraftingInventory()) {
+                final IItemList inv = invObject.getAvailableItems(invObject.getChannel().createList(), iteration);
+                if (!inv.isEmpty()) {
+                    final Collection fzlist = inv.findFuzzy(fuzzyItem, fuzzyMode);
+                    out.addAll(fzlist);
+                }
+            }
+        }
+
+        this.surface(this, Actionable.SIMULATE);
+
+        return out;
+    }
 
     /**
      * Sorter for the {@link #priorityInventory} list. AutoCrafting inventories are first followed by Sticky
@@ -84,6 +115,116 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
 
     public void addNewStorage(final IMEInventoryHandler<T> h) {
         this.priorityInventory.add(h);
+    }
+
+    @Override
+    public T injectItemsNotSave(T input, Actionable type, BaseActionSource src) {
+        if (this.diveList(this, type)) {
+            return input;
+        }
+
+        if (this.testPermission(src, SecurityPermissions.INJECT)) {
+            this.surface(this, type);
+            return input;
+        }
+
+        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
+        final int size = priorityInventory.size();
+
+        int i = 0;
+        boolean stickyInventoryFound = false;
+        // Try to insert into all sticky inventories which are at the beginning of the list
+        for (; i < size && input != null; i++) {
+            final IMEInventoryHandler<T> inv = priorityInventory.get(i);
+            if (!inv.getSticky() && !inv.isAutoCraftingInventory()) break;
+
+            if (inv.canAccept(input)
+                    && (inv.isPrioritized(input) || inv.extractItems(input, Actionable.SIMULATE, src) != null)) {
+                input = inv.injectItemsNotSave(input, type, src);
+                if (!stickyInventoryFound && inv.getSticky()) stickyInventoryFound = true;
+            }
+        }
+
+        if (stickyInventoryFound || input == null || i >= size) {
+            this.surface(this, type);
+            return input;
+        }
+
+        IMEInventoryHandler<T> inv = priorityInventory.get(i);
+        int lastPriority = inv.getPriority();
+        outer: while (true) {
+            int passTwoIndex = -1;
+            // Pass 1
+            while (true) {
+                // If the next if-statement computes this value, we can use it later. If it doesn't we're just being
+                // optimistic here and the actual check will happen on pass 2
+                boolean canAcceptInput = true;
+
+                final boolean validForPass1 = inv.validForPass(1);
+                if (validForPass1 && (canAcceptInput = inv.canAccept(input))
+                        && (inv.isPrioritized(input) || inv.extractItems(input, Actionable.SIMULATE, src) != null)) {
+                    input = inv.injectItemsNotSave(input, type, src);
+                    if (input == null) break outer;
+                }
+
+                // We remember at which index the second pass should start iterating. Additionally, we check if the
+                // inventory accepts the item at all, to avoid doing the exact same check again in the second pass.
+                // This als assumes that canAccept is not dependent on stack size
+                if (canAcceptInput && passTwoIndex == -1 && inv.validForPass(2)) {
+                    passTwoIndex = i;
+                    // If we're at a pass 2 only inventory, we can stop here and continue with pass 2
+                    if (!validForPass1) break;
+                }
+
+                i++;
+
+                if (i >= size) {
+                    if (passTwoIndex == -1) break outer; // If pass 2 also has no work to do, we're fully done
+                    else break; // Otherwise pass 2 will run till the end again and then break out of the outer loop
+                }
+
+                inv = priorityInventory.get(i);
+
+                final int priority = inv.getPriority();
+                final boolean prioritySwitch = lastPriority != priority;
+                lastPriority = priority;
+
+                // Check if the current run has ended
+                if (prioritySwitch) break;
+            }
+
+            // Pass 2
+            if (passTwoIndex != -1) {
+                i = passTwoIndex;
+                inv = priorityInventory.get(i);
+                lastPriority = inv.getPriority();
+                while (true) {
+                    if (inv.canAccept(input) && !inv.isPrioritized(input)) {
+                        input = inv.injectItemsNotSave(input, type, src);
+                        if (input == null) break outer;
+                    }
+
+                    i++;
+
+                    // Pass 2 iteration will go at least as far as pass 1, therefore we can be sure pass 1 also has
+                    // no work left
+                    if (i >= size) break outer;
+
+                    inv = priorityInventory.get(i);
+
+                    final int priority = inv.getPriority();
+                    final boolean prioritySwitch = lastPriority != priority;
+                    lastPriority = priority;
+
+                    // Check if the current run has ended
+                    if (prioritySwitch) break;
+                }
+            }
+        }
+
+        this.surface(this, type);
+
+        return input;
     }
 
     @Override

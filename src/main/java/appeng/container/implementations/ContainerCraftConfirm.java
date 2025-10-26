@@ -17,13 +17,16 @@ import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
+import appeng.api.config.CraftingAllow;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
+import appeng.parts.reporting.AbstractPartDisplay;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ICrafting;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 import appeng.api.AEApi;
@@ -193,9 +196,11 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
 
                         if (toExtract.getStackSize() > 0 && toCraft.getStackSize() <= 0
                                 && (missing == null || missing.getStackSize() <= 0)) {
-                            long available = items.getAvailableItem(toExtract, IterationCounter.fetchNewId())
-                                    .getStackSize();
-                            toExtract.setUsedPercent(toExtract.getStackSize() / (available / 100f));
+                            IAEItemStack availableStack = items
+                                    .getAvailableItem(toExtract, IterationCounter.fetchNewId());
+                            long available = (availableStack == null) ? 0 : availableStack.getStackSize();
+                            if (available > 0) toExtract.setUsedPercent(toExtract.getStackSize() / (available / 100f));
+                            else toExtract.setUsedPercent(0f);
                         }
 
                         if (toExtract.getStackSize() > 0) {
@@ -236,7 +241,7 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
                 }
             } catch (final Throwable e) {
                 e.printStackTrace();
-                this.getPlayerInv().player.addChatMessage(new ChatComponentText("Error: " + e.toString()));
+                this.getPlayerInv().player.addChatMessage(new ChatComponentText("Error: " + e));
                 AELog.debug(e);
                 this.setValidContainer(false);
                 this.result = null;
@@ -272,6 +277,7 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
     }
 
     public boolean cpuMatches(final CraftingCPUStatus c) {
+        if (c.allowMode() == CraftingAllow.ONLY_NONPLAYER) return false;
         if (this.getUsedBytes() <= 0) return false;
         if (c.isBusy() && this.cpuCraftingSameItem(c)) {
             return c.getStorage() >= this.getUsedBytes() + c.getUsedStorage();
@@ -280,22 +286,30 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
     }
 
     public void startJob() {
-        if (this.result != null && !this.isSimulation() && getGrid() != null) {
-            final ICraftingGrid cc = this.getGrid().getCache(ICraftingGrid.class);
-            CraftingCPUStatus selected = this.cpuTable.getSelectedCPU();
-            if (selected != null && selected.getServerCluster() instanceof CraftingCPUCluster && !getWorld().isRemote) {
-                ((CraftingCPUCluster) selected.getServerCluster()).setRequester((EntityPlayerMP) this.getInventoryPlayer().player);
+        try {
+            if (this.result != null && !this.isSimulation() && getGrid() != null) {
+                final ICraftingGrid cc = this.getGrid().getCache(ICraftingGrid.class);
+                CraftingCPUStatus selected = this.cpuTable.getSelectedCPU();
+                if (selected != null && selected.getServerCluster() instanceof CraftingCPUCluster && !getWorld().isRemote) {
+                    ((CraftingCPUCluster) selected.getServerCluster()).setRequester((EntityPlayerMP) this.getInventoryPlayer().player);
+                }
+                final ICraftingLink g = cc.submitJob(
+                        this.result,
+                        null,
+                        (selected == null) ? null : selected.getServerCluster(),
+                        true,
+                        this.getActionSrc());
+                this.setAutoStart(false);
+                if (g != null) {
+                    this.switchToOriginalGUI();
+                } else {
+                    System.out.println("ERRR 2");
+                }
+            } else {
+                System.out.println("ERRR 1");
             }
-            final ICraftingLink g = cc.submitJob(
-                    this.result,
-                    null,
-                    (selected == null) ? null : selected.getServerCluster(),
-                    true,
-                    this.getActionSrc());
-            this.setAutoStart(false);
-            if (g != null) {
-                this.switchToOriginalGUI();
-            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 
@@ -363,6 +377,9 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
 
             final TileEntity te = this.getOpenContext().getTile();
             Platform.openGUI(this.getInventoryPlayer().player, te, this.getOpenContext().getSide(), originalGui);
+        } else if (ah instanceof AbstractPartDisplay apd) {
+            TileEntity te = apd.getHost().getTile();
+            apd.onPartActivate(this.getInventoryPlayer().player, Vec3.createVectorHelper(te.xCoord, te.yCoord, te.zCoord));
         }
     }
 

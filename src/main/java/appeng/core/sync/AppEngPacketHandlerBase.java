@@ -51,6 +51,7 @@ import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.core.sync.packets.PacketTransitionEffect;
 import appeng.core.sync.packets.PacketValueConfig;
 import io.netty.buffer.ByteBuf;
+import appeng.core.sync.packets.PacketPatternItemRenamer;
 
 public class AppEngPacketHandlerBase {
 
@@ -118,7 +119,8 @@ public class AppEngPacketHandlerBase {
         PACKET_NEI_BOOKMARK(PacketNEIBookmark.class),
         PACKET_INTERFACE_TERMINAL_UPDATE(PacketInterfaceTerminalUpdate.class),
         PACKET_OPTIMIZE_PATTERNS(PacketOptimizePatterns.class),
-        PACKET_NETWORK_STATUS_SELECTED(PacketNetworkStatusSelected.class),;
+        PACKET_NETWORK_STATUS_SELECTED(PacketNetworkStatusSelected.class),
+        PACKET_PATTERN_ITEM_RENAMER(PacketPatternItemRenamer.class);
 
         private final Class<? extends AppEngPacket> packetClass;
         private final Constructor<? extends AppEngPacket> packetConstructor;

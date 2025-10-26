@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
+import appeng.api.ICraftingDevice;
 import appeng.api.events.EventFinishCraft;
 import appeng.api.implementations.tiles.ICraftingMachine;
 import appeng.api.util.EventCrafingInventory;
@@ -450,11 +451,15 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         }
 
                         if (getRequester() != null) {
-                            EventCrafingInventory.executors.execute(() -> {
-                                FMLCommonHandler.instance().firePlayerCraftingEvent(
-                                        getRequester(),
-                                        what.getItemStack().copy(),
-                                        new EventCrafingInventory(simpleNull));
+                            EventCrafingInventory.executors.submit(() -> {
+                                try {
+                                    FMLCommonHandler.instance().firePlayerCraftingEvent(
+                                            getRequester(),
+                                            what.getItemStack().copy(),
+                                            new EventCrafingInventory(simpleNull));
+                                } catch (Throwable ignored) {
+                                    // :P
+                                }
                             });
                         }
 
@@ -869,6 +874,65 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
                 }
 
+                if (m instanceof ICraftingDevice) {
+                    long max = ((ICraftingDevice) m).push(details, e.getValue().value, waitingFor);
+                    if (max > 0) {
+                        this.somethingChanged = true;
+                        this.remainingOperations -= max;
+                        pushedPattern = true;
+                        this.isFakeCrafting = (m instanceof DualityInterface di && di.isFakeCraftingMode());
+
+                        for (final IAEItemStack out : details.getCondensedOutputs()) {
+                            IAEItemStack ias = out.copy();
+                            ias.setStackSize(ias.getStackSize() * max);
+                            this.postChange(ias, this.machineSrc);
+                            this.postCraftingStatusChange(ias.copy());
+                            providers.computeIfAbsent(ias, k -> new ArrayList<>());
+                            List<DimensionalCoord> list = providers.get(ias);
+
+                            TileEntity tile = this.getTile(m);
+                            if (tile == null) continue;
+                            DimensionalCoord tileDimensionalCoord = new DimensionalCoord(tile);
+                            boolean isAdded = false;
+                            for (DimensionalCoord dimensionalCoord : list) {
+                                if (dimensionalCoord.isEqual(tileDimensionalCoord)) {
+                                    isAdded = true;
+                                    break;
+                                }
+                            }
+                            if (!isAdded) {
+                                list.add(tileDimensionalCoord);
+                            }
+                        }
+
+                        if (details.isCraftable()) {
+                            for (int x = 0; x < ic.getSizeInventory(); x++) {
+                                final ItemStack output = Platform.getContainerItem(ic.getStackInSlot(x));
+                                if (output != null) {
+                                    final IAEItemStack cItem = AEItemStack.create(output);
+                                    cItem.setStackSize(cItem.getStackSize() * max);
+                                    this.postChange(cItem, this.machineSrc);
+                                    this.waitingFor.add(cItem);
+                                    this.postCraftingStatusChange(cItem);
+                                }
+                            }
+                        }
+
+                        ic = null; // hand off complete!
+                        this.markDirty();
+
+                        e.getValue().value -= max;
+                        if (e.getValue().value <= 0) {
+                            continue;
+                        }
+
+                        if (this.remainingOperations == 0) {
+                            return;
+                        }
+                    }
+                    continue;
+                }
+
                 if (m.pushPatternWithCluster(details, ic, this)) {
                     eg.extractAEPower(sum, Actionable.MODULATE, PowerMultiplier.CONFIG);
                     this.somethingChanged = true;
@@ -900,13 +964,6 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
 
                     if (details.isCraftable()) {
-                        InventoryCrafting finalIc = ic;
-//                        EventCrafingInventory.executors.execute(() -> {
-//                            FMLCommonHandler.instance().firePlayerCraftingEvent(
-//                                    Platform.getPlayer((WorldServer) this.getWorld()),
-//                                    details.getOutput(finalIc, this.getWorld()).copy(),
-//                                    new EventCrafingInventory(finalIc));
-//                        });
                         for (int x = 0; x < ic.getSizeInventory(); x++) {
                             final ItemStack output = Platform.getContainerItem(ic.getStackInSlot(x));
                             if (output != null) {

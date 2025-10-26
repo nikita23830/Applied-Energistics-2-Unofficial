@@ -104,6 +104,11 @@ public class EnergyGridCache implements IEnergyGrid {
         this.pgc = this.myGrid.getCache(IPathingGrid.class);
     }
 
+    @Override
+    public boolean getHasInfiniteStore() {
+        return this.infinite;
+    }
+
     @MENetworkEventSubscribe
     public void EnergyNodeChanges(final MENetworkPowerIdleChange ev) {
         // update power usage based on event.

@@ -12,6 +12,7 @@ package appeng.core.sync.packets;
 
 import java.io.IOException;
 
+import appeng.container.implementations.ContainerPatternItemRenamer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
@@ -148,6 +149,22 @@ public class PacketInventoryAction extends AppEngPacket {
                     Platform.openGUI(sender, te, baseContainer.getOpenContext().getSide(), GuiBridge.GUI_PATTERN_MULTI);
                     if (sender.openContainer instanceof ContainerPatternMulti cpm) {
                         cpm.detectAndSendChanges();
+                    }
+                }
+            } else if (this.action == InventoryAction.RENAME_PATTERN_ITEM) {
+                final ContainerOpenContext context = baseContainer.getOpenContext();
+                if (context != null) {
+                    final TileEntity te = context.getTile();
+                    Platform.openGUI(
+                            sender,
+                            te,
+                            baseContainer.getOpenContext().getSide(),
+                            GuiBridge.GUI_PATTERN_ITEM_RENAMER);
+                    if (sender.openContainer instanceof ContainerPatternItemRenamer cpir) {
+                        if (baseContainer.getTargetStack() != null) {
+                            cpir.getPatternValue().putStack(baseContainer.getTargetStack().getItemStack());
+                        }
+                        cpir.detectAndSendChanges();
                     }
                 }
             } else {

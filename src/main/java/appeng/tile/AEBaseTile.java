@@ -301,6 +301,7 @@ public class AEBaseTile extends TileEntity implements IOrientable, ICommonTile, 
             }
         } catch (Throwable g) {
             System.out.println("ERROR IN TILE " + getClass().getName());
+            g.printStackTrace();
             throw g;
         }
     }

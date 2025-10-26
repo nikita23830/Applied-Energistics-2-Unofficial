@@ -33,6 +33,15 @@ public class FuzzyPriorityList<T extends IAEStack<T>> implements IPartitionList<
     }
 
     @Override
+    public boolean isListed(IItemList<T> input) {
+        for (T t : input) {
+            if (isListed(t))
+                return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean isEmpty() {
         return this.list.isEmpty();
     }

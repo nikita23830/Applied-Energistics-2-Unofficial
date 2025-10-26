@@ -13,6 +13,7 @@ package appeng.container.implementations;
 import java.io.IOException;
 import java.util.List;
 
+import appeng.api.config.CraftingAllow;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -57,6 +58,8 @@ public class ContainerCraftingCPU extends AEBaseContainer
 
     @GuiSync(0)
     public long elapsed = -1;
+    @GuiSync(1)
+    public int allow = 0;
 
     public ContainerCraftingCPU(final InventoryPlayer ip, final Object te) {
         super(ip, te);
@@ -114,11 +117,27 @@ public class ContainerCraftingCPU extends AEBaseContainer
             this.getMonitor().getListOfItem(this.list, CraftingItemList.ALL);
             this.getMonitor().addListener(this, null);
             this.setElapsedTime(0);
+            this.allow = this.getMonitor().getCraftingAllowMode().ordinal();
         } else {
             this.setMonitor(null);
             this.cpuName = "";
             this.setElapsedTime(-1);
         }
+    }
+
+    public void changeAllowMode(String msg) {
+        if (this.getMonitor() != null) {
+            CraftingAllow newAllowMode = CraftingAllow.values()[Integer.valueOf(msg)].next();
+            this.getMonitor().changeCraftingAllowMode(newAllowMode);
+            this.allow = newAllowMode.ordinal();
+        }
+    }
+
+    public CraftingAllow getAllowMode() {
+        if (this.getMonitor() != null) {
+            return this.getMonitor().getCraftingAllowMode();
+        }
+        return null;
     }
 
     public void cancelCrafting() {

@@ -18,8 +18,11 @@ import appeng.api.networking.security.BaseActionSource;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.StorageChannel;
+import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
+
+import java.util.List;
 
 public class MEPassThrough<T extends IAEStack<T>> implements IMEInventoryHandler<T> {
 
@@ -42,6 +45,21 @@ public class MEPassThrough<T extends IAEStack<T>> implements IMEInventoryHandler
     @Override
     public T injectItems(final T input, final Actionable type, final BaseActionSource src) {
         return this.internal.injectItems(input, type, src);
+    }
+
+    @Override
+    public T injectItemsNotSave(T input, Actionable mode, BaseActionSource src) {
+        return this.internal.injectItemsNotSave(input, mode, src);
+    }
+
+    @Override
+    public void _saveChanges() {
+        this.internal._saveChanges();
+    }
+
+    @Override
+    public List<T> injectMultiItems(IItemList<T> input, Actionable mode, BaseActionSource src) {
+        return this.internal.injectMultiItems(input, mode, src);
     }
 
     @Override

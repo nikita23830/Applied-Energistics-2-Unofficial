@@ -130,10 +130,4 @@ public class ItemExtremeStorageCell extends ItemBasicStorageCell {
         }
     }
 
-    public static boolean checkInvalidForLockingAndStickyCarding(ItemStack cell, ICellHandler cellHandler) {
-        return cellHandler == null || cell == null
-                || !(cell.getItem() instanceof ItemExtremeStorageCell)
-                || (cell.getItem() instanceof ItemExtremeStorageCell exCell && exCell.getTotalTypes(cell) != 1);
-    }
-
 }

@@ -12,6 +12,7 @@ package appeng.block.networking;
 
 import java.util.EnumSet;
 
+import appeng.client.texture.ExtraBlockTextures;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.world.World;
@@ -44,5 +45,16 @@ public class BlockController extends AEBaseTileBlock {
     @SideOnly(Side.CLIENT)
     protected RenderBlockController getRenderer() {
         return new RenderBlockController();
+    }
+
+    public ExtraBlockTextures getRenderTexture(int id) {
+        return switch (id) {
+            case 0 -> ExtraBlockTextures.BlockControllerPowered;
+            case 1 -> ExtraBlockTextures.BlockControllerColumnPowered;
+            case 2 -> ExtraBlockTextures.BlockControllerColumn;
+            case 3 -> ExtraBlockTextures.BlockControllerInsideA;
+            case 4 -> ExtraBlockTextures.BlockControllerInsideB;
+            default -> throw new IllegalStateException("Unexpected value: " + id);
+        };
     }
 }

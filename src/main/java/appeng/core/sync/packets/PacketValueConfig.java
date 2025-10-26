@@ -50,6 +50,7 @@ import appeng.core.sync.network.INetworkInfo;
 import appeng.helpers.IMouseWheelItem;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import appeng.container.implementations.ContainerMEMonitorable;
 
 public class PacketValueConfig extends AppEngPacket {
 
@@ -100,6 +101,10 @@ public class PacketValueConfig extends AppEngPacket {
         	qk.startJob(this.Value);
         } else if (this.Name.equals("Terminal.Start") && c instanceof final ContainerCraftConfirm qk) {
         	qk.startJob();
+        } else if(this.Name.equals("Terminal.OptimizePatterns") && c instanceof final ContainerCraftConfirm qk) {
+            qk.optimizePatterns();
+        } else if (this.Name.equals("Terminal.UpdateViewCell") && c instanceof final ContainerMEMonitorable qk) {
+            qk.toggleViewCell(Integer.parseInt(this.Value));
         } else if(this.Name.equals("Terminal.OptimizePatterns") && c instanceof final ContainerCraftConfirm qk){
             qk.optimizePatterns();
         } else if(this.Name.equals("Interface.DoublePatterns") && c instanceof final ContainerInterface qk){
@@ -108,6 +113,7 @@ public class PacketValueConfig extends AppEngPacket {
         	switch(this.Name) {
         	case "TileCrafting.Cancel" -> qk.cancelCrafting();
         	case "TileCrafting.Follow" -> qk.togglePlayerFollowStatus(this.Value);
+            case "TileCrafting.Allow" -> qk.changeAllowMode(this.Value);
         	}
         } else if (this.Name.equals("QuartzKnife.Name") && c instanceof final ContainerQuartzKnife qk) {
             qk.setName(this.Value);

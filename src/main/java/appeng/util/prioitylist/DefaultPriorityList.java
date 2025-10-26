@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import appeng.api.storage.data.IAEStack;
+import appeng.api.storage.data.IItemList;
 
 public class DefaultPriorityList<T extends IAEStack<T>> implements IPartitionList<T> {
 
@@ -21,6 +22,11 @@ public class DefaultPriorityList<T extends IAEStack<T>> implements IPartitionLis
 
     @Override
     public boolean isListed(final T input) {
+        return false;
+    }
+
+    @Override
+    public boolean isListed(IItemList<T> input) {
         return false;
     }
 

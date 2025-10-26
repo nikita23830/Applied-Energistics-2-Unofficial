@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 
 import javax.annotation.Nullable;
 
+import gregtech.api.enums.SoundResource;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -206,7 +207,7 @@ public class PartP2PGT5Power extends PartP2PTunnelNormal<PartP2PGT5Power> implem
                             World tWorld = te.getWorldObj();
                             GTUtility.sendSoundToPlayers(
                                     tWorld,
-                                    GregTechAPI.sSoundList.get(209),
+                                    SoundResource.IC2_MACHINES_MACHINE_OVERLOAD,
                                     1.0F,
                                     -1.0F,
                                     tX,

@@ -10,6 +10,8 @@
 
 package appeng.me.storage;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -92,12 +94,35 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     }
 
     @Override
+    public T injectItemsNotSave(T input, Actionable type, BaseActionSource src) {
+        if (!this.canAccept(input)) {
+            return input;
+        }
+
+        return this.internal.injectItemsNotSave(input, type, src);
+    }
+
+    @Override
+    public void _saveChanges() {
+        this.internal._saveChanges();
+    }
+
+    @Override
     public T injectItems(final T input, final Actionable type, final BaseActionSource src) {
         if (!this.canAccept(input)) {
             return input;
         }
 
         return this.internal.injectItems(input, type, src);
+    }
+
+    @Override
+    public List<T> injectMultiItems(IItemList<T> input, Actionable mode, BaseActionSource src) {
+        if (!this.canAccept(input)) {
+            return input.toList();
+        }
+
+        return this.internal.injectMultiItems(input, mode, src);
     }
 
     @Override
@@ -129,7 +154,9 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     }
 
     public boolean isVisible() {
-        return this.internal instanceof MEMonitorIInventory inv && inv.getMode() == StorageFilter.NONE;
+        boolean bool = this.internal instanceof MEMonitorIInventory inv && inv.getMode() == StorageFilter.NONE;
+        if (this.internal instanceof MEMonitorPassThrough inv && inv.getMode() == StorageFilter.NONE) bool = true;
+        return bool;
     }
 
     protected IItemList<T> filterAvailableItems(IItemList<T> out, int iteration) {
@@ -192,6 +219,14 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     }
 
     @Override
+    public boolean isPrioritized(IItemList<T> input) {
+        if (this.myWhitelist == IncludeExclude.WHITELIST) {
+            return this.myPartitionList.isListed(input) || this.internal.isPrioritized(input);
+        }
+        return false;
+    }
+
+    @Override
     public boolean canAccept(final T input) {
         if (!this.hasWriteAccess) {
             return false;
@@ -205,6 +240,32 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         }
         return this.myPartitionList.isListed(input) && this.internal.canAccept(input);
     }
+
+    public boolean canAccept(final IItemList<T> input) {
+        if (!this.hasWriteAccess) {
+            return false;
+        }
+
+        if (this.myWhitelist == IncludeExclude.BLACKLIST) {
+            for (T t : input) {
+                if (this.myPartitionList.isListed(t))
+                    return false;
+            }
+        }
+        if (this.myPartitionList.isEmpty() || this.myWhitelist == IncludeExclude.BLACKLIST) {
+            for (T t : input) {
+                if (!this.internal.canAccept(t))
+                    return false;
+            }
+            return true;
+        }
+        for (T t : input) {
+            if (!this.myExtractPartitionList.isListed(t) || !this.internal.canAccept(t))
+                return false;
+        }
+        return true;
+    }
+
 
     @Override
     public int getPriority() {

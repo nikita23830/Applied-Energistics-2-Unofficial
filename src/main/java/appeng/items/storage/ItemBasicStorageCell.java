@@ -11,11 +11,15 @@
 package appeng.items.storage;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
+import appeng.api.storage.ICellHandler;
+import appeng.api.storage.ICellInventoryHandler;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -95,6 +99,19 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
         }
     }
 
+    public static boolean checkInvalidForLockingAndStickyCarding(ItemStack cell, ICellHandler cellHandler) {
+        return cellHandler == null || cell == null
+                || !(cell.getItem() instanceof ItemBasicStorageCell)
+                || (cell.getItem() instanceof ItemBasicStorageCell storageCell && storageCell.getTotalTypes(cell) == 0);
+    }
+
+    public static boolean cellIsPartitioned(ICellInventoryHandler cellHandler) {
+        return cellHandler != null && cellHandler.getCellInv() != null
+                && cellHandler.getCellInv().getConfigInventory() != null
+                && IntStream.range(0, cellHandler.getCellInv().getConfigInventory().getSizeInventory())
+                .anyMatch(i -> cellHandler.getCellInv().getConfigInventory().getStackInSlot(i) != null);
+    }
+
     @SuppressWarnings("Guava")
     public ItemBasicStorageCell(final Optional<String> subName) {
         super(subName);
@@ -107,64 +124,79 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
         final IMEInventoryHandler<?> inventory = AEApi.instance().registries().cell()
                 .getCellInventory(stack, null, StorageChannel.ITEMS);
 
-        if (inventory instanceof CellInventoryHandler handler) {
-            final CellInventory cellInventory = (CellInventory) handler.getCellInv();
+        if (!(inventory instanceof CellInventoryHandler handler)) {
+            return;
+        }
+        if (!(handler.getCellInv() instanceof CellInventory cellInventory)) {
+            return;
+        }
 
-            if (cellInventory != null) {
-                lines.add(
-                        NumberFormat.getInstance().format(cellInventory.getUsedBytes()) + " "
-                                + GuiText.Of.getLocal()
-                                + ' '
-                                + NumberFormat.getInstance().format(cellInventory.getTotalBytes())
-                                + ' '
-                                + GuiText.BytesUsed.getLocal());
+        lines.add(
+                NumberFormat.getInstance().format(cellInventory.getUsedBytes()) + " "
+                        + GuiText.Of.getLocal()
+                        + ' '
+                        + NumberFormat.getInstance().format(cellInventory.getTotalBytes())
+                        + ' '
+                        + GuiText.BytesUsed.getLocal());
 
-                lines.add(
-                        NumberFormat.getInstance().format(cellInventory.getStoredItemTypes()) + " "
-                                + GuiText.Of.getLocal()
-                                + ' '
-                                + NumberFormat.getInstance().format(cellInventory.getMaxItemTypes())
-                                + ' '
-                                + GuiText.Types.getLocal());
+        lines.add(
+                NumberFormat.getInstance().format(cellInventory.getStoredItemTypes()) + " "
+                        + GuiText.Of.getLocal()
+                        + ' '
+                        + NumberFormat.getInstance().format(cellInventory.getMaxItemTypes())
+                        + ' '
+                        + GuiText.Types.getLocal());
 
-                if (handler.isPreformatted()) {
-                    String filter = cellInventory.getOreFilter();
-                    if (filter.isEmpty()) {
-                        final String list = (handler.getIncludeExcludeMode() == IncludeExclude.WHITELIST
-                                ? GuiText.Included
-                                : GuiText.Excluded).getLocal();
+        if (handler.isPreformatted()) {
+            String filter = cellInventory.getOreFilter();
+            if (filter.isEmpty()) {
+                final String list = (handler.getIncludeExcludeMode() == IncludeExclude.WHITELIST ? GuiText.Included
+                        : GuiText.Excluded).getLocal();
 
-                        if (handler.isFuzzy()) {
-                            lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Fuzzy.getLocal());
-                        } else {
-                            lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Precise.getLocal());
-                        }
-                        if (GuiScreen.isShiftKeyDown()) {
-                            lines.add(GuiText.Filter.getLocal() + ": ");
-                            for (int i = 0; i < cellInventory.getConfigInventory().getSizeInventory(); ++i) {
-                                ItemStack s = cellInventory.getConfigInventory().getStackInSlot(i);
-                                if (s != null) lines.add(s.getDisplayName());
-                            }
-                        }
-                    } else {
-                        lines.add(GuiText.PartitionedOre.getLocal() + " : " + filter);
-                    }
-
-                    if (handler.getSticky()) {
-                        lines.add(GuiText.Sticky.getLocal());
-                    }
+                if (handler.isFuzzy()) {
+                    lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Fuzzy.getLocal());
+                } else {
+                    lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Precise.getLocal());
                 }
-                List<Object> restricted = handler.getRestricted();
-                if (restricted != null && ((long) restricted.get(0) != 0 || (byte) restricted.get(1) != 0)) {
-                    lines.add(GuiText.Restricted.getLocal());
-                    if (GuiScreen.isShiftKeyDown()) {
-                        NumberFormat nf = NumberFormat.getNumberInstance();
-                        if ((long) restricted.get(0) != 0)
-                            lines.add(GuiText.MaxItems.getLocal() + " " + nf.format((long) restricted.get(0)));
-                        if ((byte) restricted.get(1) != 0)
-                            lines.add(GuiText.MaxTypes.getLocal() + " " + restricted.get(1));
+                if (GuiScreen.isShiftKeyDown()) {
+                    int usedFilters = 0;
+                    ArrayList<String> filtersTexts = new ArrayList<>();
+                    for (int i = 0; i < cellInventory.getConfigInventory().getSizeInventory(); ++i) {
+                        ItemStack s = cellInventory.getConfigInventory().getStackInSlot(i);
+                        if (s != null) {
+                            usedFilters++;
+                            filtersTexts.add(s.getDisplayName());
+                        }
                     }
+                    lines.add(
+                            GuiText.Filter.getLocal() + " ("
+                                    + usedFilters
+                                    + "/"
+                                    + cellInventory.getConfigInventory().getSizeInventory()
+                                    + ")"
+                                    + ": ");
+
+                    if (!filtersTexts.isEmpty()) {
+                        lines.addAll(filtersTexts);
+                    }
+
                 }
+            } else {
+                lines.add(GuiText.PartitionedOre.getLocal() + " : " + filter);
+            }
+
+            if (handler.getSticky()) {
+                lines.add(GuiText.Sticky.getLocal());
+            }
+        }
+        List<Object> restricted = handler.getRestricted();
+        if (restricted != null && ((long) restricted.get(0) != 0 || (byte) restricted.get(1) != 0)) {
+            lines.add(GuiText.Restricted.getLocal());
+            if (GuiScreen.isShiftKeyDown()) {
+                NumberFormat nf = NumberFormat.getNumberInstance();
+                if ((long) restricted.get(0) != 0)
+                    lines.add(GuiText.MaxItems.getLocal() + " " + nf.format((long) restricted.get(0)));
+                if ((byte) restricted.get(1) != 0) lines.add(GuiText.MaxTypes.getLocal() + " " + restricted.get(1));
             }
         }
     }

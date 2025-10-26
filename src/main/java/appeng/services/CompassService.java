@@ -125,19 +125,26 @@ public final class CompassService {
     }
 
     public void kill() {
-        this.executor.shutdown();
-
-        try {
-            this.executor.awaitTermination(6, TimeUnit.MINUTES);
-
-            for (final AutoClosingCompassReader cr : this.worldSet.values()) {
-                cr.close();
-            }
-
-            this.worldSet.clear();
-        } catch (final InterruptedException e) {
-            // wrap this up..
+        for (final AutoClosingCompassReader cr : this.worldSet.values()) {
+            cr.close();
         }
+
+        this.worldSet.clear();
+        this.executor.shutdownNow();
+//        this.executor.shutdown();
+//
+//        try {
+//            this.executor.awaitTermination(6, TimeUnit.MINUTES);
+//
+//            for (final AutoClosingCompassReader cr : this.worldSet.values()) {
+//                cr.close();
+//            }
+//
+//            this.worldSet.clear();
+//        } catch (final InterruptedException e) {
+//            this.executor.shutdownNow();
+//            // wrap this up..
+//        }
     }
 
     private CompassReader getReader(final World w) {

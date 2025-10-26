@@ -14,7 +14,14 @@
 package appeng.api.storage;
 
 import appeng.api.config.AccessRestriction;
+import appeng.api.config.Actionable;
+import appeng.api.networking.security.BaseActionSource;
+import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
+import appeng.api.storage.data.IItemList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Thin logic layer that can be swapped with different IMEInventory implementations, used to handle features related to
@@ -40,6 +47,10 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      */
     boolean isPrioritized(StackType input);
 
+    default boolean isPrioritized(IItemList<StackType> input) {
+        return false;
+    }
+
     /**
      * determine if an item can be accepted and stored.
      *
@@ -47,6 +58,10 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      * @return if the item can be added
      */
     boolean canAccept(StackType input);
+
+    default boolean canAccept(IItemList<StackType> input) {
+        return false;
+    }
 
     /**
      * determine what the priority of the inventory is.
@@ -92,6 +107,14 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      */
     default boolean isAutoCraftingInventory() {
         return false;
+    }
+
+    default List<StackType> injectMultiItems(IItemList<StackType> input, Actionable mode, BaseActionSource src) {
+        return new ArrayList<>();
+    }
+
+    default void _saveChanges() {
+
     }
 
 }

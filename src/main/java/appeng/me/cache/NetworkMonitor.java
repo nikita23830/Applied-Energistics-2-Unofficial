@@ -170,6 +170,40 @@ public class NetworkMonitor<T extends IAEStack<T>> implements IMEMonitor<T> {
         return leftover;
     }
 
+    public T injectItemsNotSave(T input, final Actionable mode, final BaseActionSource src) {
+        for (final IListenerInjectItems<T> listener : this.injectListeners) {
+            input = listener.preInject(input, mode, src);
+            if (input == null) {
+                return null;
+            }
+        }
+        if (input == null) {
+            return null;
+        }
+        if (this.getHandler() == null) {
+            return input;
+        }
+        if (mode == Actionable.SIMULATE) {
+            return this.getHandler().injectItemsNotSave(input, mode, src);
+        }
+
+        localDepthSemaphore++;
+        final T leftover = this.getHandler().injectItemsNotSave(input, mode, src);
+        localDepthSemaphore--;
+
+        if (localDepthSemaphore == 0) {
+            this.monitorDifference(input.copy(), leftover, false, src);
+        }
+
+        return leftover;
+    }
+
+    @Override
+    public void _saveChanges() {
+        if (getHandler() != null)
+            getHandler()._saveChanges();
+    }
+
     @Override
     public boolean isPrioritized(final T input) {
         return this.getHandler().isPrioritized(input);

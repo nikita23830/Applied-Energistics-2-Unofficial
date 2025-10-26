@@ -14,8 +14,10 @@
 package appeng.api.storage.data;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Represents a list of items in AE.
@@ -80,5 +82,13 @@ public interface IItemList<StackType extends IAEStack> extends IItemContainer<St
         }
 
         return i != prevSize ? Arrays.copyOf(output, i) : output;
+    }
+
+    default List<StackType> toList() {
+        List<StackType> list = new ArrayList<>();
+        for (StackType stackType : this) {
+            list.add(stackType);
+        }
+        return list;
     }
 }

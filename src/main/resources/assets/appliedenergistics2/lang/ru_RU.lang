@@ -671,3 +671,28 @@ achievement.ae2.QNB.desc=Сделайте квантовое соединени�
 stat.ae2.ItemsInserted=Предметов добавлено в МЭ хранилище
 stat.ae2.ItemsExtracted=Предметов извлечено из МЭ хранилища
 stat.ae2.TurnedCranks=Сломано рукояток
+
+tile.appliedenergistics2.BlockCreativeEnergyController.name=МЭ Креативный Контроллер
+chat.appliedenergistics2.DriveLockingToggled=Ячейки в диске были распределены/не распределены
+chat.appliedenergistics2.ChestLockingToggled=Ячейка в сундуке была распределена/не распределена
+gui.appliedenergistics2.TimeUsed=Затраченное время
+gui.appliedenergistics2.HoldShift=Удерживайте [LSHIFT], чтобы показать ингредиенты
+gui.appliedenergistics2.Result=Результат
+gui.appliedenergistics2.Results=Результаты
+gui.appliedenergistics2.Ingredients=Ингредиенты
+gui.appliedenergistics2.Ingredient=Ингредиент
+gui.appliedenergistics2.AddToBookmark=В закладки
+gui.appliedenergistics2.CellView=Просмотр ячеек
+gui.appliedenergistics2.ViewCellToggleKey=ПКМ для переключения
+gui.color.appliedenergistics2.ProcessBarStartColor=FFE60A00
+gui.color.appliedenergistics2.ProcessBarMiddleColor=FFE6E600
+gui.color.appliedenergistics2.ProcessBarEndColor=FF0AE600
+
+gui.tooltips.appliedenergistics2.CPUAllowMode=Ограничения на запросы крафта
+gui.tooltips.appliedenergistics2.CPUAllowAllDesc=Разрешить все запросы на крафт
+gui.tooltips.appliedenergistics2.CPUOnlyAllowPlayerDesc=Разрешить только запросы на крафт от игрока
+gui.tooltips.appliedenergistics2.CPUOnlyAllowNonPlayerDesc=Разрешить только запросы на крафт не от игрока
+
+gui.tooltips.appliedenergistics2.ToggleShowOnlySubstitute=Переключение отображения интерфейсов с шаблонами с включёнными заменами
+gui.tooltips.appliedenergistics2.ToggleShowOnlySubstituteOnDesc=Показ всех интерфейсов
+gui.tooltips.appliedenergistics2.ToggleShowOnlySubstituteOffDesc=Показ только интерфейсов с шаблонами, где включены замены

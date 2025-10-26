@@ -93,4 +93,7 @@ public interface IEnergyGrid extends IGridCache, IEnergySource, IEnergyGridProvi
      * internal use only
      */
     void setHasInfiniteStore(boolean infinite);
+
+
+    boolean getHasInfiniteStore();
 }

@@ -872,3 +872,29 @@ stat.ae2.TurnedCranks=Turned Cranks
 # Keys
 key.appliedenergistics2.category=Applied Energistics 2
 key.toggle_focus.desc=Toggle search box focus
+
+
+tile.appliedenergistics2.BlockCreativeEnergyController.name=ME Self Powered Controller
+chat.appliedenergistics2.DriveLockingToggled=Cells in drive were partitioned/unpartitioned
+chat.appliedenergistics2.ChestLockingToggled=Cell in chest was partitioned/unpartitioned
+gui.appliedenergistics2.TimeUsed=Time Used
+gui.appliedenergistics2.HoldShift=Hold [LSHIFT] to show Ingredients
+gui.appliedenergistics2.Result=Result
+gui.appliedenergistics2.Results=Results
+gui.appliedenergistics2.Ingredients=Ingredients
+gui.appliedenergistics2.Ingredient=Ingredient
+gui.appliedenergistics2.AddToBookmark=Bookmark
+gui.appliedenergistics2.CellView=Cell View
+gui.appliedenergistics2.ViewCellToggleKey=Right-click to toggle
+gui.color.appliedenergistics2.ProcessBarStartColor=FFE60A00
+gui.color.appliedenergistics2.ProcessBarMiddleColor=FFE6E600
+gui.color.appliedenergistics2.ProcessBarEndColor=FF0AE600
+
+gui.tooltips.appliedenergistics2.CPUAllowMode=Crafting requests limitation
+gui.tooltips.appliedenergistics2.CPUAllowAllDesc=Allow all crafting requests
+gui.tooltips.appliedenergistics2.CPUOnlyAllowPlayerDesc=Only allow crafting requests from player
+gui.tooltips.appliedenergistics2.CPUOnlyAllowNonPlayerDesc=Only allow crafting requests from non-player
+
+gui.tooltips.appliedenergistics2.ToggleShowOnlySubstitute=Toggles showing interfaces with patterns with substitutions enabled
+gui.tooltips.appliedenergistics2.ToggleShowOnlySubstituteOnDesc=Showing all interfaces
+gui.tooltips.appliedenergistics2.ToggleShowOnlySubstituteOffDesc=Showing only interfaces with patterns with substitutions enabled
